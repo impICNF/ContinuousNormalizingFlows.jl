@@ -1,0 +1,7 @@
+name = "ICNF"
+uuid = "9bd0f7d2-bd29-441d-bcde-0d11364d2762"
+authors = ["Hossein Pourbozorg <prbzrg@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
