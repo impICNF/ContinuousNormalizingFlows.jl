@@ -1,6 +1,17 @@
-using ICNF
-using Test
+using
+    ICNF,
+    CUDA,
+    ComputationalResources,
+    DataFrames,
+    Distributions,
+    Flux,
+    MLJBase,
+    Test
 
-@testset "ICNF.jl" begin
-    # Write your tests here.
+CUDA.allowscalar() do
+    include("core.jl")
+
+    @testset "Overall" begin
+        include("ffjord.jl")
+    end
 end
