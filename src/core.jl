@@ -56,7 +56,7 @@ abstract type MLJICNF <: MLJModelInterface.Unsupervised end
     optimizer::Flux.Optimise.AbstractOptimiser = AMSGrad()
     n_epochs::Integer = 128
 
-    batch_size::Integer = 32
+    batch_size::Integer = 128
 
     cb_timeout::Integer = 16
 end
@@ -68,7 +68,7 @@ function ICNFModel(
         optimizer::Flux.Optimise.AbstractOptimiser=AMSGrad(),
         n_epochs::Integer=128,
 
-        batch_size::Integer=32,
+        batch_size::Integer=128,
 
         cb_timeout::Integer=16,
         ) where {T <: AbstractFloat, T2 <: AbstractICNF}
