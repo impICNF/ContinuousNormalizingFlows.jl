@@ -15,7 +15,7 @@
         @test !isnothing(generate(ffjord, TrainMode(), n))
 
         @test !isnothing(ffjord(r))
-        @test !isnothing(loss(ffjord)(r))
+        @test !isnothing(loss_f(ffjord)(r))
 
         d = ICNFDistribution(; m=ffjord)
 
@@ -31,5 +31,7 @@
 
         @test !isnothing(MLJBase.transform(mach, df))
         @test fd != ufd
+
+        @test !isnothing(ICNFModel(nvars))
     end
 end

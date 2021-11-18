@@ -1,6 +1,6 @@
 export
     inference, generate, TestMode, TrainMode,
-    loss, cb,
+    loss_f, cb,
     ICNFModel, ICNFDistribution
 
 abstract type Flows end
@@ -31,17 +31,16 @@ default_sensealg = InterpolatingAdjoint(
 
 # Flux interface
 
-function loss(icnf::AbstractICNF; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractICNF; agg::Function=mean)::Function where {T <: AbstractFloat} end
 
 function (m::AbstractICNF)(x::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
     inference(m, TestMode(), x)
 end
 
-function cb(icnf::AbstractICNF, data::AbstractVector{T2}; agg::Function=mean)::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
-    l = loss(icnf; agg)
+function cb_f(loss::Function, data::AbstractVector{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
     xs = first(data)
     function f()::Nothing
-        @info "loss = $(l(xs))"
+        @info "loss = $(loss(xs))"
     end
     f
 end
@@ -51,7 +50,8 @@ end
 abstract type MLJICNF <: MLJModelInterface.Unsupervised end
 
 @with_kw mutable struct ICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: AbstractICNF}
-    m::T2 = FFJORD{Float64}(Dense(1, 1), 1)
+    m::T2
+    loss::Function = loss_f(m)
 
     optimizer::Flux.Optimise.AbstractOptimiser = AMSGrad()
     n_epochs::Integer = 128
@@ -61,12 +61,32 @@ abstract type MLJICNF <: MLJModelInterface.Unsupervised end
     cb_timeout::Integer = 16
 end
 
+function ICNFModel(
+        nvars::Integer,
+        n_hidden_ratio::Integer=4,
+        ;
+        optimizer::Flux.Optimise.AbstractOptimiser=AMSGrad(),
+        n_epochs::Integer=128,
+
+        batch_size::Integer=32,
+
+        cb_timeout::Integer=16,
+        ) where {T <: AbstractFloat, T2 <: AbstractICNF}
+    nn = Chain(
+        Dense(nvars, nvars*n_hidden_ratio, tanh),
+        Dense(nvars*n_hidden_ratio, nvars, tanh),
+    )
+    m = FFJORD{Float64}(nn, nvars)
+    loss = loss_f(m)
+    ICNFModel(; m, loss, optimizer, n_epochs, batch_size, cb_timeout)
+end
+
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(MLJModelInterface.matrix(X)')
 
     data = broadcast(nx -> hcat(nx...), Base.Iterators.partition(eachcol(x), model.batch_size))
 
-    Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(loss(model.m), Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb(model.m, data), model.cb_timeout))
+    Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.loss, data), model.cb_timeout))
 
     fitresult = nothing
     cache = nothing

@@ -143,7 +143,7 @@ end
 
 Flux.@functor FFJORD (p,)
 
-function loss(icnf::FFJORD{T}; agg::Function=mean)::Function where {T <: AbstractFloat}
+function loss_f(icnf::FFJORD{T}; agg::Function=mean)::Function where {T <: AbstractFloat}
     function f(x::AbstractMatrix{T})::T
         logp̂x = inference(icnf, TrainMode(), x)
         agg(-logp̂x)
