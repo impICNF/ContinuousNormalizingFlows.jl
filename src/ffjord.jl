@@ -72,7 +72,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: Abst
     f_aug
 end
 
-function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{Int64, Int64})::Function where {T <: AbstractFloat}
+function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
     move = MLJFlux.Mover(icnf.acceleration)
     ϵ = randn(T, sz) |> move
 
@@ -143,7 +143,7 @@ end
 
 Flux.@functor FFJORD (p,)
 
-function loss(icnf::FFJORD{T}; agg::Function=mean)::Function where {T <: AbstractFloat}
+function loss_f(icnf::FFJORD{T}; agg::Function=mean)::Function where {T <: AbstractFloat}
     function f(x::AbstractMatrix{T})::T
         logp̂x = inference(icnf, TrainMode(), x)
         agg(-logp̂x)
