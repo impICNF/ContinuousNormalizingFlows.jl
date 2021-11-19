@@ -24,7 +24,7 @@
         @test !isnothing(rand(d, n))
 
         df = DataFrame(r', :auto)
-        model = ICNFModel(; m=ffjord)
+        model = ICNFModel(; m=ffjord, n_epochs=8)
         mach = machine(model, df)
         fit!(mach)
         fd = MLJBase.fitted_params(mach).learned_parameters

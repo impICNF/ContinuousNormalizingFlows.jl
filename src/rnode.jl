@@ -1,11 +1,11 @@
-export FFJORD
+export RNODE
 
 """
-Implementations of FFJORD from
+Implementations of RNODE from
 
-[Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
+[Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
-@with_kw struct FFJORD{T} <: AbstractICNF where {T <: AbstractFloat}
+@with_kw struct RNODE{T} <: AbstractICNF where {T <: AbstractFloat}
     re::Function
     p::AbstractVector{T}
 
@@ -25,7 +25,7 @@ Implementations of FFJORD from
     # trace_train
 end
 
-function FFJORD{T}(
+function RNODE{T}(
         nn,
         nvars::Integer,
         ;
@@ -50,7 +50,7 @@ function FFJORD{T}(
     end
     nn = move(nn)
     p, re = Flux.destructure(nn)
-    FFJORD{T}(;
+    RNODE{T}(;
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,
         sensealg_test, sensealg_train,
@@ -58,36 +58,38 @@ function FFJORD{T}(
     )
 end
 
-function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: AbstractFloat}
+function augmented_f(icnf::RNODE{T}, mode::TestMode)::Function where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
 
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz = m(z)
+        ż = m(z)
         J = jacobian_batched(m, z, move)
-        trace_J = transpose(tr.(eachslice(J, dims=3)))
-        vcat(mz, -trace_J)
+        l̇ = transpose(tr.(eachslice(J, dims=3)))
+        vcat(ż, -l̇)
     end
     f_aug
 end
 
-function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
+function augmented_f(icnf::RNODE{T}, mode::TrainMode, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
     move = MLJFlux.Mover(icnf.acceleration)
     ϵ = randn(T, sz) |> move
 
     function f_aug(u, p, t)
         m = icnf.re(p)
-        z = u[1:end - 1, :]
-        mz, back = Zygote.pullback(m, z)
+        z = u[1:end - 3, :]
+        ż, back = Zygote.pullback(m, z)
         ϵJ = only(back(ϵ))
-        trace_J = sum(ϵJ .* ϵ, dims=1)
-        vcat(mz, -trace_J)
+        l̇ = sum(ϵJ .* ϵ, dims=1)
+        Ė = transpose(norm.(eachcol(ż)))
+        ṅ = transpose(norm.(eachcol(ϵJ)))
+        vcat(ż, -l̇, Ė, ṅ)
     end
     f_aug
 end
 
-function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
@@ -101,21 +103,23 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T})::Abst
     logp̂x
 end
 
-function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T})::Tuple where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
-    zrs = zeros(T, 1, size(xs, 2)) |> move
+    zrs = zeros(T, 3, size(xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, size(xs))
     prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, icnf.p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
-    z = fsol[1:end - 1, :]
-    Δlogp = fsol[end, :]
+    z = fsol[1:end - 3, :]
+    Δlogp = fsol[end - 2, :]
+    Ė = fsol[end - 1, :]
+    ṅ = fsol[end, :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    logp̂x
+    logp̂x, Ė, ṅ
 end
 
-function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::RNODE{T}, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
@@ -128,25 +132,25 @@ function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer; rng::Union{Abstra
     z
 end
 
-function generate(icnf::FFJORD{T}, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::RNODE{T}, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
-    zrs = zeros(T, 1, size(new_xs, 2)) |> move
+    zrs = zeros(T, 3, size(new_xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, size(new_xs))
     prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), icnf.p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
-    z = fsol[1:end - 1, :]
+    z = fsol[1:end - 3, :]
     z
 end
 
-Flux.@functor FFJORD (p,)
+Flux.@functor RNODE (p,)
 
-function loss_f(icnf::FFJORD{T}; agg::Function=mean)::Function where {T <: AbstractFloat}
+function loss_f(icnf::RNODE{T}, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
     function f(x::AbstractMatrix{T})::T
-        logp̂x = inference(icnf, TrainMode(), x)
-        agg(-logp̂x)
+        logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x)
+        agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
     end
     f
 end
