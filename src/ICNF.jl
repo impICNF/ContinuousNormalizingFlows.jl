@@ -20,6 +20,7 @@ module ICNF
 
     include("core.jl")
     include("ffjord.jl")
+    include("rnode.jl")
     include("metrics.jl")
     include("utils.jl")
 
