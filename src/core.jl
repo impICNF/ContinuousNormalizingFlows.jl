@@ -1,6 +1,6 @@
 export
     inference, generate, TestMode, TrainMode,
-    loss_f, cb,
+    loss_f, cb_f,
     ICNFModel, ICNFDistribution
 
 abstract type Flows end
@@ -83,21 +83,34 @@ end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(MLJModelInterface.matrix(X)')
-
     data = broadcast(nx -> hcat(nx...), Base.Iterators.partition(eachcol(x), model.batch_size))
 
+    initial_loss_value = model.loss(x)
+    t₀ = time()
     Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.loss, data), model.cb_timeout))
+    t₁ = time()
+    final_loss_value = model.loss(x)
+    Δt = t₁ - t₀
+    @info "time cost (fit) = $(Δt) seconds"
 
     fitresult = nothing
     cache = nothing
-    report = nothing
+    report = (
+        fit_time=Δt,
+        initial_loss_value=initial_loss_value,
+        final_loss_value=final_loss_value,
+    )
     fitresult, cache, report
 end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(MLJModelInterface.matrix(Xnew)')
 
+    t₀ = time()
     logp̂x = inference(model.m, TestMode(), xnew)
+    t₁ = time()
+    Δt = t₁ - t₀
+    @info "time cost (transform) = $(Δt) seconds"
 
     DataFrame(px=exp.(logp̂x))
 end
