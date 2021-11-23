@@ -19,7 +19,7 @@ Implementations of FFJORD from
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = sensealg_test
 
-    acceleration::AbstractResource = CPU1()
+    acceleration::AbstractResource = default_acceleration
 
     # trace_test
     # trace_train
@@ -38,7 +38,7 @@ function FFJORD{T}(
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=sensealg_test,
 
-        acceleration::AbstractResource=CPU1(),
+        acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
     move = MLJFlux.Mover(acceleration)
     if T <: Float64
@@ -64,8 +64,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: Abst
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz = m(z)
-        J = jacobian_batched(m, z, move)
+        mz, J = jacobian_batched(m, z, move)
         trace_J = transpose(tr.(eachslice(J, dims=3)))
         vcat(mz, -trace_J)
     end
