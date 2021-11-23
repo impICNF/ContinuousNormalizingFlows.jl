@@ -19,7 +19,7 @@ Implementations of RNODE from
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = sensealg_test
 
-    acceleration::AbstractResource = CPU1()
+    acceleration::AbstractResource = default_acceleration
 
     # trace_test
     # trace_train
@@ -38,7 +38,7 @@ function RNODE{T}(
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=sensealg_test,
 
-        acceleration::AbstractResource=CPU1(),
+        acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
     move = MLJFlux.Mover(acceleration)
     if T <: Float64
@@ -64,8 +64,7 @@ function augmented_f(icnf::RNODE{T}, mode::TestMode)::Function where {T <: Abstr
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        ż = m(z)
-        J = jacobian_batched(m, z, move)
+        ż, J = jacobian_batched(m, z, move)
         l̇ = transpose(tr.(eachslice(J, dims=3)))
         vcat(ż, -l̇)
     end

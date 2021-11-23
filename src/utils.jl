@@ -1,4 +1,4 @@
-function jacobian_batched(f, x::AbstractMatrix{T}, move::MLJFlux.Mover)::AbstractArray{T, 3} where {T <: AbstractFloat}
+function jacobian_batched(f, x::AbstractMatrix{T}, move::MLJFlux.Mover)::Tuple where {T <: AbstractFloat}
     y, back = Zygote.pullback(f, x)
     z = zeros(eltype(x), size(x)) |> move
     res = zeros(size(x, 1), size(x, 1), size(x, 2)) |> move
@@ -7,5 +7,5 @@ function jacobian_batched(f, x::AbstractMatrix{T}, move::MLJFlux.Mover)::Abstrac
         res[i, :, :] .= only(back(z))
         z[i, :] .= zero(eltype(x))
     end
-    res
+    y, res
 end
