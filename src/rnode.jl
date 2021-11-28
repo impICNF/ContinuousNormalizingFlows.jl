@@ -13,11 +13,11 @@ Implementations of RNODE from
     basedist::Distribution = MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars)))
     tspan::Tuple{T, T} = convert.(T, (0, 1))
 
-    solver_test::OrdinaryDiffEqAlgorithm = default_solver_test
-    solver_train::OrdinaryDiffEqAlgorithm = default_solver_train
+    solver_test::SciMLBase.AbstractODEAlgorithm = default_solver_test
+    solver_train::SciMLBase.AbstractODEAlgorithm = default_solver_train
 
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
-    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = sensealg_test
+    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
 
     acceleration::AbstractResource = default_acceleration
 
@@ -32,11 +32,11 @@ function RNODE{T}(
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
         tspan::Tuple{T, T}=convert.(T, (0, 1)),
 
-        solver_test::OrdinaryDiffEqAlgorithm=default_solver_test,
-        solver_train::OrdinaryDiffEqAlgorithm=default_solver_train,
+        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
+        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
 
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
-        sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=sensealg_test,
+        sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
 
         acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
