@@ -96,7 +96,7 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T})::Abst
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
     logp̂x
 end
 
@@ -110,7 +110,7 @@ function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T})::Abs
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
     logp̂x
 end
 

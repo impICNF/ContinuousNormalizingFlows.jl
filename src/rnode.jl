@@ -98,7 +98,7 @@ function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T})::Abstr
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
     logp̂x
 end
 
@@ -114,7 +114,7 @@ function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T})::Tupl
     Δlogp = fsol[end - 2, :]
     Ė = fsol[end - 1, :]
     ṅ = fsol[end, :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
     logp̂x, Ė, ṅ
 end
 
