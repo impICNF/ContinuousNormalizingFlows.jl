@@ -14,5 +14,8 @@ CUDA.allowscalar() do
     @testset "Overall" begin
         include("ffjord.jl")
         include("rnode.jl")
+
+        include("cond_ffjord.jl")
+        include("cond_rnode.jl")
     end
 end

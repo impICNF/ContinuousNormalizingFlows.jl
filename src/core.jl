@@ -7,17 +7,10 @@ abstract type Flows end
 abstract type NormalizingFlows <: Flows end
 abstract type ContinuousNormalizingFlows <: NormalizingFlows end
 abstract type InfinitesimalContinuousNormalizingFlows <: ContinuousNormalizingFlows end
-abstract type AbstractICNF <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
 abstract type Mode end
 struct TestMode <: Mode end
 struct TrainMode <: Mode end
-
-function inference(icnf::AbstractICNF, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractICNF, mode::TrainMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
-
-function generate(icnf::AbstractICNF, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractICNF, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
 default_acceleration = CPU1()
 default_solver_test = Feagin14()
@@ -29,18 +22,54 @@ default_sensealg = InterpolatingAdjoint(
     autojacvec=ZygoteVJP(),
 )
 
-# Flux interface
+# - orginal config
+
+abstract type AbstractICNF <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
+
+function inference(icnf::AbstractICNF, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF, mode::TrainMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+
+function generate(icnf::AbstractICNF, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
 function loss_f(icnf::AbstractICNF; agg::Function=mean)::Function where {T <: AbstractFloat} end
+
+# -- Flux interface
 
 function (m::AbstractICNF)(x::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
     inference(m, TestMode(), x)
 end
 
-function cb_f(loss::Function, data::AbstractVector{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
+function cb_f(icnf::AbstractICNF, loss::Function, data::AbstractVector{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
     xs = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs))"
+    end
+    f
+end
+
+# - conditional config
+
+abstract type AbstractCondICNF <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
+
+function inference(icnf::AbstractCondICNF, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+
+function generate(icnf::AbstractCondICNF, mode::TestMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+
+function loss_f(icnf::AbstractCondICNF; agg::Function=mean)::Function where {T <: AbstractFloat} end
+
+# -- Flux interface
+
+function (m::AbstractCondICNF)(x::AbstractMatrix{T}, y::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+    inference(m, TestMode(), x, y)
+end
+
+function cb_f(icnf::AbstractCondICNF, loss::Function, data::AbstractVector{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+    xs, ys = first(data)
+    function f()::Nothing
+        @info "loss = $(loss(xs, ys))"
     end
     f
 end
@@ -87,7 +116,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
 
     initial_loss_value = model.loss(x)
     t₀ = time()
-    Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.loss, data), model.cb_timeout))
+    Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.m, model.loss, data), model.cb_timeout))
     t₁ = time()
     final_loss_value = model.loss(x)
     Δt = t₁ - t₀
