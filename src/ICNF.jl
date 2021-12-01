@@ -21,9 +21,15 @@ module ICNF
         Statistics
 
     include("core.jl")
+
     include("ffjord.jl")
     include("rnode.jl")
+
+    include("cond_ffjord.jl")
+    include("cond_rnode.jl")
+
     include("metrics.jl")
+
     include("utils.jl")
 
 end
