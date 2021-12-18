@@ -1,7 +1,7 @@
 export CondRNODE
 
 """
-Implementations of CondRNODE (Conditional Version)
+Implementations of RNODE (Conditional Version)
 """
 struct CondRNODE{T <: AbstractFloat} <: AbstractCondICNF{T}
     re::Function
