@@ -31,6 +31,10 @@
             Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.m, model.loss, data), model.cb_timeout))
         end
         fd = icnf.p
-        @test fd != ufd
+        if tp <: Float16
+            @test_broken fd != ufd
+        else
+            @test fd != ufd
+        end
     end
 end

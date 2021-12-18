@@ -24,23 +24,23 @@ default_sensealg = InterpolatingAdjoint(
 
 # - orginal config
 
-abstract type AbstractICNF <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
+abstract type AbstractICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
-function inference(icnf::AbstractICNF, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractICNF, mode::TrainMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T}, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T}, mode::TrainMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractICNF, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractICNF, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T}, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T}, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
-function loss_f(icnf::AbstractICNF; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractICNF{T}; agg::Function=mean)::Function where {T <: AbstractFloat} end
 
 # -- Flux interface
 
-function (m::AbstractICNF)(x::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function (m::AbstractICNF{T})(x::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
     inference(m, TestMode(), x)
 end
 
-function cb_f(icnf::AbstractICNF, loss::Function, data::AbstractVector{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
+function cb_f(icnf::AbstractICNF{T}, loss::Function, data::AbstractVector{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
     xs = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs))"
@@ -50,23 +50,23 @@ end
 
 # - conditional config
 
-abstract type AbstractCondICNF <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
+abstract type AbstractCondICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
-function inference(icnf::AbstractCondICNF, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractCondICNF, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractCondICNF, mode::TestMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractCondICNF, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
-function loss_f(icnf::AbstractCondICNF; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractCondICNF{T}; agg::Function=mean)::Function where {T <: AbstractFloat} end
 
 # -- Flux interface
 
-function (m::AbstractCondICNF)(x::AbstractMatrix{T}, y::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function (m::AbstractCondICNF{T})(x::AbstractMatrix{T}, y::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
     inference(m, TestMode(), x, y)
 end
 
-function cb_f(icnf::AbstractCondICNF, loss::Function, data::AbstractVector{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+function cb_f(icnf::AbstractCondICNF{T}, loss::Function, data::AbstractVector{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
     xs, ys = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs, ys))"
@@ -78,21 +78,21 @@ end
 
 abstract type MLJICNF <: MLJModelInterface.Unsupervised end
 
-@with_kw mutable struct ICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: AbstractICNF}
+mutable struct ICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
     m::T2
-    loss::Function = loss_f(m)
+    loss::Function
 
-    optimizer::Flux.Optimise.AbstractOptimiser = AMSGrad()
-    n_epochs::Integer = 128
+    optimizer::Flux.Optimise.AbstractOptimiser
+    n_epochs::Integer
 
-    batch_size::Integer = 128
+    batch_size::Integer
 
-    cb_timeout::Integer = 16
+    cb_timeout::Integer
 end
 
 function ICNFModel(
-        nvars::Integer,
-        n_hidden_ratio::Integer=4,
+        m::T2,
+        loss::Function = loss_f(m),
         ;
         optimizer::Flux.Optimise.AbstractOptimiser=AMSGrad(),
         n_epochs::Integer=128,
@@ -100,14 +100,8 @@ function ICNFModel(
         batch_size::Integer=128,
 
         cb_timeout::Integer=16,
-        ) where {T <: AbstractFloat, T2 <: AbstractICNF}
-    nn = Chain(
-        Dense(nvars, nvars*n_hidden_ratio, tanh),
-        Dense(nvars*n_hidden_ratio, nvars, tanh),
-    )
-    m = FFJORD{Float64}(nn, nvars)
-    loss = loss_f(m)
-    ICNFModel(; m, loss, optimizer, n_epochs, batch_size, cb_timeout)
+        ) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
+    ICNFModel(m, loss, optimizer, n_epochs, batch_size, cb_timeout)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -172,7 +166,7 @@ MLJBase.metadata_model(
 
 # Distributions interface
 
-@with_kw struct ICNFDistribution{T2} <: ContinuousMultivariateDistribution where {T <: AbstractFloat, T2 <: AbstractICNF}
+struct ICNFDistribution{T2} <: ContinuousMultivariateDistribution where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
     m::T2
 end
 

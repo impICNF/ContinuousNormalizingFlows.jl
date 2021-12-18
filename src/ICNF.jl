@@ -12,7 +12,6 @@ module ICNF
         MLJFlux,
         MLJModelInterface,
         OrdinaryDiffEq,
-        Parameters,
         SciMLBase,
         ScientificTypes,
         Zygote,
