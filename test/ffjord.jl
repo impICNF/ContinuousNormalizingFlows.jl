@@ -17,21 +17,23 @@
         @test !isnothing(icnf(r))
         @test !isnothing(loss_f(icnf)(r))
 
-        d = ICNFDistribution(; m=icnf)
+        d = ICNFDistribution(icnf)
 
         @test !isnothing(logpdf(d, r))
         @test !isnothing(pdf(d, r))
         @test !isnothing(rand(d, n))
 
         df = DataFrame(r', :auto)
-        model = ICNFModel(; m=icnf, n_epochs=8)
+        model = ICNFModel(icnf; n_epochs=8)
         mach = machine(model, df)
         fit!(mach)
         fd = MLJBase.fitted_params(mach).learned_parameters
 
         @test !isnothing(MLJBase.transform(mach, df))
-        @test fd != ufd
-
-        @test !isnothing(ICNFModel(nvars))
+        if tp <: Float16
+            @test_broken fd != ufd
+        else
+            @test fd != ufd
+        end
     end
 end

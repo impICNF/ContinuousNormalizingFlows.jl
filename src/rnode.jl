@@ -5,21 +5,21 @@ Implementations of RNODE from
 
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
-@with_kw struct RNODE{T} <: AbstractICNF where {T <: AbstractFloat}
+struct RNODE{T <: AbstractFloat} <: AbstractICNF{T}
     re::Function
     p::AbstractVector{T}
 
     nvars::Integer
-    basedist::Distribution = MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars)))
-    tspan::Tuple{T, T} = convert.(T, (0, 1))
+    basedist::Distribution
+    tspan::Tuple{T, T}
 
-    solver_test::SciMLBase.AbstractODEAlgorithm = default_solver_test
-    solver_train::SciMLBase.AbstractODEAlgorithm = default_solver_train
+    solver_test::SciMLBase.AbstractODEAlgorithm
+    solver_train::SciMLBase.AbstractODEAlgorithm
 
-    sensealg_test::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
-    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
+    sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
+    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
-    acceleration::AbstractResource = default_acceleration
+    acceleration::AbstractResource
 
     # trace_test
     # trace_train
@@ -50,7 +50,7 @@ function RNODE{T}(
     end
     nn = move(nn)
     p, re = Flux.destructure(nn)
-    RNODE{T}(;
+    RNODE{T}(
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,
         sensealg_test, sensealg_train,

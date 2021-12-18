@@ -5,21 +5,21 @@ Implementations of FFJORD from
 
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
-@with_kw struct FFJORD{T} <: AbstractICNF where {T <: AbstractFloat}
+struct FFJORD{T <: AbstractFloat} <: AbstractICNF{T}
     re::Function
     p::AbstractVector{T}
 
     nvars::Integer
-    basedist::Distribution = MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars)))
-    tspan::Tuple{T, T} = convert.(T, (0, 1))
+    basedist::Distribution
+    tspan::Tuple{T, T}
 
-    solver_test::SciMLBase.AbstractODEAlgorithm = default_solver_test
-    solver_train::SciMLBase.AbstractODEAlgorithm = default_solver_train
+    solver_test::SciMLBase.AbstractODEAlgorithm
+    solver_train::SciMLBase.AbstractODEAlgorithm
 
-    sensealg_test::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
-    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg
+    sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
+    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
-    acceleration::AbstractResource = default_acceleration
+    acceleration::AbstractResource
 
     # trace_test
     # trace_train
@@ -50,7 +50,7 @@ function FFJORD{T}(
     end
     nn = move(nn)
     p, re = Flux.destructure(nn)
-    FFJORD{T}(;
+    FFJORD{T}(
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,
         sensealg_test, sensealg_train,
