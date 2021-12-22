@@ -106,7 +106,7 @@ end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(MLJModelInterface.matrix(X)')
-    data = broadcast(nx -> hcat(nx...), Base.Iterators.partition(eachcol(x), model.batch_size))
+    data = Flux.Data.DataLoader(x; batchsize=model.batch_size, shuffle=true, partial=true)
 
     initial_loss_value = model.loss(x)
     t₀ = time()
