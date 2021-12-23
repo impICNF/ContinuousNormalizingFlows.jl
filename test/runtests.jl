@@ -5,6 +5,7 @@ using
     DataFrames,
     Distributions,
     Flux,
+    IterTools,
     MLJBase,
     Test
 

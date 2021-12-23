@@ -40,7 +40,7 @@ function (m::AbstractICNF{T})(x::AbstractMatrix{T})::AbstractVector{T} where {T 
     inference(m, TestMode(), x)
 end
 
-function cb_f(icnf::AbstractICNF{T}, loss::Function, data::AbstractVector{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
+function cb_f(icnf::AbstractICNF{T}, loss::Function, data::Flux.Data.DataLoader{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
     xs = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs))"
@@ -66,7 +66,7 @@ function (m::AbstractCondICNF{T})(x::AbstractMatrix{T}, y::AbstractMatrix{T})::A
     inference(m, TestMode(), x, y)
 end
 
-function cb_f(icnf::AbstractCondICNF{T}, loss::Function, data::AbstractVector{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+function cb_f(icnf::AbstractCondICNF{T}, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
     xs, ys = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs, ys))"
@@ -86,8 +86,6 @@ mutable struct ICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: Abstrac
     n_epochs::Integer
 
     batch_size::Integer
-
-    cb_timeout::Integer
 end
 
 function ICNFModel(
@@ -98,10 +96,8 @@ function ICNFModel(
         n_epochs::Integer=128,
 
         batch_size::Integer=128,
-
-        cb_timeout::Integer=16,
         ) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
-    ICNFModel(m, loss, optimizer, n_epochs, batch_size, cb_timeout)
+    ICNFModel(m, loss, optimizer, n_epochs, batch_size)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -110,7 +106,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
 
     initial_loss_value = model.loss(x)
     t₀ = time()
-    Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.m, model.loss, data), model.cb_timeout))
+    Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.loss, data))
     t₁ = time()
     final_loss_value = model.loss(x)
     Δt = t₁ - t₀
