@@ -69,10 +69,9 @@
                 optimizer=AMSGrad(),
                 n_epochs=8,
                 batch_size=128,
-                cb_timeout=16,
             )
-            data = [(r, r2),]
-            Flux.Optimise.@epochs model.n_epochs Flux.Optimise.train!(model.loss, Flux.params(model.m), data, model.optimizer; cb=Flux.throttle(cb_f(model.m, model.loss, data), model.cb_timeout))
+            data = Flux.Data.DataLoader((r, r2); batchsize=model.batch_size)
+            Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.loss, data))
         end
         fd = icnf.p
         if tp <: Float16
