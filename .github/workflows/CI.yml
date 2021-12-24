@@ -19,6 +19,7 @@ jobs:
       matrix:
         version:
           - '1.6'
+          - '1'
           - 'nightly'
         os:
           - ubuntu-latest
@@ -27,9 +28,6 @@ jobs:
         arch:
           - x64
           - x86
-        exclude:
-          - os: macOS-latest
-            arch: x86
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
