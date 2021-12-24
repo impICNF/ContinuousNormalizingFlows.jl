@@ -62,18 +62,14 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
-        let
-            model=(
-                m=icnf,
-                loss=loss_f(icnf),
-                optimizer=AMSGrad(),
-                n_epochs=8,
-                batch_size=128,
-            )
-            data = Flux.Data.DataLoader((r, r2); batchsize=model.batch_size)
-            Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.loss, data))
-        end
-        fd = icnf.p
+        df = DataFrame(r', :auto)
+        df2 = DataFrame(r2', :auto)
+        model = CondICNFModel(icnf; n_epochs=8)
+        mach = machine(model, (df, df2))
+        fit!(mach)
+        fd = MLJBase.fitted_params(mach).learned_parameters
+
+        @test !isnothing(MLJBase.transform(mach, (df, df2)))
         if tp <: Float16
             @test_broken fd != ufd
         else
