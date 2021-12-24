@@ -1,7 +1,7 @@
 export
     inference, generate, TestMode, TrainMode,
     loss_f, cb_f,
-    ICNFModel, ICNFDistribution
+    ICNFModel, CondICNFModel, ICNFDistribution
 
 abstract type Flows end
 abstract type NormalizingFlows <: Flows end
@@ -140,8 +140,74 @@ function MLJModelInterface.fitted_params(model::ICNFModel, fitresult)
     )
 end
 
-MLJBase.metadata_pkg(
-    ICNFModel,
+mutable struct CondICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
+    m::T2
+    loss::Function
+
+    optimizer::Flux.Optimise.AbstractOptimiser
+    n_epochs::Integer
+
+    batch_size::Integer
+end
+
+function CondICNFModel(
+        m::T2,
+        loss::Function = loss_f(m),
+        ;
+        optimizer::Flux.Optimise.AbstractOptimiser=AMSGrad(),
+        n_epochs::Integer=128,
+
+        batch_size::Integer=128,
+        ) where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
+    CondICNFModel(m, loss, optimizer, n_epochs, batch_size)
+end
+
+function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
+    X, Y = XY
+    x = collect(MLJModelInterface.matrix(X)')
+    y = collect(MLJModelInterface.matrix(Y)')
+    data = Flux.Data.DataLoader((x, y); batchsize=model.batch_size, shuffle=true, partial=true)
+
+    initial_loss_value = model.loss(x, y)
+    t₀ = time()
+    Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.loss, data))
+    t₁ = time()
+    final_loss_value = model.loss(x, y)
+    Δt = t₁ - t₀
+    @info "time cost (fit) = $(Δt) seconds"
+
+    fitresult = nothing
+    cache = nothing
+    report = (
+        fit_time=Δt,
+        initial_loss_value=initial_loss_value,
+        final_loss_value=final_loss_value,
+    )
+    fitresult, cache, report
+end
+
+function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
+    Xnew, Ynew = XYnew
+    xnew = collect(MLJModelInterface.matrix(Xnew)')
+    ynew = collect(MLJModelInterface.matrix(Ynew)')
+
+    t₀ = time()
+    logp̂x = inference(model.m, TestMode(), xnew, ynew)
+    t₁ = time()
+    Δt = t₁ - t₀
+    @info "time cost (transform) = $(Δt) seconds"
+
+    DataFrame(px=exp.(logp̂x))
+end
+
+function MLJModelInterface.fitted_params(model::CondICNFModel, fitresult)
+    (
+        learned_parameters=model.m.p,
+    )
+end
+
+MLJBase.metadata_pkg.(
+    [ICNFModel, CondICNFModel],
     package_name="ICNF",
     package_uuid="9bd0f7d2-bd29-441d-bcde-0d11364d2762",
     package_url="https://github.com/impICNF/ICNF.jl",
@@ -158,6 +224,15 @@ MLJBase.metadata_model(
     supports_weights=false,
     docstring="ICNFModel",
     load_path="ICNF.ICNFModel",
+)
+MLJBase.metadata_model(
+    CondICNFModel,
+    input_scitype=Tuple{Table{AbstractVector{ScientificTypes.Continuous}}, Table{AbstractVector{ScientificTypes.Continuous}}},
+    target_scitype=Table{AbstractVector{ScientificTypes.Continuous}},
+    output_scitype=Table{AbstractVector{ScientificTypes.Continuous}},
+    supports_weights=false,
+    docstring="CondICNFModel",
+    load_path="ICNF.CondICNFModel",
 )
 
 # Distributions interface
