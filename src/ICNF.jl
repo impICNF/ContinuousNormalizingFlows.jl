@@ -5,6 +5,7 @@ module ICNF
         ComputationalResources,
         DataFrames,
         DiffEqSensitivity,
+        DifferentialEquations,
         Distributions,
         DistributionsAD,
         Flux,
