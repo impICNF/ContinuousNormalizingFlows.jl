@@ -1,6 +1,6 @@
 @testset "Smoke Tests" begin
     crs = [CPU1()]
-    if CUDA.functional(true)
+    if has_cuda_gpu()
         push!(crs, CUDALibs())
     end
     tps = [Float64, Float32, Float16]
