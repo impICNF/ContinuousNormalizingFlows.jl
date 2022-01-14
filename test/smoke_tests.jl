@@ -1,9 +1,15 @@
 @testset "Smoke Tests" begin
+    crs = [CPU1()]
+    if has_cuda_gpu()
+        push!(crs, CUDALibs())
+    end
+    tps = [Float64, Float32, Float16]
+    nvars_ = 1:3
     @testset "$mt | $cr | $tp | $nvars Vars" for
             mt in [FFJORD, RNODE],
-            cr in [CPU1(), CUDALibs()],
-            tp in [Float64, Float32, Float16],
-            nvars in 1:3
+            cr in crs,
+            tp in tps,
+            nvars in nvars_
         icnf = mt{tp}(Dense(nvars, nvars), nvars; acceleration=cr)
         ufd = copy(icnf.p)
         n = 8
@@ -48,9 +54,9 @@
     end
     @testset "$mt | $cr | $tp | $nvars Vars" for
             mt in [CondFFJORD, CondRNODE],
-            cr in [CPU1(), CUDALibs()],
-            tp in [Float64, Float32, Float16],
-            nvars in 1:3
+            cr in crs,
+            tp in tps,
+            nvars in nvars_
         icnf = mt{tp}(Dense(nvars*2, nvars), nvars; acceleration=cr)
         ufd = copy(icnf.p)
         n = 8
