@@ -1,12 +1,16 @@
 @testset "Smoke Tests" begin
-    crs = [CPU1()]
+    mts = UnionAll[FFJORD, RNODE]
+    cmts = UnionAll[CondFFJORD, CondRNODE]
+    crs = AbstractResource[CPU1()]
     if has_cuda_gpu()
         push!(crs, CUDALibs())
     end
-    tps = [Float64, Float32, Float16]
+    tps = DataType[Float64, Float32, Float16]
     nvars_ = 1:3
+    n_epochs = 8
+
     @testset "$mt | $cr | $tp | $nvars Vars" for
-            mt in [FFJORD, RNODE],
+            mt in mts,
             cr in crs,
             tp in tps,
             nvars in nvars_
@@ -34,7 +38,7 @@
         @test !isnothing(rand(d, n))
 
         df = DataFrame(r', :auto)
-        model = ICNFModel(icnf; n_epochs=8)
+        model = ICNFModel(icnf; n_epochs)
         mach = machine(model, df)
         if tp <: Float64 && cr isa CUDALibs
             @test_broken !isnothing(fit!(mach))
@@ -53,7 +57,7 @@
         end
     end
     @testset "$mt | $cr | $tp | $nvars Vars" for
-            mt in [CondFFJORD, CondRNODE],
+            mt in cmts,
             cr in crs,
             tp in tps,
             nvars in nvars_
@@ -76,7 +80,7 @@
 
         df = DataFrame(r', :auto)
         df2 = DataFrame(r2', :auto)
-        model = CondICNFModel(icnf; n_epochs=8)
+        model = CondICNFModel(icnf; n_epochs)
         mach = machine(model, (df, df2))
         if tp <: Float64 && cr isa CUDALibs
             @test_broken !isnothing(fit!(mach))
