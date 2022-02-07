@@ -17,7 +17,7 @@ end
 
 Flux.@functor PlanarNN (u, w, b)
 
-function (m::PlanarNN{T})(z::AbstractVecOrMat{T}) where {T <: AbstractFloat}
+function (m::PlanarNN)(z::AbstractVecOrMat)::AbstractVecOrMat
     u, w, b = m.u, m.w, only(m.b)
     h = NNlib.fast_act(m.h, z)
     u * h.(transpose(w) * z .+ b)
