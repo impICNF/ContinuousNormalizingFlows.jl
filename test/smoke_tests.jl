@@ -1,6 +1,6 @@
 @testset "Smoke Tests" begin
-    mts = UnionAll[FFJORD, RNODE]
-    cmts = UnionAll[CondFFJORD, CondRNODE]
+    mts = UnionAll[FFJORD, RNODE, Planar]
+    cmts = UnionAll[CondFFJORD, CondRNODE, CondPlanar]
     crs = AbstractResource[CPU1()]
     if has_cuda_gpu()
         push!(crs, CUDALibs())
@@ -14,7 +14,14 @@
             cr in crs,
             tp in tps,
             nvars in nvars_
-        icnf = mt{tp}(Dense(nvars, nvars), nvars; acceleration=cr)
+        if mt <: Planar
+            nn = PlanarNN{tp}(nvars, tanh)
+        else
+            nn = Chain(
+                Dense(nvars, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
         n = 8
         r = rand(tp, nvars, n)
@@ -61,7 +68,14 @@
             cr in crs,
             tp in tps,
             nvars in nvars_
-        icnf = mt{tp}(Dense(nvars*2, nvars), nvars; acceleration=cr)
+        if mt <: CondPlanar
+            nn = PlanarNN{tp}(nvars, tanh; cond=true)
+        else
+            nn = Chain(
+                Dense(nvars*2, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
         n = 8
         r = rand(tp, nvars, n)
