@@ -47,17 +47,11 @@
         df = DataFrame(r', :auto)
         model = ICNFModel(icnf; n_epochs)
         mach = machine(model, df)
-        if tp <: Float64 && cr isa CUDALibs
-            @test_broken !isnothing(fit!(mach))
-            fd = ufd
-            @test_broken !isnothing(MLJBase.transform(mach, df))
-        else
-            @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
-            @test !isnothing(MLJBase.transform(mach, df))
-        end
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, df))
 
-        if tp <: Float16 || (tp <: Float64 && cr isa CUDALibs)
+        if tp <: Float16
             @test_broken fd != ufd
         else
             @test fd != ufd
@@ -96,17 +90,11 @@
         df2 = DataFrame(r2', :auto)
         model = CondICNFModel(icnf; n_epochs)
         mach = machine(model, (df, df2))
-        if tp <: Float64 && cr isa CUDALibs
-            @test_broken !isnothing(fit!(mach))
-            fd = ufd
-            @test_broken !isnothing(MLJBase.transform(mach, (df, df2)))
-        else
-            @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
-            @test !isnothing(MLJBase.transform(mach, (df, df2)))
-        end
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, (df, df2)))
 
-        if tp <: Float16 || (tp <: Float64 && cr isa CUDALibs)
+        if tp <: Float16
             @test_broken fd != ufd
         else
             @test fd != ufd
