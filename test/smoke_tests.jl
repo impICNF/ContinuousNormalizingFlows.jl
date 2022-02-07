@@ -1,6 +1,6 @@
 @testset "Smoke Tests" begin
-    mts = UnionAll[FFJORD, RNODE]
-    cmts = UnionAll[CondFFJORD, CondRNODE]
+    mts = UnionAll[FFJORD, RNODE, Planar]
+    cmts = UnionAll[CondFFJORD, CondRNODE, CondPlanar]
     crs = AbstractResource[CPU1()]
     if has_cuda_gpu()
         push!(crs, CUDALibs())
@@ -14,7 +14,14 @@
             cr in crs,
             tp in tps,
             nvars in nvars_
-        icnf = mt{tp}(Dense(nvars, nvars), nvars; acceleration=cr)
+        if mt <: Planar
+            nn = PlanarNN{tp}(nvars, tanh)
+        else
+            nn = Chain(
+                Dense(nvars, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
         n = 8
         r = rand(tp, nvars, n)
@@ -40,17 +47,11 @@
         df = DataFrame(r', :auto)
         model = ICNFModel(icnf; n_epochs)
         mach = machine(model, df)
-        if tp <: Float64 && cr isa CUDALibs
-            @test_broken !isnothing(fit!(mach))
-            fd = ufd
-            @test_broken !isnothing(MLJBase.transform(mach, df))
-        else
-            @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
-            @test !isnothing(MLJBase.transform(mach, df))
-        end
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, df))
 
-        if tp <: Float16 || (tp <: Float64 && cr isa CUDALibs)
+        if tp <: Float16
             @test_broken fd != ufd
         else
             @test fd != ufd
@@ -61,7 +62,14 @@
             cr in crs,
             tp in tps,
             nvars in nvars_
-        icnf = mt{tp}(Dense(nvars*2, nvars), nvars; acceleration=cr)
+        if mt <: CondPlanar
+            nn = PlanarNN{tp}(nvars, tanh; cond=true)
+        else
+            nn = Chain(
+                Dense(nvars*2, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
         n = 8
         r = rand(tp, nvars, n)
@@ -82,17 +90,11 @@
         df2 = DataFrame(r2', :auto)
         model = CondICNFModel(icnf; n_epochs)
         mach = machine(model, (df, df2))
-        if tp <: Float64 && cr isa CUDALibs
-            @test_broken !isnothing(fit!(mach))
-            fd = ufd
-            @test_broken !isnothing(MLJBase.transform(mach, (df, df2)))
-        else
-            @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
-            @test !isnothing(MLJBase.transform(mach, (df, df2)))
-        end
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, (df, df2)))
 
-        if tp <: Float16 || (tp <: Float64 && cr isa CUDALibs)
+        if tp <: Float16
             @test_broken fd != ufd
         else
             @test fd != ufd

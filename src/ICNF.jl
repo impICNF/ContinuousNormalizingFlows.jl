@@ -13,6 +13,7 @@ module ICNF
         MLJBase,
         MLJFlux,
         MLJModelInterface,
+        NNlib,
         OrdinaryDiffEq,
         SciMLBase,
         ScientificTypes,
@@ -25,9 +26,11 @@ module ICNF
 
     include("ffjord.jl")
     include("rnode.jl")
+    include("planar.jl")
 
     include("cond_ffjord.jl")
     include("cond_rnode.jl")
+    include("cond_planar.jl")
 
     include("metrics.jl")
 
