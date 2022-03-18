@@ -1,7 +1,27 @@
+authors = ["Hossein Pourbozorg <prbzrg@gmail.com> and contributors"]
 name = "ICNF"
 uuid = "9bd0f7d2-bd29-441d-bcde-0d11364d2762"
-authors = ["Hossein Pourbozorg <prbzrg@gmail.com> and contributors"]
 version = "0.1.0"
+
+[compat]
+CUDA = "3.7"
+ComputationalResources = "0.3"
+DataFrames = "1.2"
+DiffEqSensitivity = "6.69"
+DifferentialEquations = "7.0"
+Distributions = "0.25"
+DistributionsAD = "0.6"
+Flux = "0.12"
+IterTools = "1.3"
+MLJBase = "0.19"
+MLJFlux = "0.2"
+MLJModelInterface = "1.3"
+NNlib = "0.8"
+OrdinaryDiffEq = "6.6"
+SciMLBase = "1.27"
+ScientificTypes = "3.0"
+Zygote = "0.6"
+julia = "1.6"
 
 [deps]
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
@@ -25,22 +45,5 @@ ScientificTypes = "321657f4-b219-11e9-178b-2701a2544e81"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
-[compat]
-CUDA = "3.3.4"
-ComputationalResources = "0.3.2"
-DataFrames = "1.2.2"
-DiffEqSensitivity = "6.56.0"
-DifferentialEquations = "6.19.0, 7"
-Distributions = "0.25.11"
-DistributionsAD = "0.6.28"
-Flux = "0.12.6"
-IterTools = "1.2.0"
-MLJBase = "0.18.15, 0.19"
-MLJFlux = "0.2.3"
-MLJModelInterface = "1.1.1"
-NNlib = "0.7.27, 0.8"
-OrdinaryDiffEq = "5.60.2, 6"
-SciMLBase = "1.18.2"
-ScientificTypes = "2.0.1, 3"
-Zygote = "0.6.17"
-julia = "1.6.0"
+[extras]
+CPUSummary = "2a0fbf3d-bb9c-48f3-b0a9-814d99fd7ab9"
