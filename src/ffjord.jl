@@ -1,7 +1,7 @@
 export FFJORD
 
 """
-Implementations of FFJORD from
+Implementation of FFJORD from
 
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """

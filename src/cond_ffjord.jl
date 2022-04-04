@@ -1,7 +1,7 @@
 export CondFFJORD
 
 """
-Implementations of FFJORD (Conditional Version)
+Implementation of FFJORD (Conditional Version)
 """
 struct CondFFJORD{T <: AbstractFloat} <: AbstractCondICNF{T}
     re::Function

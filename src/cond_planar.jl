@@ -1,7 +1,7 @@
 export CondPlanar
 
 """
-Implementations of Planar (Conditional Version)
+Implementation of Planar (Conditional Version)
 """
 struct CondPlanar{T <: AbstractFloat} <: AbstractCondICNF{T}
     re::Function
