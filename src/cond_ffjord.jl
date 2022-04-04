@@ -1,7 +1,7 @@
 export CondFFJORD
 
 """
-Implementations of FFJORD (Conditional Version)
+Implementation of FFJORD (Conditional Version)
 """
 struct CondFFJORD{T <: AbstractFloat} <: AbstractCondICNF{T}
     re::Function
@@ -90,13 +90,13 @@ function augmented_f(icnf::CondFFJORD{T}, mode::TrainMode, ys::Union{AbstractMat
     f_aug
 end
 
-function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     ys = ys |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, ys)
-    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -105,13 +105,13 @@ function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, y
     logp̂x
 end
 
-function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     ys = ys |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, ys, size(xs))
-    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -120,28 +120,28 @@ function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, 
     logp̂x
 end
 
-function generate(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     ys = ys |> move
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
     zrs = zeros(T, 1, size(new_xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, ys)
-    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
 end
 
-function generate(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     ys = ys |> move
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
     zrs = zeros(T, 1, size(new_xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, ys, size(new_xs))
-    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -150,9 +150,17 @@ end
 
 Flux.@functor CondFFJORD (p,)
 
-function loss_f(icnf::CondFFJORD{T}; agg::Function=mean)::Function where {T <: AbstractFloat}
+function loss_f(icnf::CondFFJORD{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
     function f(x::AbstractMatrix{T}, y::AbstractMatrix{T})::T
         logp̂x = inference(icnf, TrainMode(), x, y)
+        agg(-logp̂x)
+    end
+    f
+end
+
+function loss_f(icnf::CondFFJORD{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
+    function f(θ::AbstractVector{T}, p::Any, x::AbstractMatrix{T}, y::AbstractMatrix{T})::T
+        logp̂x = inference(icnf, TrainMode(), x, y, θ)
         agg(-logp̂x)
     end
     f

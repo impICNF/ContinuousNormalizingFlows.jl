@@ -9,6 +9,7 @@ module ICNF
         Distributions,
         DistributionsAD,
         Flux,
+        GalacticOptim,
         IterTools,
         MLJBase,
         MLJFlux,
