@@ -88,12 +88,12 @@ function augmented_f(icnf::RNODE{T}, mode::TrainMode, sz::Tuple{T2, T2})::Functi
     f_aug
 end
 
-function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
     f_aug = augmented_f(icnf, mode)
-    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -102,12 +102,12 @@ function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T})::Abstr
     logp̂x
 end
 
-function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T})::Tuple where {T <: AbstractFloat}
+function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::Tuple where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 3, size(xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, size(xs))
-    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 3, :]
@@ -118,26 +118,26 @@ function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T})::Tupl
     logp̂x, Ė, ṅ
 end
 
-function generate(icnf::RNODE{T}, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::RNODE{T}, mode::TestMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
     zrs = zeros(T, 1, size(new_xs, 2)) |> move
     f_aug = augmented_f(icnf, mode)
-    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
 end
 
-function generate(icnf::RNODE{T}, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::RNODE{T}, mode::TrainMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
     zrs = zeros(T, 3, size(new_xs, 2)) |> move
     f_aug = augmented_f(icnf, mode, size(new_xs))
-    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), icnf.p)
+    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 3, :]
@@ -146,9 +146,17 @@ end
 
 Flux.@functor RNODE (p,)
 
-function loss_f(icnf::RNODE{T}, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
+function loss_f(icnf::RNODE{T}, opt_app::FluxOptApp, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
     function f(x::AbstractMatrix{T})::T
         logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x)
+        agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
+    end
+    f
+end
+
+function loss_f(icnf::RNODE{T}, opt_app::SciMLOptApp, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
+    function f(θ::AbstractVector{T}, p::Any, x::AbstractMatrix{T})::T
+        logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x, θ)
         agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
     end
     f

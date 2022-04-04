@@ -1,5 +1,7 @@
 export
-    inference, generate, TestMode, TrainMode,
+    inference, generate,
+    TestMode, TrainMode,
+    FluxOptApp, SciMLOptApp,
     loss_f, cb_f,
     ICNFModel, CondICNFModel, ICNFDistribution
 
@@ -11,6 +13,10 @@ abstract type InfinitesimalContinuousNormalizingFlows <: ContinuousNormalizingFl
 abstract type Mode end
 struct TestMode <: Mode end
 struct TrainMode <: Mode end
+
+abstract type OptApp end
+struct FluxOptApp <: OptApp end
+struct SciMLOptApp <: OptApp end
 
 default_acceleration = CPU1()
 default_solver_test = Feagin14()
@@ -26,13 +32,14 @@ default_sensealg = InterpolatingAdjoint(
 
 abstract type AbstractICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
-function inference(icnf::AbstractICNF{T}, mode::TestMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractICNF{T}, mode::TrainMode, xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractICNF{T}, mode::TestMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractICNF{T}, mode::TrainMode, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T}, mode::TestMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T}, mode::TrainMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
-function loss_f(icnf::AbstractICNF{T}; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
 
 # -- Flux interface
 
@@ -40,10 +47,19 @@ function (m::AbstractICNF{T})(x::AbstractMatrix{T})::AbstractVector{T} where {T 
     inference(m, TestMode(), x)
 end
 
-function cb_f(icnf::AbstractICNF{T}, loss::Function, data::Flux.Data.DataLoader{T2})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}}
-    xs = first(data)
+function cb_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+    xs, = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs))"
+    end
+    f
+end
+
+function cb_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+    xs, = first(data)
+    function f(p::AbstractVector{T}, l::Any)::Bool
+        @info "loss = $(loss(p, nothing, xs))"
+        false
     end
     f
 end
@@ -52,13 +68,14 @@ end
 
 abstract type AbstractCondICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
-function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
-function loss_f(icnf::AbstractCondICNF{T}; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
+function loss_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
 
 # -- Flux interface
 
@@ -66,10 +83,19 @@ function (m::AbstractCondICNF{T})(x::AbstractMatrix{T}, y::AbstractMatrix{T})::A
     inference(m, TestMode(), x, y)
 end
 
-function cb_f(icnf::AbstractCondICNF{T}, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+function cb_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
     xs, ys = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs, ys))"
+    end
+    f
+end
+
+function cb_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+    xs, ys = first(data)
+    function f(p::AbstractVector{T}, l::Any)::Bool
+        @info "loss = $(loss(p, nothing, xs, ys))"
+        false
     end
     f
 end
@@ -82,33 +108,61 @@ mutable struct ICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: Abstrac
     m::T2
     loss::Function
 
-    optimizer::Flux.Optimise.AbstractOptimiser
+    opt_app::OptApp
+    optimizer::Any
     n_epochs::Integer
+    adtype::SciMLBase.AbstractADType
 
     batch_size::Integer
 end
 
 function ICNFModel(
         m::T2,
-        loss::Function = loss_f(m),
+        loss::Function,
         ;
-        optimizer::Flux.Optimise.AbstractOptimiser=AMSGrad(),
+        opt_app::OptApp=FluxOptApp(),
+        optimizer::Any=AMSGrad(),
         n_epochs::Integer=128,
+        adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
 
         batch_size::Integer=128,
         ) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
-    ICNFModel(m, loss, optimizer, n_epochs, batch_size)
+    ICNFModel(m, loss, opt_app, optimizer, n_epochs, adtype, batch_size)
+end
+
+function ICNFModel(
+        m::T2,
+        ;
+        opt_app::OptApp=FluxOptApp(),
+        optimizer::Any=AMSGrad(),
+        n_epochs::Integer=128,
+        adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
+
+        batch_size::Integer=128,
+        ) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
+    ICNFModel(m, loss_f(m, opt_app), opt_app, optimizer, n_epochs, adtype, batch_size)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(MLJModelInterface.matrix(X)')
-    data = Flux.Data.DataLoader(x; batchsize=model.batch_size, shuffle=true, partial=true)
+    data = Flux.Data.DataLoader((x,); batchsize=model.batch_size, shuffle=true, partial=true)
 
-    initial_loss_value = model.loss(x)
-    t₀ = time()
-    Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.loss, data))
-    t₁ = time()
-    final_loss_value = model.loss(x)
+    if model.opt_app isa FluxOptApp
+        initial_loss_value = model.loss(x)
+        t₀ = time()
+        Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.opt_app, model.loss, data))
+        t₁ = time()
+        final_loss_value = model.loss(x)
+    elseif model.opt_app isa SciMLOptApp
+        initial_loss_value = model.loss(model.m.p, nothing, x)
+        t₀ = time()
+        optfunc = OptimizationFunction(model.loss, model.adtype)
+        optprob = OptimizationProblem(optfunc, model.m.p)
+        res = solve(optprob, model.optimizer, ncycle(data, model.n_epochs); cb=cb_f(model.m, model.opt_app, model.loss, data))
+        model.m.p .= res.u
+        t₁ = time()
+        final_loss_value = model.loss(model.m.p, nothing, x)
+    end
     Δt = t₁ - t₀
     @info "time cost (fit) = $(Δt) seconds"
 
@@ -144,22 +198,39 @@ mutable struct CondICNFModel{T2} <: MLJICNF where {T <: AbstractFloat, T2 <: Abs
     m::T2
     loss::Function
 
-    optimizer::Flux.Optimise.AbstractOptimiser
+    opt_app::OptApp
+    optimizer::Any
     n_epochs::Integer
+    adtype::SciMLBase.AbstractADType
 
     batch_size::Integer
 end
 
 function CondICNFModel(
         m::T2,
-        loss::Function = loss_f(m),
+        loss::Function,
         ;
-        optimizer::Flux.Optimise.AbstractOptimiser=AMSGrad(),
+        opt_app::OptApp=FluxOptApp(),
+        optimizer::Any=AMSGrad(),
         n_epochs::Integer=128,
+        adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
 
         batch_size::Integer=128,
         ) where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
-    CondICNFModel(m, loss, optimizer, n_epochs, batch_size)
+    CondICNFModel(m, loss, opt_app, optimizer, n_epochs, adtype, batch_size)
+end
+
+function CondICNFModel(
+        m::T2,
+        ;
+        opt_app::OptApp=FluxOptApp(),
+        optimizer::Any=AMSGrad(),
+        n_epochs::Integer=128,
+        adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
+
+        batch_size::Integer=128,
+        ) where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
+    CondICNFModel(m, loss_f(m, opt_app), opt_app, optimizer, n_epochs, adtype, batch_size)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -168,11 +239,22 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     y = collect(MLJModelInterface.matrix(Y)')
     data = Flux.Data.DataLoader((x, y); batchsize=model.batch_size, shuffle=true, partial=true)
 
-    initial_loss_value = model.loss(x, y)
-    t₀ = time()
-    Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.loss, data))
-    t₁ = time()
-    final_loss_value = model.loss(x, y)
+    if model.opt_app isa FluxOptApp
+        initial_loss_value = model.loss(x, y)
+        t₀ = time()
+        Flux.Optimise.train!(model.loss, Flux.params(model.m), ncycle(data, model.n_epochs), model.optimizer; cb=cb_f(model.m, model.opt_app, model.loss, data))
+        t₁ = time()
+        final_loss_value = model.loss(x, y)
+    elseif model.opt_app isa SciMLOptApp
+        initial_loss_value = model.loss(model.m.p, nothing, x, y)
+        t₀ = time()
+        optfunc = OptimizationFunction(model.loss, model.adtype)
+        optprob = OptimizationProblem(optfunc, model.m.p)
+        res = solve(optprob, model.optimizer, ncycle(data, model.n_epochs); cb=cb_f(model.m, model.opt_app, model.loss, data))
+        model.m.p .= res.u
+        t₁ = time()
+        final_loss_value = model.loss(model.m.p, nothing, x, y)
+    end
     Δt = t₁ - t₀
     @info "time cost (fit) = $(Δt) seconds"
 
