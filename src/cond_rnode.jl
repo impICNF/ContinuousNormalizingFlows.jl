@@ -162,7 +162,7 @@ function loss_f(icnf::CondRNODE{T}, opt_app::FluxOptApp, λ₁::T=convert(T, 1e-
     f
 end
 
-function loss_f(icnf::CondRNODE{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
+function loss_f(icnf::CondRNODE{T}, opt_app::SciMLOptApp, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
     function f(θ::AbstractVector{T}, p::Any, x::AbstractMatrix{T}, y::AbstractMatrix{T})::T
         logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x, y, θ)
         agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
