@@ -24,7 +24,7 @@ struct CondPlanar{T <: AbstractFloat} <: AbstractCondICNF{T}
 end
 
 function CondPlanar{T}(
-        nn::PlanarNN{T},
+        nn::PlanarNN,
         nvars::Integer,
         ;
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
@@ -39,6 +39,13 @@ function CondPlanar{T}(
         acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
     move = MLJFlux.Mover(acceleration)
+    if T <: Float64
+        nn = f64(nn)
+    elseif T <: Float32
+        nn = f32(nn)
+    else
+        nn = Flux.paramtype(T, nn)
+    end
     nn = move(nn)
     p, re = Flux.destructure(nn)
     CondPlanar{T}(
@@ -68,7 +75,7 @@ function augmented_f(icnf::CondPlanar{T}, ys::Union{AbstractMatrix{T}, CuArray},
     f_aug
 end
 
-function inference(icnf::CondPlanar{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::CondPlanar{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     ys = ys |> move
@@ -79,11 +86,11 @@ function inference(icnf::CondPlanar{T}, mode::TestMode, xs::AbstractMatrix{T}, y
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     logp̂x
 end
 
-function inference(icnf::CondPlanar{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::CondPlanar{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     ys = ys |> move
@@ -94,11 +101,11 @@ function inference(icnf::CondPlanar{T}, mode::TrainMode, xs::AbstractMatrix{T}, 
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     logp̂x
 end
 
-function generate(icnf::CondPlanar{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::CondPlanar{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     ys = ys |> move
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
@@ -112,7 +119,7 @@ function generate(icnf::CondPlanar{T}, mode::TestMode, ys::AbstractMatrix{T}, n:
     z
 end
 
-function generate(icnf::CondPlanar{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::CondPlanar{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     ys = ys |> move
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
@@ -137,7 +144,7 @@ function loss_f(icnf::CondPlanar{T}, opt_app::FluxOptApp; agg::Function=mean)::F
 end
 
 function loss_f(icnf::CondPlanar{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(θ::AbstractVector{T}, p::Any, x::AbstractMatrix{T}, y::AbstractMatrix{T})::T
+    function f(θ::AbstractVector, p::SciMLBase.NullParameters, x::AbstractMatrix{T}, y::AbstractMatrix{T})
         logp̂x = inference(icnf, TrainMode(), x, y, θ)
         agg(-logp̂x)
     end

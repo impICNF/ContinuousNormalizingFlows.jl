@@ -32,11 +32,11 @@ default_sensealg = InterpolatingAdjoint(
 
 abstract type AbstractICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
-function inference(icnf::AbstractICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractICNF{T}, mode::TestMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractICNF{T}, mode::TrainMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
 function loss_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
 function loss_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
@@ -57,8 +57,8 @@ end
 
 function cb_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
     xs, = first(data)
-    function f(p::AbstractVector{T}, l::Any)::Bool
-        @info "loss = $(loss(p, nothing, xs))"
+    function f(p::AbstractVector{T}, l::T)::Bool
+        @info "loss = $(loss(p, SciMLBase.NullParameters(), xs))"
         false
     end
     f
@@ -68,11 +68,11 @@ end
 
 abstract type AbstractCondICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
 
-function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
-function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
 
 function loss_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
 function loss_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat} end
@@ -93,8 +93,8 @@ end
 
 function cb_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
     xs, ys = first(data)
-    function f(p::AbstractVector{T}, l::Any)::Bool
-        @info "loss = $(loss(p, nothing, xs, ys))"
+    function f(p::AbstractVector{T}, l::T)::Bool
+        @info "loss = $(loss(p, SciMLBase.NullParameters(), xs, ys))"
         false
     end
     f
@@ -154,14 +154,14 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         t₁ = time()
         final_loss_value = model.loss(x)
     elseif model.opt_app isa SciMLOptApp
-        initial_loss_value = model.loss(model.m.p, nothing, x)
+        initial_loss_value = model.loss(model.m.p, SciMLBase.NullParameters(), x)
         t₀ = time()
         optfunc = OptimizationFunction(model.loss, model.adtype)
         optprob = OptimizationProblem(optfunc, model.m.p)
         res = solve(optprob, model.optimizer, ncycle(data, model.n_epochs); cb=cb_f(model.m, model.opt_app, model.loss, data))
         model.m.p .= res.u
         t₁ = time()
-        final_loss_value = model.loss(model.m.p, nothing, x)
+        final_loss_value = model.loss(model.m.p, SciMLBase.NullParameters(), x)
     end
     Δt = t₁ - t₀
     @info "time cost (fit) = $(Δt) seconds"
@@ -246,14 +246,14 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         t₁ = time()
         final_loss_value = model.loss(x, y)
     elseif model.opt_app isa SciMLOptApp
-        initial_loss_value = model.loss(model.m.p, nothing, x, y)
+        initial_loss_value = model.loss(model.m.p, SciMLBase.NullParameters(), x, y)
         t₀ = time()
         optfunc = OptimizationFunction(model.loss, model.adtype)
         optprob = OptimizationProblem(optfunc, model.m.p)
         res = solve(optprob, model.optimizer, ncycle(data, model.n_epochs); cb=cb_f(model.m, model.opt_app, model.loss, data))
         model.m.p .= res.u
         t₁ = time()
-        final_loss_value = model.loss(model.m.p, nothing, x, y)
+        final_loss_value = model.loss(model.m.p, SciMLBase.NullParameters(), x, y)
     end
     Δt = t₁ - t₀
     @info "time cost (fit) = $(Δt) seconds"
