@@ -1,18 +1,18 @@
 export Planar, PlanarNN
 
-struct PlanarNN{T <: AbstractFloat}
-    u::AbstractVector{T}
-    w::AbstractVector{T}
-    b::AbstractVector{T}
+struct PlanarNN
+    u::AbstractVector
+    w::AbstractVector
+    b::AbstractVector
 
     h::Function
 end
 
-function PlanarNN{T}(nvars::Integer, h::Function=tanh; cond=false) where {T <: AbstractFloat}
-    u = randn(T, nvars)
-    w = randn(T, cond ? nvars*2 : nvars)
-    b = randn(T, 1)
-    PlanarNN{T}(u, w, b, h)
+function PlanarNN(nvars::Integer, h::Function=tanh; cond=false)
+    u = randn(nvars)
+    w = randn(cond ? nvars*2 : nvars)
+    b = randn(1)
+    PlanarNN(u, w, b, h)
 end
 
 Flux.@functor PlanarNN (u, w, b)
@@ -49,7 +49,7 @@ struct Planar{T <: AbstractFloat} <: AbstractICNF{T}
 end
 
 function Planar{T}(
-        nn::PlanarNN{T},
+        nn::PlanarNN,
         nvars::Integer,
         ;
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
@@ -64,6 +64,13 @@ function Planar{T}(
         acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
     move = MLJFlux.Mover(acceleration)
+    if T <: Float64
+        nn = f64(nn)
+    elseif T <: Float32
+        nn = f32(nn)
+    else
+        nn = Flux.paramtype(T, nn)
+    end
     nn = move(nn)
     p, re = Flux.destructure(nn)
     Planar{T}(
@@ -89,7 +96,7 @@ function augmented_f(icnf::Planar{T}, sz::Tuple{T2, T2})::Function where {T <: A
     f_aug
 end
 
-function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
@@ -99,11 +106,11 @@ function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     logp̂x
 end
 
-function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
@@ -113,11 +120,11 @@ function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     logp̂x
 end
 
-function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
@@ -130,7 +137,7 @@ function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector
     z
 end
 
-function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
@@ -154,7 +161,7 @@ function loss_f(icnf::Planar{T}, opt_app::FluxOptApp; agg::Function=mean)::Funct
 end
 
 function loss_f(icnf::Planar{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(θ::AbstractVector{T}, p::Any, x::AbstractMatrix{T})::T
+    function f(θ::AbstractVector, p::SciMLBase.NullParameters, x::AbstractMatrix{T})
         logp̂x = inference(icnf, TrainMode(), x, θ)
         agg(-logp̂x)
     end

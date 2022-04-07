@@ -88,7 +88,7 @@ function augmented_f(icnf::RNODE{T}, mode::TrainMode, sz::Tuple{T2, T2})::Functi
     f_aug
 end
 
-function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::AbstractVector{T} where {T <: AbstractFloat}
+function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
@@ -98,11 +98,11 @@ function inference(icnf::RNODE{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Abs
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
-    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     logp̂x
 end
 
-function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector{T}=icnf.p)::Tuple where {T <: AbstractFloat}
+function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::Tuple where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 3, size(xs, 2)) |> move
@@ -114,11 +114,11 @@ function inference(icnf::RNODE{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::Ab
     Δlogp = fsol[end - 2, :]
     Ė = fsol[end - 1, :]
     ṅ = fsol[end, :]
-    logp̂x = convert.(T, logpdf(icnf.basedist, z)) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     logp̂x, Ė, ṅ
 end
 
-function generate(icnf::RNODE{T}, mode::TestMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::RNODE{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
@@ -131,7 +131,7 @@ function generate(icnf::RNODE{T}, mode::TestMode, n::Integer, p::AbstractVector{
     z
 end
 
-function generate(icnf::RNODE{T}, mode::TrainMode, n::Integer, p::AbstractVector{T}=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::RNODE{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> move
@@ -155,7 +155,7 @@ function loss_f(icnf::RNODE{T}, opt_app::FluxOptApp, λ₁::T=convert(T, 1e-2), 
 end
 
 function loss_f(icnf::RNODE{T}, opt_app::SciMLOptApp, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(θ::AbstractVector{T}, p::Any, x::AbstractMatrix{T})::T
+    function f(θ::AbstractVector, p::SciMLBase.NullParameters, x::AbstractMatrix{T})
         logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x, θ)
         agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
     end
