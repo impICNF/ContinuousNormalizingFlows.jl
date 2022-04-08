@@ -61,7 +61,7 @@
             @test fd != ufd
         end
 
-        # SciML Opt with ForwardDiff and Optim
+        # SciML Opt with ForwardDiff
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
         else
@@ -71,7 +71,7 @@
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
-        model = ICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), optimizer=BFGS(), adtype=GalacticOptim.AutoForwardDiff())
+        model = ICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), adtype=GalacticOptim.AutoForwardDiff())
         mach = machine(model, df)
         @test !isnothing(fit!(mach))
         fd = MLJBase.fitted_params(mach).learned_parameters
@@ -127,7 +127,7 @@
             @test fd != ufd
         end
 
-        # SciML Opt with ForwardDiff and Optim
+        # SciML Opt with ForwardDiff
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond=true)
         else
@@ -137,7 +137,7 @@
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
-        model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), optimizer=BFGS(), adtype=GalacticOptim.AutoForwardDiff())
+        model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), adtype=GalacticOptim.AutoForwardDiff())
         mach = machine(model, (df, df2))
         @test !isnothing(fit!(mach))
         fd = MLJBase.fitted_params(mach).learned_parameters
