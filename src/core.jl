@@ -47,7 +47,7 @@ function (m::AbstractICNF{T})(x::AbstractMatrix{T})::AbstractVector{T} where {T 
     inference(m, TestMode(), x)
 end
 
-function cb_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+function cb_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
     xs, = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs))"
@@ -55,7 +55,7 @@ function cb_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, data::
     f
 end
 
-function cb_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+function cb_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
     xs, = first(data)
     function f(p::AbstractVector{T}, l::T)::Bool
         @info "loss = $(loss(p, SciMLBase.NullParameters(), xs))"
@@ -83,7 +83,7 @@ function (m::AbstractCondICNF{T})(x::AbstractMatrix{T}, y::AbstractMatrix{T})::A
     inference(m, TestMode(), x, y)
 end
 
-function cb_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+function cb_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
     xs, ys = first(data)
     function f()::Nothing
         @info "loss = $(loss(xs, ys))"
@@ -91,7 +91,7 @@ function cb_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp, loss::Function, da
     f
 end
 
-function cb_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Function, data::Flux.Data.DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+function cb_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
     xs, ys = first(data)
     function f(p::AbstractVector{T}, l::T)::Bool
         @info "loss = $(loss(p, SciMLBase.NullParameters(), xs, ys))"
@@ -145,7 +145,7 @@ end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(MLJModelInterface.matrix(X)')
-    data = Flux.Data.DataLoader((x,); batchsize=model.batch_size, shuffle=true, partial=true)
+    data = DataLoader((x,); batchsize=model.batch_size, shuffle=true, partial=true)
 
     if model.opt_app isa FluxOptApp
         initial_loss_value = model.loss(x)
@@ -237,7 +237,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     X, Y = XY
     x = collect(MLJModelInterface.matrix(X)')
     y = collect(MLJModelInterface.matrix(Y)')
-    data = Flux.Data.DataLoader((x, y); batchsize=model.batch_size, shuffle=true, partial=true)
+    data = DataLoader((x, y); batchsize=model.batch_size, shuffle=true, partial=true)
 
     if model.opt_app isa FluxOptApp
         initial_loss_value = model.loss(x, y)
