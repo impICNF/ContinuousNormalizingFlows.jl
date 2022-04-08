@@ -71,7 +71,7 @@
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
-        model = ICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), optimizer=BFGS(), adtype=GalacticOptim.AutoForwardDiff())
+        model = ICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), optimizer=ConjugateGradient(), adtype=GalacticOptim.AutoForwardDiff())
         mach = machine(model, df)
         @test !isnothing(fit!(mach))
         fd = MLJBase.fitted_params(mach).learned_parameters
@@ -137,7 +137,7 @@
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
         ufd = copy(icnf.p)
-        model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), optimizer=BFGS(), adtype=GalacticOptim.AutoForwardDiff())
+        model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), optimizer=ConjugateGradient(), adtype=GalacticOptim.AutoForwardDiff())
         mach = machine(model, (df, df2))
         @test !isnothing(fit!(mach))
         fd = MLJBase.fitted_params(mach).learned_parameters
