@@ -14,6 +14,7 @@ module ICNF
         MLJBase,
         MLJFlux,
         MLJModelInterface,
+        MLUtils,
         NNlib,
         OrdinaryDiffEq,
         SciMLBase,
