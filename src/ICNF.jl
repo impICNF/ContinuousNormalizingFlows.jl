@@ -16,6 +16,7 @@ module ICNF
         MLJModelInterface,
         MLUtils,
         NNlib,
+        Optimisers,
         OrdinaryDiffEq,
         SciMLBase,
         ScientificTypes,

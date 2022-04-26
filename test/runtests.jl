@@ -7,9 +7,7 @@ using
     Flux,
     ForwardDiff,
     GalacticOptim,
-    IterTools,
     MLJBase,
-    Optim,
     SciMLBase,
     Test
 

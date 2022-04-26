@@ -121,7 +121,7 @@ function ICNFModel(
         loss::Function,
         ;
         opt_app::OptApp=FluxOptApp(),
-        optimizer::Any=AMSGrad(),
+        optimizer::Any=Flux.AMSGrad(),
         n_epochs::Integer=128,
         adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
 
@@ -134,7 +134,7 @@ function ICNFModel(
         m::T2,
         ;
         opt_app::OptApp=FluxOptApp(),
-        optimizer::Any=AMSGrad(),
+        optimizer::Any=Flux.AMSGrad(),
         n_epochs::Integer=128,
         adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
 
@@ -211,7 +211,7 @@ function CondICNFModel(
         loss::Function,
         ;
         opt_app::OptApp=FluxOptApp(),
-        optimizer::Any=AMSGrad(),
+        optimizer::Any=Flux.AMSGrad(),
         n_epochs::Integer=128,
         adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
 
@@ -224,7 +224,7 @@ function CondICNFModel(
         m::T2,
         ;
         opt_app::OptApp=FluxOptApp(),
-        optimizer::Any=AMSGrad(),
+        optimizer::Any=Flux.AMSGrad(),
         n_epochs::Integer=128,
         adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
 
