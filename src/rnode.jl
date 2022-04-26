@@ -6,7 +6,7 @@ Implementation of RNODE from
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
 struct RNODE{T <: AbstractFloat} <: AbstractICNF{T}
-    re::Function
+    re::Optimisers.Restructure
     p::AbstractVector{T}
 
     nvars::Integer
@@ -49,7 +49,7 @@ function RNODE{T}(
         nn = Flux.paramtype(T, nn)
     end
     nn = move(nn)
-    p, re = Flux.destructure(nn)
+    p, re = destructure(nn)
     RNODE{T}(
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,

@@ -4,7 +4,7 @@ export CondRNODE
 Implementation of RNODE (Conditional Version)
 """
 struct CondRNODE{T <: AbstractFloat} <: AbstractCondICNF{T}
-    re::Function
+    re::Optimisers.Restructure
     p::AbstractVector{T}
 
     nvars::Integer
@@ -47,7 +47,7 @@ function CondRNODE{T}(
         nn = Flux.paramtype(T, nn)
     end
     nn = move(nn)
-    p, re = Flux.destructure(nn)
+    p, re = destructure(nn)
     CondRNODE{T}(
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,

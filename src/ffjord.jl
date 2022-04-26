@@ -6,7 +6,7 @@ Implementation of FFJORD from
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
 struct FFJORD{T <: AbstractFloat} <: AbstractICNF{T}
-    re::Function
+    re::Optimisers.Restructure
     p::AbstractVector{T}
 
     nvars::Integer
@@ -49,7 +49,7 @@ function FFJORD{T}(
         nn = Flux.paramtype(T, nn)
     end
     nn = move(nn)
-    p, re = Flux.destructure(nn)
+    p, re = destructure(nn)
     FFJORD{T}(
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,

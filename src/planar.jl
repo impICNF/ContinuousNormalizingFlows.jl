@@ -29,7 +29,7 @@ Implementation of Planar Flows from
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
 struct Planar{T <: AbstractFloat} <: AbstractICNF{T}
-    re::Function
+    re::Optimisers.Restructure
     p::AbstractVector{T}
 
     nvars::Integer
@@ -72,7 +72,7 @@ function Planar{T}(
         nn = Flux.paramtype(T, nn)
     end
     nn = move(nn)
-    p, re = Flux.destructure(nn)
+    p, re = destructure(nn)
     Planar{T}(
         re, p, nvars, basedist, tspan,
         solver_test, solver_train,
