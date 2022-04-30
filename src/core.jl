@@ -30,7 +30,7 @@ default_sensealg = InterpolatingAdjoint(
 )
 default_optimizer = Dict(
     FluxOptApp => Flux.AMSGrad(),
-    OptimOptApp => ConjugateGradient(),
+    OptimOptApp => BFGS(),
     SciMLOptApp => Flux.AMSGrad(),
 )
 
@@ -69,25 +69,6 @@ function cb_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, data::
     f
 end
 
-# -- SciML interface
-
-function loss_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp)::Function where {T <: AbstractFloat}
-    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix{T})
-        loss(icnf, xs, p)
-    end
-    f
-end
-
-function cb_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
-    xs, = first(data)
-    function f(p::AbstractVector{T}, l::T)::Bool
-        vl = loss(icnf, xs, p)
-        @info "loss = $vl"
-        false
-    end
-    f
-end
-
 # -- Optim interface
 
 function loss_f(icnf::AbstractICNF{T}, opt_app::OptimOptApp, itrtr::AbstractVector)::Function where {T <: AbstractFloat}
@@ -110,6 +91,25 @@ function cb_f(icnf::AbstractICNF{T}, opt_app::OptimOptApp, loss::Function, data:
             itrtr .= nxitr
             false
         end
+    end
+    f
+end
+
+# -- SciML interface
+
+function loss_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp)::Function where {T <: AbstractFloat}
+    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix{T})
+        loss(icnf, xs, p)
+    end
+    f
+end
+
+function cb_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+    xs, = first(data)
+    function f(p::AbstractVector{T}, l::T)::Bool
+        vl = loss(icnf, xs, p)
+        @info "loss = $vl"
+        false
     end
     f
 end
@@ -149,25 +149,6 @@ function cb_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp, loss::Function, da
     f
 end
 
-# -- SciML interface
-
-function loss_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp)::Function where {T <: AbstractFloat}
-    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})
-        loss(icnf, xs, ys, p)
-    end
-    f
-end
-
-function cb_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
-    xs, ys = first(data)
-    function f(p::AbstractVector{T}, l::T)::Bool
-        vl = loss(icnf, xs, ys, p)
-        @info "loss = $vl"
-        false
-    end
-    f
-end
-
 # -- Optim interface
 
 function loss_f(icnf::AbstractCondICNF{T}, opt_app::OptimOptApp, itrtr::AbstractVector)::Function where {T <: AbstractFloat}
@@ -190,6 +171,25 @@ function cb_f(icnf::AbstractCondICNF{T}, opt_app::OptimOptApp, loss::Function, d
             itrtr .= nxitr
             false
         end
+    end
+    f
+end
+
+# -- SciML interface
+
+function loss_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp)::Function where {T <: AbstractFloat}
+    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix{T}, ys::AbstractMatrix{T})
+        loss(icnf, xs, ys, p)
+    end
+    f
+end
+
+function cb_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2, T2}}
+    xs, ys = first(data)
+    function f(p::AbstractVector{T}, l::T)::Bool
+        vl = loss(icnf, xs, ys, p)
+        @info "loss = $vl"
+        false
     end
     f
 end
