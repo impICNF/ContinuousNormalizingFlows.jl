@@ -29,12 +29,9 @@ default_sensealg = InterpolatingAdjoint(
     autojacvec=ZygoteVJP(),
 )
 default_optimizer = Dict(
-    FluxOptApp => Flux.AMSGrad(1e-1),
-    OptimOptApp => Newton(;
-        alphaguess=LineSearches.InitialHagerZhang(),
-        linesearch=LineSearches.HagerZhang(),
-    ),
-    SciMLOptApp => Flux.AMSGrad(1e-1),
+    FluxOptApp => Flux.AMSGrad(),
+    OptimOptApp => ConjugateGradient(),
+    SciMLOptApp => Flux.AMSGrad(),
 )
 
 # - orginal config

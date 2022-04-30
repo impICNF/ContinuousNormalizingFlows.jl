@@ -11,7 +11,6 @@ module ICNF
         Flux,
         GalacticOptim,
         IterTools,
-        LineSearches,
         MLJBase,
         MLJFlux,
         MLJModelInterface,
