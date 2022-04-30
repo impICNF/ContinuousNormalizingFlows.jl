@@ -61,6 +61,50 @@
             @test fd != ufd
         end
 
+        # Optim Opt
+        if mt <: Planar
+            nn = PlanarNN(nvars, tanh)
+        else
+            nn = Chain(
+                Dense(nvars, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
+        ufd = copy(icnf.p)
+        model = ICNFModel(icnf; n_epochs, batch_size, opt_app=OptimOptApp())
+        mach = machine(model, df)
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, df))
+
+        if tp <: Float16
+            @test_broken fd != ufd
+        else
+            @test fd != ufd
+        end
+
+        # SciML Opt with Zygote
+        if mt <: Planar
+            nn = PlanarNN(nvars, tanh)
+        else
+            nn = Chain(
+                Dense(nvars, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
+        ufd = copy(icnf.p)
+        model = ICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), adtype=GalacticOptim.AutoZygote())
+        mach = machine(model, df)
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, df))
+
+        if tp <: Float16
+            @test_broken fd != ufd
+        else
+            @test fd != ufd
+        end
+
         # SciML Opt with ForwardDiff
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -116,6 +160,50 @@
 
         # Flux Opt
         model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=FluxOptApp())
+        mach = machine(model, (df, df2))
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, (df, df2)))
+
+        if tp <: Float16
+            @test_broken fd != ufd
+        else
+            @test fd != ufd
+        end
+
+        # Optim Opt
+        if mt <: CondPlanar
+            nn = PlanarNN(nvars, tanh; cond=true)
+        else
+            nn = Chain(
+                Dense(nvars*2, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
+        ufd = copy(icnf.p)
+        model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=OptimOptApp())
+        mach = machine(model, (df, df2))
+        @test !isnothing(fit!(mach))
+        fd = MLJBase.fitted_params(mach).learned_parameters
+        @test !isnothing(MLJBase.transform(mach, (df, df2)))
+
+        if tp <: Float16
+            @test_broken fd != ufd
+        else
+            @test fd != ufd
+        end
+
+        # SciML Opt with Zygote
+        if mt <: CondPlanar
+            nn = PlanarNN(nvars, tanh; cond=true)
+        else
+            nn = Chain(
+                Dense(nvars*2, nvars, tanh),
+            )
+        end
+        icnf = mt{tp}(nn, nvars; acceleration=cr)
+        ufd = copy(icnf.p)
+        model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=SciMLOptApp(), adtype=GalacticOptim.AutoZygote())
         mach = machine(model, (df, df2))
         @test !isnothing(fit!(mach))
         fd = MLJBase.fitted_params(mach).learned_parameters

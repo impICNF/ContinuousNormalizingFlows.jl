@@ -152,18 +152,7 @@ end
 
 Flux.@functor Planar (p,)
 
-function loss_f(icnf::Planar{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(x::AbstractMatrix{T})::T
-        logp̂x = inference(icnf, TrainMode(), x)
-        agg(-logp̂x)
-    end
-    f
-end
-
-function loss_f(icnf::Planar{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(θ::AbstractVector, p::SciMLBase.NullParameters, x::AbstractMatrix{T})
-        logp̂x = inference(icnf, TrainMode(), x, θ)
-        agg(-logp̂x)
-    end
-    f
+function loss(icnf::Planar{T}, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat}
+    logp̂x = inference(icnf, TrainMode(), xs, p)
+    agg(-logp̂x)
 end
