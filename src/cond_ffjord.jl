@@ -150,18 +150,7 @@ end
 
 Flux.@functor CondFFJORD (p,)
 
-function loss_f(icnf::CondFFJORD{T}, opt_app::FluxOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(x::AbstractMatrix{T}, y::AbstractMatrix{T})::T
-        logp̂x = inference(icnf, TrainMode(), x, y)
-        agg(-logp̂x)
-    end
-    f
-end
-
-function loss_f(icnf::CondFFJORD{T}, opt_app::SciMLOptApp; agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(θ::AbstractVector, p::SciMLBase.NullParameters, x::AbstractMatrix{T}, y::AbstractMatrix{T})
-        logp̂x = inference(icnf, TrainMode(), x, y, θ)
-        agg(-logp̂x)
-    end
-    f
+function loss(icnf::CondFFJORD{T}, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat}
+    logp̂x = inference(icnf, TrainMode(), xs, ys, p)
+    agg(-logp̂x)
 end

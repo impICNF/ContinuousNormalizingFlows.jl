@@ -9,7 +9,8 @@ using
     GalacticOptim,
     MLJBase,
     SciMLBase,
-    Test
+    Test,
+    Zygote
 
 CUDA.allowscalar() do
     include("core.jl")

@@ -154,18 +154,7 @@ end
 
 Flux.@functor CondRNODE (p,)
 
-function loss_f(icnf::CondRNODE{T}, opt_app::FluxOptApp, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(x::AbstractMatrix{T}, y::AbstractMatrix{T})::T
-        logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x, y)
-        agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
-    end
-    f
-end
-
-function loss_f(icnf::CondRNODE{T}, opt_app::SciMLOptApp, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Function where {T <: AbstractFloat}
-    function f(θ::AbstractVector, p::SciMLBase.NullParameters, x::AbstractMatrix{T}, y::AbstractMatrix{T})
-        logp̂x, Ė, ṅ = inference(icnf, TrainMode(), x, y, θ)
-        agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
-    end
-    f
+function loss(icnf::CondRNODE{T}, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean) where {T <: AbstractFloat}
+    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, ys, p)
+    agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
 end
