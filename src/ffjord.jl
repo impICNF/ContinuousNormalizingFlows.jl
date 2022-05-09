@@ -71,9 +71,10 @@ function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: Abst
     f_aug
 end
 
-function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
+function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2}; rng::Union{AbstractRNG, Nothing}=nothing)::Function where {T <: AbstractFloat, T2 <: Integer}
     move = MLJFlux.Mover(icnf.acceleration)
-    ϵ = randn(T, sz) |> move
+    ϵ = isnothing(rng) ? randn(T, sz) : randn(rng, T, sz)
+    ϵ = ϵ |> move
 
     function f_aug(u, p, t)
         m = icnf.re(p)
@@ -86,7 +87,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2})::Funct
     f_aug
 end
 
-function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
@@ -100,11 +101,11 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     logp̂x
 end
 
-function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
-    f_aug = augmented_f(icnf, mode, size(xs))
+    f_aug = augmented_f(icnf, mode, size(xs); rng)
     prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]

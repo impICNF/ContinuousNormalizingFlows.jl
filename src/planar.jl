@@ -8,10 +8,10 @@ struct PlanarNN
     h::Function
 end
 
-function PlanarNN(nvars::Integer, h::Function=tanh; cond=false)
-    u = randn(nvars)
-    w = randn(cond ? nvars*2 : nvars)
-    b = randn(1)
+function PlanarNN(nvars::Integer, h::Function=tanh; cond=false, rng::Union{AbstractRNG, Nothing}=nothing)
+    u = isnothing(rng) ? randn(nvars) : randn(rng, nvars)
+    w = isnothing(rng) ? randn(cond ? nvars*2 : nvars) : randn(rng, cond ? nvars*2 : nvars)
+    b = isnothing(rng) ? randn(1) : randn(rng, 1)
     PlanarNN(u, w, b, h)
 end
 
@@ -96,7 +96,7 @@ function augmented_f(icnf::Planar{T}, sz::Tuple{T2, T2})::Function where {T <: A
     f_aug
 end
 
-function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
@@ -110,7 +110,7 @@ function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     logp̂x
 end
 
-function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
     move = MLJFlux.Mover(icnf.acceleration)
     xs = xs |> move
     zrs = zeros(T, 1, size(xs, 2)) |> move
