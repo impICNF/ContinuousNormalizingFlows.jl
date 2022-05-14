@@ -63,7 +63,7 @@ function callback_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, 
     xs, = first(data)
     function f()::Nothing
         vl = loss(icnf, xs)
-        @info "loss = $vl"
+        @info "Training" loss=vl
         nothing
     end
     f
@@ -83,7 +83,7 @@ function callback_f(icnf::AbstractICNF{T}, opt_app::OptimOptApp, loss::Function,
     xs, = first(data)
     function f(s::OptimizationState)::Bool
         vl = loss(icnf, xs, s.metadata["x"])
-        @info "loss = $vl"
+        @info "Training" loss=vl
         nxitr = iterate(data, itrtr[2])
         if isnothing(nxitr)
             true
@@ -108,7 +108,7 @@ function callback_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function,
     xs, = first(data)
     function f(p::AbstractVector{T}, l::T)::Bool
         vl = loss(icnf, xs, p)
-        @info "loss = $vl"
+        @info "Training" loss=vl
         false
     end
     f
@@ -143,7 +143,7 @@ function callback_f(icnf::AbstractCondICNF{T}, opt_app::FluxOptApp, loss::Functi
     xs, ys = first(data)
     function f()::Nothing
         vl = loss(icnf, xs, ys)
-        @info "loss = $vl"
+        @info "Training" loss=vl
         nothing
     end
     f
@@ -163,7 +163,7 @@ function callback_f(icnf::AbstractCondICNF{T}, opt_app::OptimOptApp, loss::Funct
     xs, ys = first(data)
     function f(s::OptimizationState)::Bool
         vl = loss(icnf, xs, ys, s.metadata["x"])
-        @info "loss = $vl"
+        @info "Training" loss=vl
         nxitr = iterate(data, itrtr[2])
         if isnothing(nxitr)
             true
@@ -188,7 +188,7 @@ function callback_f(icnf::AbstractCondICNF{T}, opt_app::SciMLOptApp, loss::Funct
     xs, ys = first(data)
     function f(p::AbstractVector{T}, l::T)::Bool
         vl = loss(icnf, xs, ys, p)
-        @info "loss = $vl"
+        @info "Training" loss=vl
         false
     end
     f
@@ -235,9 +235,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         _p = Flux.params(model.m)
-        t₀ = time()
-        Flux.Optimise.train!(_loss, _p, ncdata, model.optimizer; cb=_callback)
-        t₁ = time()
+        tst = @timed Flux.Optimise.train!(_loss, _p, ncdata, model.optimizer; cb=_callback)
     elseif model.opt_app isa OptimOptApp
         @assert model.optimizer isa Optim.AbstractOptimizer
         itrtr = Any[nothing, nothing]
@@ -257,28 +255,27 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
             store_trace=false, trace_simplex=true, show_trace=false, extended_trace=true,
             show_every=1, callback=_callback, time_limit=Inf,
         )
-        t₀ = time()
-        res = optimize(_loss, model.m.p, model.optimizer, ops)
-        t₁ = time()
+        tst = @timed res = optimize(_loss, model.m.p, model.optimizer, ops)
         model.m.p .= res.minimizer
     elseif model.opt_app isa SciMLOptApp
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         optfunc = OptimizationFunction(_loss, model.adtype)
         optprob = OptimizationProblem(optfunc, model.m.p)
-        t₀ = time()
-        res = solve(optprob, model.optimizer, ncdata; callback=_callback)
-        t₁ = time()
+        tst = @timed res = solve(optprob, model.optimizer, ncdata; callback=_callback)
         model.m.p .= res.u
     end
     final_loss_value = model.loss(model.m, x)
-    Δt = t₁ - t₀
-    @info "time cost (fit) = $(Δt) seconds"
+    @info("Fitting",
+        "elapsed time (seconds)"=tst.time,
+        "total bytes allocated"=tst.bytes,
+        "garbage collection time (seconds)"=tst.gctime,
+    )
 
     fitresult = nothing
     cache = nothing
     report = (
-        fit_time=Δt,
+        time_stats=tst,
         initial_loss_value=initial_loss_value,
         final_loss_value=final_loss_value,
     )
@@ -288,11 +285,12 @@ end
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(MLJModelInterface.matrix(Xnew)')
 
-    t₀ = time()
-    logp̂x = inference(model.m, TestMode(), xnew)
-    t₁ = time()
-    Δt = t₁ - t₀
-    @info "time cost (transform) = $(Δt) seconds"
+    tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
+    @info("Transforming",
+        "elapsed time (seconds)"=tst.time,
+        "total bytes allocated"=tst.bytes,
+        "garbage collection time (seconds)"=tst.gctime,
+    )
 
     DataFrame(px=exp.(logp̂x))
 end
@@ -342,9 +340,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         _p = Flux.params(model.m)
-        t₀ = time()
-        Flux.Optimise.train!(_loss, _p, ncdata, model.optimizer; cb=_callback)
-        t₁ = time()
+        tst = @timed Flux.Optimise.train!(_loss, _p, ncdata, model.optimizer; cb=_callback)
     elseif model.opt_app isa OptimOptApp
         @assert model.optimizer isa Optim.AbstractOptimizer
         itrtr = Any[nothing, nothing]
@@ -364,28 +360,27 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
             store_trace=false, trace_simplex=true, show_trace=false, extended_trace=true,
             show_every=1, callback=_callback, time_limit=Inf,
         )
-        t₀ = time()
-        res = optimize(_loss, model.m.p, model.optimizer, ops)
-        t₁ = time()
+        tst = @timed res = optimize(_loss, model.m.p, model.optimizer, ops)
         model.m.p .= res.minimizer
     elseif model.opt_app isa SciMLOptApp
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         optfunc = OptimizationFunction(_loss, model.adtype)
         optprob = OptimizationProblem(optfunc, model.m.p)
-        t₀ = time()
-        res = solve(optprob, model.optimizer, ncdata; callback=_callback)
-        t₁ = time()
+        tst = @timed res = solve(optprob, model.optimizer, ncdata; callback=_callback)
         model.m.p .= res.u
     end
     final_loss_value = model.loss(model.m, x, y)
-    Δt = t₁ - t₀
-    @info "time cost (fit) = $(Δt) seconds"
+    @info("Fitting",
+        "elapsed time (seconds)"=tst.time,
+        "total bytes allocated"=tst.bytes,
+        "garbage collection time (seconds)"=tst.gctime,
+    )
 
     fitresult = nothing
     cache = nothing
     report = (
-        fit_time=Δt,
+        time_stats=tst,
         initial_loss_value=initial_loss_value,
         final_loss_value=final_loss_value,
     )
@@ -397,11 +392,12 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     xnew = collect(MLJModelInterface.matrix(Xnew)')
     ynew = collect(MLJModelInterface.matrix(Ynew)')
 
-    t₀ = time()
-    logp̂x = inference(model.m, TestMode(), xnew, ynew)
-    t₁ = time()
-    Δt = t₁ - t₀
-    @info "time cost (transform) = $(Δt) seconds"
+    tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ynew)
+    @info("Transforming",
+        "elapsed time (seconds)"=tst.time,
+        "total bytes allocated"=tst.bytes,
+        "garbage collection time (seconds)"=tst.gctime,
+    )
 
     DataFrame(px=exp.(logp̂x))
 end
