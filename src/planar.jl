@@ -155,5 +155,5 @@ Flux.@functor Planar (p,)
 function loss(icnf::Planar{T}, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4)) where {T <: AbstractFloat}
     logp̂x = inference(icnf, TrainMode(), xs, p)
     prm_n = norm(p)
-    agg(-logp̂x .+ nλ*prm_n)
+    agg(-logp̂x) + nλ*prm_n
 end
