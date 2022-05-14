@@ -268,14 +268,13 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     final_loss_value = model.loss(model.m, x)
     @info("Fitting",
         "elapsed time (seconds)"=tst.time,
-        "total bytes allocated"=tst.bytes,
         "garbage collection time (seconds)"=tst.gctime,
     )
 
     fitresult = nothing
     cache = nothing
     report = (
-        time_stats=tst,
+        stats=tst,
         initial_loss_value=initial_loss_value,
         final_loss_value=final_loss_value,
     )
@@ -288,7 +287,6 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
     @info("Transforming",
         "elapsed time (seconds)"=tst.time,
-        "total bytes allocated"=tst.bytes,
         "garbage collection time (seconds)"=tst.gctime,
     )
 
@@ -373,14 +371,13 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     final_loss_value = model.loss(model.m, x, y)
     @info("Fitting",
         "elapsed time (seconds)"=tst.time,
-        "total bytes allocated"=tst.bytes,
         "garbage collection time (seconds)"=tst.gctime,
     )
 
     fitresult = nothing
     cache = nothing
     report = (
-        time_stats=tst,
+        stats=tst,
         initial_loss_value=initial_loss_value,
         final_loss_value=final_loss_value,
     )
@@ -395,7 +392,6 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ynew)
     @info("Transforming",
         "elapsed time (seconds)"=tst.time,
-        "total bytes allocated"=tst.bytes,
         "garbage collection time (seconds)"=tst.gctime,
     )
 
