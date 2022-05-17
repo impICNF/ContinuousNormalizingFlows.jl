@@ -43,13 +43,15 @@
 
         @test !isnothing(icnf(r))
         @test !isnothing(loss(icnf, r))
+        @test !isnothing(loss_pn(icnf, r))
+        @test !isnothing(loss_pln(icnf, r))
         @test !isnothing(loss_f(icnf, FluxOptApp())(r))
         @test !isnothing(loss_f(icnf, OptimOptApp(), [(r,), nothing])(icnf.p))
         @test !isnothing(loss_f(icnf, SciMLOptApp())(icnf.p, SciMLBase.NullParameters(), r))
 
         @test !isnothing(agg_loglikelihood(icnf, r))
 
-        d = ICNFDistribution(icnf)
+        d = ICNFDist(icnf)
 
         @test !isnothing(logpdf(d, r))
         @test !isnothing(pdf(d, r))
@@ -130,11 +132,20 @@
 
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
+        @test !isnothing(loss_pn(icnf, r, r2))
+        @test !isnothing(loss_pln(icnf, r, r2))
         @test !isnothing(loss_f(icnf, FluxOptApp())(r, r2))
         @test !isnothing(loss_f(icnf, OptimOptApp(), [(r, r2), nothing])(icnf.p))
         @test !isnothing(loss_f(icnf, SciMLOptApp())(icnf.p, SciMLBase.NullParameters(), r, r2))
 
         @test !isnothing(agg_loglikelihood(icnf, r, r2))
+
+        d = CondICNFDist(icnf, r2)
+
+        @test !isnothing(logpdf(d, r))
+        @test !isnothing(pdf(d, r))
+        @test !isnothing(rand(d))
+        @test !isnothing(rand(d, n))
     end
     @testset "Fitting | $mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
             mt in cmts_fit,

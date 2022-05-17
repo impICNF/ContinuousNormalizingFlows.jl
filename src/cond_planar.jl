@@ -135,8 +135,7 @@ end
 
 Flux.@functor CondPlanar (p,)
 
-function loss(icnf::CondPlanar{T}, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4)) where {T <: AbstractFloat}
+function loss(icnf::CondPlanar{T}, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat}
     logp̂x = inference(icnf, TrainMode(), xs, ys, p)
-    prm_n = norm(p)
-    agg(-logp̂x) + nλ*prm_n
+    agg(-logp̂x)
 end
