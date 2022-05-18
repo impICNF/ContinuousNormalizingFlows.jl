@@ -9,6 +9,7 @@ module ICNF
         Distributions,
         DistributionsAD,
         Flux,
+        ForwardDiff,
         GalacticFlux,
         GalacticOptim,
         GalacticOptimJL,
