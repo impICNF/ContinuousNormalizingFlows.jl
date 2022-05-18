@@ -28,7 +28,10 @@ module ICNF
         Random,
         Statistics
 
-    include("core.jl")
+    include("types.jl")
+    include("defaults.jl")
+    include("core_icnf.jl")
+    include("core_cond_icnf.jl")
 
     include("ffjord.jl")
     include("rnode.jl")
