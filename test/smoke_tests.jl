@@ -16,11 +16,11 @@
     n_batch = 2
     n = n_batch*batch_size
 
-    @testset "$mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in mts,
+    @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
             tp in tps,
-            nvars in nvars_
+            nvars in nvars_,
+            mt in mts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         r = convert.(tp, rand(data_dist, nvars, n))
 
@@ -67,11 +67,11 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, n))
     end
-    @testset "Fitting | $mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in mts,
+    @testset "Fitting | $(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
             tp in tps,
-            nvars in nvars_
+            nvars in nvars_,
+            mt in mts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         r = convert.(tp, rand(data_dist, nvars, n))
         df = DataFrame(r', :auto)
@@ -108,11 +108,11 @@
             @test !isnothing(MLJBase.transform(mach, df))
         end
     end
-    @testset "$mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in cmts,
+    @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
             tp in tps,
-            nvars in nvars_
+            nvars in nvars_,
+            mt in cmts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
         r = convert.(tp, rand(data_dist, nvars, n))
@@ -161,11 +161,11 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, n))
     end
-    @testset "Fitting | $mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in cmts,
+    @testset "Fitting | $(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
             tp in tps,
-            nvars in nvars_
+            nvars in nvars_,
+            mt in cmts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
         r = convert.(tp, rand(data_dist, nvars, n))
