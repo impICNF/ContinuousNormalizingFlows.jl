@@ -51,14 +51,14 @@
         diff_loss = x -> loss(icnf, r, x)
         @test !isnothing(Zygote.gradient(diff_loss, icnf.p))
         @test !isnothing(Zygote.jacobian(diff_loss, icnf.p))
-        @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
-        @test !isnothing(Zygote.diaghessian(diff_loss, icnf.p))
         @test !isnothing(Zygote.forwarddiff(diff_loss, icnf.p))
-        @test_broken !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.diaghessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
         @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
         @test_broken !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
-        @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
+        # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
 
         d = ICNFDist(icnf)
 
@@ -145,14 +145,14 @@
         diff_loss = x -> loss(icnf, r, r2, x)
         @test !isnothing(Zygote.gradient(diff_loss, icnf.p))
         @test !isnothing(Zygote.jacobian(diff_loss, icnf.p))
-        @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
-        @test !isnothing(Zygote.diaghessian(diff_loss, icnf.p))
         @test !isnothing(Zygote.forwarddiff(diff_loss, icnf.p))
-        @test_broken !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.diaghessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
         @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
         @test_broken !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
-        @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
+        # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
 
         d = CondICNFDist(icnf, r2)
 
