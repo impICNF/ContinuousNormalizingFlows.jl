@@ -1,28 +1,26 @@
 @testset "Smoke Tests" begin
-    mts = UnionAll[FFJORD, RNODE, Planar]
-    mts_fit = UnionAll[RNODE]
-    cmts = UnionAll[CondFFJORD, CondRNODE, CondPlanar]
-    cmts_fit = UnionAll[CondRNODE]
+    mts = UnionAll[RNODE, FFJORD, Planar]
+    cmts = UnionAll[CondRNODE, CondFFJORD, CondPlanar]
     crs = AbstractResource[CPU1()]
     if has_cuda_gpu()
         push!(crs, CUDALibs())
     end
     tps = DataType[Float64, Float32, Float16]
-    tps_fit = DataType[Float32]
     opt_apps = ICNF.OptApp[FluxOptApp(), OptimOptApp(), SciMLOptApp()]
     go_oa = SciMLOptApp()
     go_ads = SciMLBase.AbstractADType[GalacticOptim.AutoZygote(), GalacticOptim.AutoForwardDiff()]
     go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp]]
     nvars_ = (1:2)
-    n_epochs = 8
+    n_epochs = 2
     batch_size = 8
-    n = 8*4
+    n_batch = 2
+    n = n_batch*batch_size
 
-    @testset "$mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in mts,
+    @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
             tp in tps,
-            nvars in nvars_
+            nvars in nvars_,
+            mt in mts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         r = convert.(tp, rand(data_dist, nvars, n))
 
@@ -34,7 +32,6 @@
             )
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
-        ufd = copy(icnf.p)
 
         @test !isnothing(inference(icnf, TestMode(), r))
         @test !isnothing(inference(icnf, TrainMode(), r))
@@ -51,6 +48,18 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r))
 
+        diff_loss = x -> loss(icnf, r, x)
+        @test !isnothing(Zygote.gradient(diff_loss, icnf.p))
+        @test !isnothing(Zygote.jacobian(diff_loss, icnf.p))
+        @test !isnothing(Zygote.forwarddiff(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.diaghessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
+
+        @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
+        @test_broken !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
+        # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
+
         d = ICNFDist(icnf)
 
         @test !isnothing(logpdf(d, r))
@@ -58,11 +67,11 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, n))
     end
-    @testset "Fitting | $mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in mts_fit,
+    @testset "Fitting | $(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
-            tp in tps_fit,
-            nvars in nvars_
+            tp in tps,
+            nvars in nvars_,
+            mt in mts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         r = convert.(tp, rand(data_dist, nvars, n))
         df = DataFrame(r', :auto)
@@ -77,13 +86,10 @@
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
-            ufd = copy(icnf.p)
             model = ICNFModel(icnf; n_epochs, batch_size, opt_app)
             mach = machine(model, df)
             @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
             @test !isnothing(MLJBase.transform(mach, df))
-            @test fd != ufd
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
                 go_ad in go_ads,
@@ -96,20 +102,17 @@
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
-            ufd = copy(icnf.p)
             model = ICNFModel(icnf; n_epochs, batch_size, opt_app=go_oa, adtype=go_ad, optimizer=go_md)
             mach = machine(model, df)
             @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
             @test !isnothing(MLJBase.transform(mach, df))
-            @test fd != ufd
         end
     end
-    @testset "$mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in cmts,
+    @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
             tp in tps,
-            nvars in nvars_
+            nvars in nvars_,
+            mt in cmts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
         r = convert.(tp, rand(data_dist, nvars, n))
@@ -123,7 +126,6 @@
             )
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
-        ufd = copy(icnf.p)
 
         @test !isnothing(inference(icnf, TestMode(), r, r2))
         @test !isnothing(inference(icnf, TrainMode(), r, r2))
@@ -140,6 +142,18 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
+        diff_loss = x -> loss(icnf, r, r2, x)
+        @test !isnothing(Zygote.gradient(diff_loss, icnf.p))
+        @test !isnothing(Zygote.jacobian(diff_loss, icnf.p))
+        @test !isnothing(Zygote.forwarddiff(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.diaghessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
+        # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
+
+        @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
+        @test_broken !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
+        # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
+
         d = CondICNFDist(icnf, r2)
 
         @test !isnothing(logpdf(d, r))
@@ -147,11 +161,11 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, n))
     end
-    @testset "Fitting | $mt | $(typeof(cr).name.name) | $tp | $nvars Vars" for
-            mt in cmts_fit,
+    @testset "Fitting | $(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
             cr in crs,
-            tp in tps_fit,
-            nvars in nvars_
+            tp in tps,
+            nvars in nvars_,
+            mt in cmts
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
         r = convert.(tp, rand(data_dist, nvars, n))
@@ -169,13 +183,10 @@
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
-            ufd = copy(icnf.p)
             model = CondICNFModel(icnf; n_epochs, batch_size, opt_app)
             mach = machine(model, (df, df2))
             @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
             @test !isnothing(MLJBase.transform(mach, (df, df2)))
-            @test fd != ufd
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
                 go_ad in go_ads,
@@ -188,13 +199,10 @@
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
-            ufd = copy(icnf.p)
             model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=go_oa, adtype=go_ad, optimizer=go_md)
             mach = machine(model, (df, df2))
             @test !isnothing(fit!(mach))
-            fd = MLJBase.fitted_params(mach).learned_parameters
             @test !isnothing(MLJBase.transform(mach, (df, df2)))
-            @test fd != ufd
         end
     end
 end
