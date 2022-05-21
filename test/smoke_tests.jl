@@ -1,6 +1,8 @@
 @testset "Smoke Tests" begin
     mts = UnionAll[RNODE, FFJORD, Planar]
+    mts_fit = UnionAll[RNODE]
     cmts = UnionAll[CondRNODE, CondFFJORD, CondPlanar]
+    cmts_fit = UnionAll[CondRNODE]
     crs = AbstractResource[CPU1()]
     if has_cuda_gpu()
         push!(crs, CUDALibs())
@@ -71,7 +73,7 @@
             cr in crs,
             tp in tps,
             nvars in nvars_,
-            mt in mts
+            mt in mts_fit
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         r = convert.(tp, rand(data_dist, nvars, n))
         df = DataFrame(r', :auto)
@@ -165,7 +167,7 @@
             cr in crs,
             tp in tps,
             nvars in nvars_,
-            mt in cmts
+            mt in cmts_fit
         data_dist = Beta{tp}(convert.(tp, (2, 4))...)
         data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
         r = convert.(tp, rand(data_dist, nvars, n))
