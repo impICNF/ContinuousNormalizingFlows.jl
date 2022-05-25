@@ -30,7 +30,7 @@ function FFJORD{T}(
         nvars::Integer,
         ;
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
-        tspan::Tuple{T, T}=convert.(T, (0, 1)),
+        tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
         solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
         solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
@@ -65,7 +65,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: Abst
         m = icnf.re(p)
         z = u[1:end - 1, :]
         mz, J = jacobian_batched(m, z, move)
-        trace_J = transpose(tr.(eachslice(J, dims=3)))
+        trace_J = transpose(tr.(eachslice(J; dims=3)))
         vcat(mz, -trace_J)
     end
     f_aug
@@ -81,7 +81,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2}; rng::U
         z = u[1:end - 1, :]
         mz, back = Zygote.pullback(m, z)
         ϵJ = only(back(ϵ))
-        trace_J = sum(ϵJ .* ϵ, dims=1)
+        trace_J = sum(ϵJ .* ϵ; dims=1)
         vcat(mz, -trace_J)
     end
     f_aug

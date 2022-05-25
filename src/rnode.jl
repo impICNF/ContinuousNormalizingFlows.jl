@@ -30,7 +30,7 @@ function RNODE{T}(
         nvars::Integer,
         ;
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
-        tspan::Tuple{T, T}=convert.(T, (0, 1)),
+        tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
         solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
         solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
@@ -65,7 +65,7 @@ function augmented_f(icnf::RNODE{T}, mode::TestMode)::Function where {T <: Abstr
         m = icnf.re(p)
         z = u[1:end - 1, :]
         ż, J = jacobian_batched(m, z, move)
-        l̇ = transpose(tr.(eachslice(J, dims=3)))
+        l̇ = transpose(tr.(eachslice(J; dims=3)))
         vcat(ż, -l̇)
     end
     f_aug
@@ -81,7 +81,7 @@ function augmented_f(icnf::RNODE{T}, mode::TrainMode, sz::Tuple{T2, T2}; rng::Un
         z = u[1:end - 3, :]
         ż, back = Zygote.pullback(m, z)
         ϵJ = only(back(ϵ))
-        l̇ = sum(ϵJ .* ϵ, dims=1)
+        l̇ = sum(ϵJ .* ϵ; dims=1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
         vcat(ż, -l̇, Ė, ṅ)
