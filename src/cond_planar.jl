@@ -28,7 +28,7 @@ function CondPlanar{T}(
         nvars::Integer,
         ;
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
-        tspan::Tuple{T, T}=convert.(T, (0, 1)),
+        tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
         solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
         solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,

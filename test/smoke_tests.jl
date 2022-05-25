@@ -23,8 +23,8 @@
             tp in tps,
             nvars in nvars_,
             mt in mts
-        data_dist = Beta{tp}(convert.(tp, (2, 4))...)
-        r = convert.(tp, rand(data_dist, nvars, n))
+        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
 
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -74,8 +74,8 @@
             tp in tps,
             nvars in nvars_,
             mt in mts_fit
-        data_dist = Beta{tp}(convert.(tp, (2, 4))...)
-        r = convert.(tp, rand(data_dist, nvars, n))
+        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
         df = DataFrame(r', :auto)
 
         @testset "Using $(typeof(opt_app).name.name)" for
@@ -115,10 +115,10 @@
             tp in tps,
             nvars in nvars_,
             mt in cmts
-        data_dist = Beta{tp}(convert.(tp, (2, 4))...)
-        data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
-        r = convert.(tp, rand(data_dist, nvars, n))
-        r2 = convert.(tp, rand(data_dist, nvars, n))
+        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
+        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
 
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond=true)
@@ -168,10 +168,10 @@
             tp in tps,
             nvars in nvars_,
             mt in cmts_fit
-        data_dist = Beta{tp}(convert.(tp, (2, 4))...)
-        data_dist2 = Beta{tp}(convert.(tp, (4, 2))...)
-        r = convert.(tp, rand(data_dist, nvars, n))
-        r2 = convert.(tp, rand(data_dist, nvars, n))
+        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
+        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
         df = DataFrame(r', :auto)
         df2 = DataFrame(r2', :auto)
 

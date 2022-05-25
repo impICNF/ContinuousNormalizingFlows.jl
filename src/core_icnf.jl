@@ -195,7 +195,7 @@ function MLJModelInterface.fitted_params(model::ICNFModel, fitresult)
     )
 end
 
-MLJBase.metadata_pkg.(
+MLJBase.metadata_pkg(
     ICNFModel,
     package_name="ICNF",
     package_uuid="9bd0f7d2-bd29-441d-bcde-0d11364d2762",
