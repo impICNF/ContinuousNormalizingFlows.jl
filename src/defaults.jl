@@ -10,5 +10,5 @@ default_sensealg = InterpolatingAdjoint(
 default_optimizer = Dict(
     FluxOptApp => Flux.AMSGrad(),
     OptimOptApp => BFGS(),
-    SciMLOptApp => Flux.AMSGrad(),
+    SciMLOptApp => Optimisers.AMSGrad(),
 )
