@@ -1,8 +1,6 @@
 @testset "Smoke Tests" begin
     mts = UnionAll[RNODE, FFJORD, Planar]
-    mts_fit = UnionAll[RNODE]
     cmts = UnionAll[CondRNODE, CondFFJORD, CondPlanar]
-    cmts_fit = UnionAll[CondRNODE]
     crs = AbstractResource[CPU1()]
     if has_cuda_gpu()
         push!(crs, CUDALibs())
@@ -12,6 +10,7 @@
     go_oa = SciMLOptApp()
     go_ads = SciMLBase.AbstractADType[GalacticOptim.AutoZygote(), GalacticOptim.AutoForwardDiff()]
     go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp]]
+    pfm = typeof(ICNF.default_optimizer[OptimOptApp])
     nvars_ = (1:2)
     n_epochs = 2
     batch_size = 8
@@ -73,7 +72,7 @@
             cr in crs,
             tp in tps,
             nvars in nvars_,
-            mt in mts_fit
+            mt in mts
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(Matrix{tp}, rand(data_dist, nvars, n))
         df = DataFrame(r', :auto)
@@ -90,8 +89,10 @@
             icnf = mt{tp}(nn, nvars; acceleration=cr)
             model = ICNFModel(icnf; n_epochs, batch_size, opt_app)
             mach = machine(model, df)
-            @test !isnothing(fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, df))
+            if !(mt <: Planar) || !(opt_app isa OptimOptApp)
+                @test !isnothing(fit!(mach))
+                @test !isnothing(MLJBase.transform(mach, df))
+            end
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
                 go_ad in go_ads,
@@ -106,8 +107,10 @@
             icnf = mt{tp}(nn, nvars; acceleration=cr)
             model = ICNFModel(icnf; n_epochs, batch_size, opt_app=go_oa, adtype=go_ad, optimizer=go_md)
             mach = machine(model, df)
-            @test !isnothing(fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, df))
+            if !(mt <: Planar) || !(go_md isa pfm)
+                @test !isnothing(fit!(mach))
+                @test !isnothing(MLJBase.transform(mach, df))
+            end
         end
     end
     @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
@@ -167,7 +170,7 @@
             cr in crs,
             tp in tps,
             nvars in nvars_,
-            mt in cmts_fit
+            mt in cmts
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(Matrix{tp}, rand(data_dist, nvars, n))
@@ -187,8 +190,10 @@
             icnf = mt{tp}(nn, nvars; acceleration=cr)
             model = CondICNFModel(icnf; n_epochs, batch_size, opt_app)
             mach = machine(model, (df, df2))
-            @test !isnothing(fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, (df, df2)))
+            if !(mt <: CondPlanar) || !(opt_app isa OptimOptApp)
+                @test !isnothing(fit!(mach))
+                @test !isnothing(MLJBase.transform(mach, (df, df2)))
+            end
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
                 go_ad in go_ads,
@@ -203,8 +208,10 @@
             icnf = mt{tp}(nn, nvars; acceleration=cr)
             model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=go_oa, adtype=go_ad, optimizer=go_md)
             mach = machine(model, (df, df2))
-            @test !isnothing(fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, (df, df2)))
+            if !(mt <: CondPlanar) || !(go_md isa pfm)
+                @test !isnothing(fit!(mach))
+                @test !isnothing(MLJBase.transform(mach, (df, df2)))
+            end
         end
     end
 end

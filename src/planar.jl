@@ -43,6 +43,7 @@ struct Planar{T <: AbstractFloat} <: AbstractICNF{T}
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
     acceleration::AbstractResource
+    array_mover::Function
 
     # trace_test
     # trace_train
@@ -63,27 +64,18 @@ function Planar{T}(
 
         acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
-    move = MLJFlux.Mover(acceleration)
-    if T <: Float64
-        nn = f64(nn)
-    elseif T <: Float32
-        nn = f32(nn)
-    else
-        nn = Flux.paramtype(T, nn)
-    end
-    nn = move(nn)
+    array_mover = make_mover(acceleration, T)
     p, re = destructure(nn)
     Planar{T}(
-        re, p, nvars, basedist, tspan,
+        re, p |> array_mover, nvars, basedist, tspan,
         solver_test, solver_train,
         sensealg_test, sensealg_train,
-        acceleration,
+        acceleration, array_mover,
     )
 end
 
 function augmented_f(icnf::Planar{T}, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
-    move = MLJFlux.Mover(icnf.acceleration)
-    o_ = ones(T, sz) |> move
+    o_ = ones(T, sz) |> icnf.array_mover
 
     function f_aug(u, p, t)
         m = icnf.re(p)
@@ -97,9 +89,8 @@ function augmented_f(icnf::Planar{T}, sz::Tuple{T2, T2})::Function where {T <: A
 end
 
 function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
-    move = MLJFlux.Mover(icnf.acceleration)
-    xs = xs |> move
-    zrs = zeros(T, 1, size(xs, 2)) |> move
+    xs = xs |> icnf.array_mover
+    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, size(xs))
     prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
@@ -111,9 +102,8 @@ function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
 end
 
 function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
-    move = MLJFlux.Mover(icnf.acceleration)
-    xs = xs |> move
-    zrs = zeros(T, 1, size(xs, 2)) |> move
+    xs = xs |> icnf.array_mover
+    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, size(xs))
     prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
@@ -125,10 +115,9 @@ function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
 end
 
 function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
-    move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> move
-    zrs = zeros(T, 1, size(new_xs, 2)) |> move
+    new_xs = new_xs |> icnf.array_mover
+    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, size(new_xs))
     prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
@@ -138,10 +127,9 @@ function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector
 end
 
 function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
-    move = MLJFlux.Mover(icnf.acceleration)
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> move
-    zrs = zeros(T, 1, size(new_xs, 2)) |> move
+    new_xs = new_xs |> icnf.array_mover
+    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, size(new_xs))
     prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
