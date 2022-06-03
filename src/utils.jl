@@ -11,13 +11,12 @@ function jacobian_batched(f, x::AbstractMatrix{T}, array_mover::Function)::Tuple
 end
 
 function make_mover(acceleration::AbstractResource, data_type::DataType)
-    @assert acceleration isa Union{CPU1, CUDALibs}
-    @assert data_type in DataType[Float64, Float32, Float16]
+    (data_type <: AbstractFloat) || error("data_type must be a float type")
 
-    if acceleration isa CPU1
-        arr_t = Array
-    elseif acceleration isa CUDALibs
+    if acceleration isa CUDALibs
         arr_t = CuArray
+    else
+        arr_t = Array
     end
 
     function mover(x)
