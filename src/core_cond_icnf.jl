@@ -129,13 +129,13 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     initial_loss_value = model.loss(model.m, x, y)
 
     if model.opt_app isa FluxOptApp
-        @assert model.optimizer isa Flux.Optimise.AbstractOptimiser
+        model.optimizer isa Flux.Optimise.AbstractOptimiser || error("model.optimizer must be a Flux optimizer")
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         _p = Flux.params(model.m)
         tst = @timed Flux.Optimise.train!(_loss, _p, ncdata, model.optimizer; cb=_callback)
     elseif model.opt_app isa OptimOptApp
-        @assert model.optimizer isa Optim.AbstractOptimizer
+        model.optimizer isa Optim.AbstractOptimizer || error("model.optimizer must be an Optim optimizer")
         itrtr = Any[nothing, nothing]
         itrtr .= iterate(ncdata)
         _loss = loss_f(model.m, model.opt_app, itrtr)
