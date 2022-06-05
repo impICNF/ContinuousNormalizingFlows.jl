@@ -113,7 +113,7 @@ function CondICNFModel(
         opt_app::OptApp=FluxOptApp(),
         optimizer::Any=default_optimizer[typeof(opt_app)],
         n_epochs::Integer=128,
-        adtype::SciMLBase.AbstractADType=GalacticOptim.AutoZygote(),
+        adtype::SciMLBase.AbstractADType=Optimization.AutoZygote(),
 
         batch_size::Integer=128,
         ) where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
