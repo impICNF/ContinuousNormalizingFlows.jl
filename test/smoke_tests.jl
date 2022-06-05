@@ -8,7 +8,7 @@
     tps = DataType[Float64, Float32, Float16]
     opt_apps = ICNF.OptApp[FluxOptApp(), OptimOptApp(), SciMLOptApp()]
     go_oa = SciMLOptApp()
-    go_ads = SciMLBase.AbstractADType[GalacticOptim.AutoZygote(), GalacticOptim.AutoForwardDiff()]
+    go_ads = SciMLBase.AbstractADType[Optimization.AutoZygote(), Optimization.AutoForwardDiff()]
     go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp]]
     pfm = typeof(ICNF.default_optimizer[OptimOptApp])
     nvars_ = (1:2)

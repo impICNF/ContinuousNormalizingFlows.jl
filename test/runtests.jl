@@ -6,7 +6,7 @@ using
     Distributions,
     Flux,
     ForwardDiff,
-    GalacticOptim,
+    Optimization,
     MLJBase,
     SciMLBase,
     Test,
