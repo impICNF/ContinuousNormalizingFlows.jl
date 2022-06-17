@@ -5,6 +5,7 @@ using
     ComputationalResources,
     DataFrames,
     Distributions,
+    FiniteDiff,
     FiniteDifferences,
     Flux,
     ForwardDiff,
