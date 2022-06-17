@@ -95,7 +95,7 @@
         @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, icnf.p))
         @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, icnf.p))
 
-        @test !isnothing(FiniteDiff.finite_difference_derivative(diff_loss, icnf.p))
+        @test_broken !isnothing(FiniteDiff.finite_difference_derivative(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
@@ -218,7 +218,7 @@
         @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, icnf.p))
         @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, icnf.p))
 
-        @test !isnothing(FiniteDiff.finite_difference_derivative(diff_loss, icnf.p))
+        @test_broken !isnothing(FiniteDiff.finite_difference_derivative(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
