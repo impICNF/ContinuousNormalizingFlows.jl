@@ -1,15 +1,20 @@
 using
     ICNF,
+    AbstractDifferentiation,
     CUDA,
     ComputationalResources,
     DataFrames,
     Distributions,
+    FiniteDiff,
+    FiniteDifferences,
     Flux,
     ForwardDiff,
     Optimization,
+    ReverseDiff,
     MLJBase,
     SciMLBase,
     Test,
+    Tracker,
     Zygote
 
 CUDA.allowscalar() do

@@ -6,9 +6,23 @@
         push!(crs, CUDALibs())
     end
     tps = DataType[Float64, Float32, Float16]
+    adb_list = AbstractDifferentiation.AbstractBackend[
+        AbstractDifferentiation.ZygoteBackend(),
+        AbstractDifferentiation.ReverseDiffBackend(),
+        AbstractDifferentiation.ForwardDiffBackend(),
+        AbstractDifferentiation.TrackerBackend(),
+        AbstractDifferentiation.FiniteDifferencesBackend(),
+    ]
+    fd_m = FiniteDifferences.central_fdm(5, 1)
     opt_apps = ICNF.OptApp[FluxOptApp(), OptimOptApp(), SciMLOptApp()]
     go_oa = SciMLOptApp()
-    go_ads = SciMLBase.AbstractADType[Optimization.AutoZygote(), Optimization.AutoForwardDiff()]
+    go_ads = SciMLBase.AbstractADType[
+        Optimization.AutoZygote(),
+        Optimization.AutoReverseDiff(),
+        Optimization.AutoForwardDiff(),
+        Optimization.AutoTracker(),
+        Optimization.AutoFiniteDiff(),
+    ]
     go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp]]
     pfm = typeof(ICNF.default_optimizer[OptimOptApp])
     nvars_ = (1:2)
@@ -50,6 +64,15 @@
         @test !isnothing(agg_loglikelihood(icnf, r))
 
         diff_loss = x -> loss(icnf, r, x)
+
+        @testset "Using $(typeof(adb).name.name)" for
+                adb in adb_list
+            @test_throws MethodError !isnothing(AbstractDifferentiation.derivative(adb, diff_loss, icnf.p))
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, icnf.p))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, icnf.p))
+        end
+
         @test !isnothing(Zygote.gradient(diff_loss, icnf.p))
         @test !isnothing(Zygote.jacobian(diff_loss, icnf.p))
         @test !isnothing(Zygote.forwarddiff(diff_loss, icnf.p))
@@ -57,9 +80,25 @@
         # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
         # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
+        @test !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, icnf.p))
+        # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
+
         @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
-        @test_broken !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
+
+        @test !isnothing(Tracker.gradient(diff_loss, icnf.p))
+        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, icnf.p))
+        # @test !isnothing(Tracker.hessian(diff_loss, icnf.p))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, icnf.p))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, icnf.p))
+
+        @test_throws MethodError !isnothing(FiniteDiff.finite_difference_derivative(diff_loss, icnf.p))
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, icnf.p))
+        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
 
         d = ICNFDist(icnf)
 
@@ -148,6 +187,15 @@
         @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
         diff_loss = x -> loss(icnf, r, r2, x)
+
+        @testset "Using $(typeof(adb).name.name)" for
+                adb in adb_list
+            @test_throws MethodError !isnothing(AbstractDifferentiation.derivative(adb, diff_loss, icnf.p))
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, icnf.p))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, icnf.p))
+        end
+
         @test !isnothing(Zygote.gradient(diff_loss, icnf.p))
         @test !isnothing(Zygote.jacobian(diff_loss, icnf.p))
         @test !isnothing(Zygote.forwarddiff(diff_loss, icnf.p))
@@ -155,9 +203,25 @@
         # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
         # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
+        @test !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, icnf.p))
+        # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
+
         @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
-        @test_broken !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
+
+        @test !isnothing(Tracker.gradient(diff_loss, icnf.p))
+        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, icnf.p))
+        # @test !isnothing(Tracker.hessian(diff_loss, icnf.p))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, icnf.p))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, icnf.p))
+
+        @test_throws MethodError !isnothing(FiniteDiff.finite_difference_derivative(diff_loss, icnf.p))
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, icnf.p))
+        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
 
         d = CondICNFDist(icnf, r2)
 
