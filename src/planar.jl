@@ -65,6 +65,7 @@ function Planar{T}(
         acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
     array_mover = make_mover(acceleration, T)
+    nn = fmap(x -> adapt(T, x), nn)
     p, re = destructure(nn)
     Planar{T}(
         re, p |> array_mover, nvars, basedist, tspan,

@@ -1,6 +1,7 @@
 module ICNF
 
     using
+        Adapt,
         CUDA,
         ComputationalResources,
         DataFrames,
