@@ -42,6 +42,7 @@ function FFJORD{T}(
         acceleration::AbstractResource=default_acceleration,
         ) where {T <: AbstractFloat}
     array_mover = make_mover(acceleration, T)
+    nn = fmap(x -> adapt(T, x), nn)
     p, re = destructure(nn)
     FFJORD{T}(
         re, p |> array_mover, nvars, basedist, tspan,
@@ -82,7 +83,8 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
-    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
+    func = ODEFunction{false, true}(f_aug)
+    prob = ODEProblem{false}(func, vcat(xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -95,7 +97,8 @@ function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, size(xs); rng)
-    prob = ODEProblem{false}(f_aug, vcat(xs, zrs), icnf.tspan, p)
+    func = ODEFunction{false, true}(f_aug)
+    prob = ODEProblem{false}(func, vcat(xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -109,7 +112,8 @@ function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer, p::AbstractVector
     new_xs = new_xs |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
-    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
+    func = ODEFunction{false, true}(f_aug)
+    prob = ODEProblem{false}(func, vcat(new_xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -121,7 +125,8 @@ function generate(icnf::FFJORD{T}, mode::TrainMode, n::Integer, p::AbstractVecto
     new_xs = new_xs |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, size(new_xs))
-    prob = ODEProblem{false}(f_aug, vcat(new_xs, zrs), reverse(icnf.tspan), p)
+    func = ODEFunction{false, true}(f_aug)
+    prob = ODEProblem{false}(func, vcat(new_xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
