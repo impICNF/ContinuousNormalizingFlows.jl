@@ -91,7 +91,7 @@ function inference(icnf::CondRNODE{T}, mode::TestMode, xs::AbstractMatrix{T}, ys
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(xs, zrs), reverse(icnf.tspan), p)
+    prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -106,7 +106,7 @@ function inference(icnf::CondRNODE{T}, mode::TrainMode, xs::AbstractMatrix{T}, y
     zrs = zeros(T, 3, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys, size(xs); rng)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(xs, zrs), reverse(icnf.tspan), p)
+    prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 3, :]
@@ -124,7 +124,7 @@ function generate(icnf::CondRNODE{T}, mode::TestMode, ys::AbstractMatrix{T}, n::
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(new_xs, zrs), icnf.tspan, p)
+    prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
@@ -138,7 +138,7 @@ function generate(icnf::CondRNODE{T}, mode::TrainMode, ys::AbstractMatrix{T}, n:
     zrs = zeros(T, 3, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys, size(new_xs))
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(new_xs, zrs), icnf.tspan, p)
+    prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 3, :]
