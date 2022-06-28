@@ -18,9 +18,6 @@ using
     Yota,
     Zygote
 
-import
-    Nabla
-
 CUDA.allowscalar() do
     include("core.jl")
 
