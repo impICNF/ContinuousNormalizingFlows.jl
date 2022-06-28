@@ -100,6 +100,10 @@
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
 
+        @test !isnothing(Yota.grad(diff_loss, icnf.p))
+
+        @test !isnothing(Nabla.∇(diff_loss)(icnf.p))
+
         d = ICNFDist(icnf)
 
         @test !isnothing(logpdf(d, r))
@@ -222,6 +226,10 @@
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, icnf.p))
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
+
+        @test !isnothing(Yota.grad(diff_loss, icnf.p))
+
+        @test !isnothing(Nabla.∇(diff_loss)(icnf.p))
 
         d = CondICNFDist(icnf, r2)
 
