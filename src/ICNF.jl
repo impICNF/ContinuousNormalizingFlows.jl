@@ -1,6 +1,7 @@
 module ICNF
 
     using
+        AbstractDifferentiation,
         Adapt,
         CUDA,
         ComputationalResources,
@@ -9,7 +10,6 @@ module ICNF
         Distributions,
         DistributionsAD,
         Flux,
-        ForwardDiff,
         IterTools,
         MLJBase,
         MLJModelInterface,

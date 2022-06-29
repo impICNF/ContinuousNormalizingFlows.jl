@@ -13,6 +13,9 @@ struct FFJORD{T <: AbstractFloat} <: AbstractICNF{T}
     basedist::Distribution
     tspan::Tuple{T, T}
 
+    differentiation_backend_test::AbstractDifferentiation.AbstractBackend
+    differentiation_backend_train::AbstractDifferentiation.AbstractBackend
+
     solver_test::SciMLBase.AbstractODEAlgorithm
     solver_train::SciMLBase.AbstractODEAlgorithm
 
@@ -33,8 +36,11 @@ function FFJORD{T}(
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
         tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
-        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
-        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
+        differentiation_backend_test::AbstractDifferentiation.AbstractBackend=default_differentiation_backend(),
+        differentiation_backend_train::AbstractDifferentiation.AbstractBackend=default_differentiation_backend(),
+
+        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver,
+        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver,
 
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
@@ -46,6 +52,7 @@ function FFJORD{T}(
     p, re = destructure(nn)
     FFJORD{T}(
         re, p |> array_mover, nvars, basedist, tspan,
+        differentiation_backend_test, differentiation_backend_train,
         solver_test, solver_train,
         sensealg_test, sensealg_train,
         acceleration, array_mover,
@@ -57,7 +64,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: Abst
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz, J = jacobian_batched(m, z, icnf.array_mover)
+        mz, J = jacobian_batched(m, z, icnf.differentiation_backend_test, icnf.array_mover)
         trace_J = transpose(tr.(eachslice(J; dims=3)))
         vcat(mz, -trace_J)
     end
@@ -71,8 +78,8 @@ function augmented_f(icnf::FFJORD{T}, mode::TrainMode, sz::Tuple{T2, T2}; rng::U
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz, back = Zygote.pullback(m, z)
-        ϵJ = only(back(ϵ))
+        mz, ϵJ = AbstractDifferentiation.value_and_pullback_function(icnf.differentiation_backend_train, m, z)(ϵ)
+        ϵJ = only(ϵJ)
         trace_J = sum(ϵJ .* ϵ; dims=1)
         vcat(mz, -trace_J)
     end
