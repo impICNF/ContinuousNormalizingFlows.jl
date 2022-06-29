@@ -8,10 +8,10 @@ struct PlanarNN
     h::Function
 end
 
-function PlanarNN(nvars::Integer, h::Function=tanh; cond=false, rng::Union{AbstractRNG, Nothing}=nothing)
-    u = isnothing(rng) ? randn(nvars) : randn(rng, nvars)
-    w = isnothing(rng) ? randn(cond ? nvars*2 : nvars) : randn(rng, cond ? nvars*2 : nvars)
-    b = isnothing(rng) ? randn(1) : randn(rng, 1)
+function PlanarNN(nvars::Integer, h::Function=tanh; cond=false, rng::AbstractRNG=Random.default_rng())
+    u = randn(rng, nvars)
+    w = randn(rng, cond ? nvars*2 : nvars)
+    b = randn(rng, 1)
     PlanarNN(u, w, b, h)
 end
 
@@ -108,7 +108,7 @@ function augmented_f(icnf::Planar{T}, mode::TrainMode)::Function where {T <: Abs
     f_aug
 end
 
-function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
@@ -122,7 +122,7 @@ function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     logp̂x
 end
 
-function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
@@ -136,9 +136,8 @@ function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     logp̂x
 end
 
-function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
-    new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> icnf.array_mover
+function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
+    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction{false, true}(f_aug)
@@ -149,9 +148,8 @@ function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector
     z
 end
 
-function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
-    new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> icnf.array_mover
+function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
+    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction{false, true}(f_aug)
