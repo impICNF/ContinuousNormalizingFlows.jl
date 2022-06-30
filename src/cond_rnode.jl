@@ -65,15 +65,17 @@ function augmented_f(icnf::CondRNODE{T}, mode::TestMode, ys::AbstractMatrix{T}):
             icnf.re(p),
         )
         z = u[1:end - 1, :]
-        ż, J = jacobian_batched(m, z, icnf.differentiation_backend_test, icnf.array_mover)
-        l̇ = transpose(tr.(eachslice(J; dims=3)))
-        vcat(ż, -l̇)
+        ż = m(z)
+        l̇ = transpose(div_batch_full(m, z, icnf.differentiation_backend_test))
+        Ė = transpose(norm.(eachcol(ż)))
+        ṅ = transpose(norm.(eachcol(l̇)))
+        vcat(ż, -l̇, Ė, ṅ)
     end
     f_aug
 end
 
 function augmented_f(icnf::CondRNODE{T}, mode::TrainMode, ys::AbstractMatrix{T}, sz::Tuple{T2, T2}; rng::AbstractRNG=Random.default_rng())::Function where {T <: AbstractFloat, T2 <: Integer}
-    ϵ = randn(rng, T, sz) |> icnf.array_mover
+    ϵ = randn(rng, T, icnf.nvars) |> icnf.array_mover
 
     function f_aug(u, p, t)
         m = Chain(
@@ -81,11 +83,10 @@ function augmented_f(icnf::CondRNODE{T}, mode::TrainMode, ys::AbstractMatrix{T},
             icnf.re(p),
         )
         z = u[1:end - 3, :]
-        ż, ϵJ = AbstractDifferentiation.value_and_pullback_function(icnf.differentiation_backend_train, m, z)(ϵ)
-        ϵJ = only(ϵJ)
-        l̇ = sum(ϵJ .* ϵ; dims=1)
+        ż = m(z)
+        l̇ = transpose(div_batch_est(m, z, icnf.differentiation_backend_train, ϵ))
         Ė = transpose(norm.(eachcol(ż)))
-        ṅ = transpose(norm.(eachcol(ϵJ)))
+        ṅ = transpose(norm.(eachcol(l̇)))
         vcat(ż, -l̇, Ė, ṅ)
     end
     f_aug
@@ -94,23 +95,25 @@ end
 function inference(icnf::CondRNODE{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     ys = ys |> icnf.array_mover
-    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
+    zrs = zeros(T, 3, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p; alg=icnf.solver_test, sensealg=icnf.sensealg_test)
     sol = solve(prob)
     fsol = sol[:, :, end]
-    z = fsol[1:end - 1, :]
-    Δlogp = fsol[end, :]
+    z = fsol[1:end - 3, :]
+    Δlogp = fsol[end - 2, :]
+    Ė = fsol[end - 1, :]
+    ṅ = fsol[end, :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    logp̂x
+    logp̂x, Ė, ṅ
 end
 
 function inference(icnf::CondRNODE{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::Tuple where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     ys = ys |> icnf.array_mover
     zrs = zeros(T, 3, size(xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, mode, ys, size(xs); rng)
+    f_aug = augmented_f(icnf, mode, ys; rng)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p; alg=icnf.solver_train, sensealg=icnf.sensealg_train)
     sol = solve(prob)
@@ -126,13 +129,13 @@ end
 function generate(icnf::CondRNODE{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
     ys = ys |> icnf.array_mover
     new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
-    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
+    zrs = zeros(T, 3, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p; alg=icnf.solver_test, sensealg=icnf.sensealg_test)
     sol = solve(prob)
     fsol = sol[:, :, end]
-    z = fsol[1:end - 1, :]
+    z = fsol[1:end - 3, :]
     z
 end
 
@@ -140,7 +143,7 @@ function generate(icnf::CondRNODE{T}, mode::TrainMode, ys::AbstractMatrix{T}, n:
     ys = ys |> icnf.array_mover
     new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 3, size(new_xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, mode, ys, size(new_xs); rng)
+    f_aug = augmented_f(icnf, mode, ys; rng)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p; alg=icnf.solver_train, sensealg=icnf.sensealg_train)
     sol = solve(prob)

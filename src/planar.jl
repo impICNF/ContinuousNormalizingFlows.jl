@@ -87,9 +87,8 @@ function augmented_f(icnf::Planar{T}, mode::TestMode)::Function where {T <: Abst
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz, J = AbstractDifferentiation.value_and_jacobian(icnf.differentiation_backend_test, m, z)
-        J = only(J)
-        trace_J = transpose(m.u) * J
+        mz = m(z)
+        trace_J = transpose(div_batch_full_pln(m, z, icnf.differentiation_backend_test))
         vcat(mz, -trace_J)
     end
     f_aug
@@ -100,9 +99,8 @@ function augmented_f(icnf::Planar{T}, mode::TrainMode)::Function where {T <: Abs
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz, J = AbstractDifferentiation.value_and_jacobian(icnf.differentiation_backend_train, m, z)
-        J = only(J)
-        trace_J = transpose(m.u) * J
+        mz = m(z)
+        trace_J = transpose(div_batch_full_pln(m, z, icnf.differentiation_backend_train))
         vcat(mz, -trace_J)
     end
     f_aug

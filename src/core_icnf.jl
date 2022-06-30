@@ -121,7 +121,7 @@ function ICNFModel(
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
-    x = collect(MLJModelInterface.matrix(X)')
+    x = collect(transpose(MLJModelInterface.matrix(X)))
     data = DataLoader((x,); batchsize=model.batch_size, shuffle=true, partial=true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, x)
@@ -178,7 +178,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
 end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
-    xnew = collect(MLJModelInterface.matrix(Xnew)')
+    xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
 
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
     @info("Transforming",

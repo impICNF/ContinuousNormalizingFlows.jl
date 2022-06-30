@@ -13,6 +13,30 @@ function jacobian_batched(
     y, res
 end
 
+function div_batch_full(
+        f, xs::AbstractMatrix{T}, differentiation_backend::AbstractDifferentiation.AbstractBackend,
+        )::AbstractVector where {T <: AbstractFloat}
+    broadcast(eachcol(xs)) do x
+        tr(only(AbstractDifferentiation.jacobian(differentiation_backend, f, x)))
+    end
+end
+
+function div_batch_full_pln(
+        f, xs::AbstractMatrix{T}, differentiation_backend::AbstractDifferentiation.AbstractBackend,
+        )::AbstractVector where {T <: AbstractFloat}
+    broadcast(eachcol(xs)) do x
+        transpose(f.u) * only(AbstractDifferentiation.jacobian(differentiation_backend, f, x))
+    end
+end
+
+function div_batch_est(
+        f, xs::AbstractMatrix{T}, differentiation_backend::AbstractDifferentiation.AbstractBackend, ϵ::AbstractVector{T}
+        )::AbstractVector where {T <: AbstractFloat}
+    broadcast(eachcol(xs)) do x
+        transpose(only(AbstractDifferentiation.pullback_function(differentiation_backend, f, x)(ϵ))) * ϵ
+    end
+end
+
 function make_mover(acceleration::AbstractResource, data_type::DataType)
     (data_type <: AbstractFloat) || error("data_type must be a float type")
 

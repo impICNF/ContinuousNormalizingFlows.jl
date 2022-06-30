@@ -116,7 +116,7 @@
             mt in mts
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        df = DataFrame(r', :auto)
+        df = DataFrame(transpose(r), :auto)
 
         @testset "Using $(typeof(opt_app).name.name)" for
                 opt_app in opt_apps
@@ -243,8 +243,8 @@
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(Matrix{tp}, rand(data_dist, nvars, n))
         r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        df = DataFrame(r', :auto)
-        df2 = DataFrame(r2', :auto)
+        df = DataFrame(transpose(r), :auto)
+        df2 = DataFrame(transpose(r2), :auto)
 
         @testset "Using $(typeof(opt_app).name.name)" for
                 opt_app in opt_apps
