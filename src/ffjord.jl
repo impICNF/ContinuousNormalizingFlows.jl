@@ -13,8 +13,8 @@ struct FFJORD{T <: AbstractFloat} <: AbstractICNF{T}
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    solver_test::SciMLBase.AbstractODEAlgorithm
-    solver_train::SciMLBase.AbstractODEAlgorithm
+    solvealg_test::SciMLBase.AbstractODEAlgorithm
+    solvealg_train::SciMLBase.AbstractODEAlgorithm
 
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
@@ -33,8 +33,8 @@ function FFJORD{T}(
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
         tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
-        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
-        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
+        solvealg_test::SciMLBase.AbstractODEAlgorithm=default_solvealg,
+        solvealg_train::SciMLBase.AbstractODEAlgorithm=default_solvealg,
 
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
@@ -46,7 +46,7 @@ function FFJORD{T}(
     p, re = destructure(nn)
     FFJORD{T}(
         re, p |> array_mover, nvars, basedist, tspan,
-        solver_test, solver_train,
+        solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
         acceleration, array_mover,
     )
@@ -85,7 +85,7 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
-    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
+    sol = solve(prob, icnf.solvealg_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -99,7 +99,7 @@ function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     f_aug = augmented_f(icnf, mode, size(xs); rng)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
-    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
+    sol = solve(prob, icnf.solvealg_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -114,7 +114,7 @@ function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer, p::AbstractVector
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
-    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
+    sol = solve(prob, icnf.solvealg_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
@@ -127,7 +127,7 @@ function generate(icnf::FFJORD{T}, mode::TrainMode, n::Integer, p::AbstractVecto
     f_aug = augmented_f(icnf, mode, size(new_xs))
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
-    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
+    sol = solve(prob, icnf.solvealg_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
