@@ -63,7 +63,7 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r))
 
-        diff_loss = x -> loss(icnf, r, x)
+        diff_loss(x) = loss(icnf, r, x)
 
         @testset "Using $(typeof(adb).name.name)" for
                 adb in adb_list
@@ -188,7 +188,7 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
-        diff_loss = x -> loss(icnf, r, r2, x)
+        diff_loss(x) = loss(icnf, r, r2, x)
 
         @testset "Using $(typeof(adb).name.name)" for
                 adb in adb_list
