@@ -31,8 +31,8 @@ function CondFFJORD{T}(
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
         tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
-        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
-        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
+        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver,
+        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver,
 
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
@@ -50,7 +50,7 @@ function CondFFJORD{T}(
     )
 end
 
-function augmented_f(icnf::CondFFJORD{T}, mode::TestMode, ys::Union{AbstractMatrix{T}, CuArray{T, 2}})::Function where {T <: AbstractFloat}
+function augmented_f(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T})::Function where {T <: AbstractFloat}
 
     function f_aug(u, p, t)
         m = Chain(
@@ -65,9 +65,8 @@ function augmented_f(icnf::CondFFJORD{T}, mode::TestMode, ys::Union{AbstractMatr
     f_aug
 end
 
-function augmented_f(icnf::CondFFJORD{T}, mode::TrainMode, ys::Union{AbstractMatrix{T}, CuArray{T, 2}}, sz::Tuple{T2, T2}; rng::Union{AbstractRNG, Nothing}=nothing)::Function where {T <: AbstractFloat, T2 <: Integer}
-    ϵ = isnothing(rng) ? randn(T, sz) : randn(rng, T, sz)
-    ϵ = ϵ |> icnf.array_mover
+function augmented_f(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}, sz::Tuple{T2, T2}; rng::AbstractRNG=Random.default_rng())::Function where {T <: AbstractFloat, T2 <: Integer}
+    ϵ = randn(rng, T, sz) |> icnf.array_mover
 
     function f_aug(u, p, t)
         m = Chain(
@@ -83,14 +82,14 @@ function augmented_f(icnf::CondFFJORD{T}, mode::TrainMode, ys::Union{AbstractMat
     f_aug
 end
 
-function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     ys = ys |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
-    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
+    prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p; alg=icnf.solver_test, sensealg=icnf.sensealg_test)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -98,14 +97,14 @@ function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, y
     logp̂x
 end
 
-function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     ys = ys |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys, size(xs); rng)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
-    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
+    prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p; alg=icnf.solver_train, sensealg=icnf.sensealg_train)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -113,29 +112,27 @@ function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, 
     logp̂x
 end
 
-function generate(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
     ys = ys |> icnf.array_mover
-    new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> icnf.array_mover
+    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
-    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
+    prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p; alg=icnf.solver_test, sensealg=icnf.sensealg_test)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
 end
 
-function generate(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
+function generate(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
     ys = ys |> icnf.array_mover
-    new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> icnf.array_mover
+    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, mode, ys, size(new_xs))
+    f_aug = augmented_f(icnf, mode, ys, size(new_xs); rng)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
-    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
+    prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p; alg=icnf.solver_train, sensealg=icnf.sensealg_train)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z

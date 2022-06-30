@@ -9,7 +9,6 @@ module ICNF
         Distributions,
         DistributionsAD,
         Flux,
-        ForwardDiff,
         IterTools,
         MLJBase,
         MLJModelInterface,
