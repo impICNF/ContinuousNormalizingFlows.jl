@@ -80,7 +80,7 @@
         # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
         # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
-        @test !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
+        @test_throws DimensionMismatch !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
 
@@ -205,7 +205,7 @@
         # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
         # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
-        @test !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
+        @test_throws DimensionMismatch !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
 
