@@ -1,5 +1,5 @@
 function jacobian_batched(f, xs::AbstractMatrix{T}, array_mover::Function)::Tuple where {T <: AbstractFloat}
-    ys, back = Zygote.pullback(f, xs)
+    y, back = Zygote.pullback(f, xs)
     z = zeros(eltype(xs), size(xs)) |> array_mover
     res = zeros(size(xs, 1), size(xs, 1), size(xs, 2)) |> array_mover
     for i in 1:size(y, 1)
@@ -7,7 +7,7 @@ function jacobian_batched(f, xs::AbstractMatrix{T}, array_mover::Function)::Tupl
         res[i, :, :] .= only(back(z))
         z[i, :] .= zero(eltype(xs))
     end
-    ys, res
+    y, res
 end
 
 function make_mover(acceleration::AbstractResource, data_type::DataType)
