@@ -122,8 +122,8 @@ end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     X, Y = XY
-    x = collect(MLJModelInterface.matrix(X)')
-    y = collect(MLJModelInterface.matrix(Y)')
+    x = collect(transpose(MLJModelInterface.matrix(X)))
+    y = collect(transpose(MLJModelInterface.matrix(Y)))
     data = DataLoader((x, y); batchsize=model.batch_size, shuffle=true, partial=true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, x, y)
@@ -181,8 +181,8 @@ end
 
 function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     Xnew, Ynew = XYnew
-    xnew = collect(MLJModelInterface.matrix(Xnew)')
-    ynew = collect(MLJModelInterface.matrix(Ynew)')
+    xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
+    ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
 
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ynew)
     @info("Transforming",
