@@ -50,7 +50,7 @@ function CondPlanar{T}(
     )
 end
 
-function augmented_f(icnf::CondPlanar{T}, ys::Union{AbstractMatrix{T}, CuArray{T, 2}}, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
+function augmented_f(icnf::CondPlanar{T}, mode::Mode, ys::Union{AbstractMatrix{T}, CuArray{T, 2}}, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
     o_ = ones(T, sz) |> icnf.array_mover
 
     function f_aug(u, p, t)
@@ -72,7 +72,7 @@ function inference(icnf::CondPlanar{T}, mode::TestMode, xs::AbstractMatrix{T}, y
     xs = xs |> icnf.array_mover
     ys = ys |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, ys, size(xs))
+    f_aug = augmented_f(icnf, mode, ys, size(xs))
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solvealg_test; sensealg=icnf.sensealg_test)
@@ -87,7 +87,7 @@ function inference(icnf::CondPlanar{T}, mode::TrainMode, xs::AbstractMatrix{T}, 
     xs = xs |> icnf.array_mover
     ys = ys |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, ys, size(xs))
+    f_aug = augmented_f(icnf, mode, ys, size(xs))
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solvealg_train; sensealg=icnf.sensealg_train)
@@ -103,7 +103,7 @@ function generate(icnf::CondPlanar{T}, mode::TestMode, ys::AbstractMatrix{T}, n:
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, ys, size(new_xs))
+    f_aug = augmented_f(icnf, mode, ys, size(new_xs))
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solvealg_test; sensealg=icnf.sensealg_test)
@@ -117,7 +117,7 @@ function generate(icnf::CondPlanar{T}, mode::TrainMode, ys::AbstractMatrix{T}, n
     new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
     new_xs = new_xs |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, ys, size(new_xs))
+    f_aug = augmented_f(icnf, mode, ys, size(new_xs))
     func = ODEFunction{false, true}(f_aug)
     prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solvealg_train; sensealg=icnf.sensealg_train)
