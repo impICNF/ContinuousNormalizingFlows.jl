@@ -69,7 +69,11 @@
                 adb in adb_list
             @test_throws MethodError !isnothing(AbstractDifferentiation.derivative(adb, diff_loss, icnf.p))
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, icnf.p))
-            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            if adb isa AbstractDifferentiation.TrackerBackend
+                @test_throws MethodError !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            else
+                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            end
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, icnf.p))
         end
 
@@ -194,7 +198,11 @@
                 adb in adb_list
             @test_throws MethodError !isnothing(AbstractDifferentiation.derivative(adb, diff_loss, icnf.p))
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, icnf.p))
-            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            if adb isa AbstractDifferentiation.TrackerBackend
+                @test_throws MethodError !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            else
+                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
+            end
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, icnf.p))
         end
 
