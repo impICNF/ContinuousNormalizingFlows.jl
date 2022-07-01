@@ -43,7 +43,9 @@ struct Planar{T <: AbstractFloat} <: AbstractICNF{T}
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
     acceleration::AbstractResource
+
     array_mover::Function
+    ϵ::AbstractVector{T}
 
     # trace_test
     # trace_train
@@ -63,6 +65,8 @@ function Planar{T}(
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
 
         acceleration::AbstractResource=default_acceleration,
+
+        rng::AbstractRNG=Random.default_rng(),
         ) where {T <: AbstractFloat}
     array_mover = make_mover(acceleration, T)
     nn = fmap(x -> adapt(T, x), nn)
@@ -71,7 +75,7 @@ function Planar{T}(
         re, p |> array_mover, nvars, basedist, tspan,
         solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
-        acceleration, array_mover,
+        acceleration, array_mover, randn(rng, T, nvars) |> array_mover,
     )
 end
 
@@ -89,7 +93,7 @@ function augmented_f(icnf::Planar{T}, mode::Mode, sz::Tuple{T2, T2})::Function w
     f_aug
 end
 
-function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, size(xs))
@@ -103,7 +107,7 @@ function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     logp̂x
 end
 
-function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode, size(xs))
