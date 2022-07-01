@@ -8,10 +8,10 @@ struct PlanarNN
     h::Function
 end
 
-function PlanarNN(nvars::Integer, h::Function=tanh; cond=false, rng::Union{AbstractRNG, Nothing}=nothing)
-    u = isnothing(rng) ? randn(nvars) : randn(rng, nvars)
-    w = isnothing(rng) ? randn(cond ? nvars*2 : nvars) : randn(rng, cond ? nvars*2 : nvars)
-    b = isnothing(rng) ? randn(1) : randn(rng, 1)
+function PlanarNN(nvars::Integer, h::Function=tanh; cond=false, rng::AbstractRNG=Random.default_rng())
+    u = randn(rng, nvars)
+    w = randn(rng, cond ? nvars*2 : nvars)
+    b = randn(rng, 1)
     PlanarNN(u, w, b, h)
 end
 
@@ -36,8 +36,8 @@ struct Planar{T <: AbstractFloat} <: AbstractICNF{T}
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    solver_test::SciMLBase.AbstractODEAlgorithm
-    solver_train::SciMLBase.AbstractODEAlgorithm
+    solvealg_test::SciMLBase.AbstractODEAlgorithm
+    solvealg_train::SciMLBase.AbstractODEAlgorithm
 
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
@@ -56,8 +56,8 @@ function Planar{T}(
         basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
         tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
-        solver_test::SciMLBase.AbstractODEAlgorithm=default_solver_test,
-        solver_train::SciMLBase.AbstractODEAlgorithm=default_solver_train,
+        solvealg_test::SciMLBase.AbstractODEAlgorithm=default_solvealg,
+        solvealg_train::SciMLBase.AbstractODEAlgorithm=default_solvealg,
 
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
@@ -69,13 +69,13 @@ function Planar{T}(
     p, re = destructure(nn)
     Planar{T}(
         re, p |> array_mover, nvars, basedist, tspan,
-        solver_test, solver_train,
+        solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
         acceleration, array_mover,
     )
 end
 
-function augmented_f(icnf::Planar{T}, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
+function augmented_f(icnf::Planar{T}, mode::Mode, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, T2 <: Integer}
     o_ = ones(T, sz) |> icnf.array_mover
 
     function f_aug(u, p, t)
@@ -89,13 +89,13 @@ function augmented_f(icnf::Planar{T}, sz::Tuple{T2, T2})::Function where {T <: A
     f_aug
 end
 
-function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, size(xs))
-    func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
-    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
+    f_aug = augmented_f(icnf, mode, size(xs))
+    func = ODEFunction(f_aug)
+    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, icnf.solvealg_test; sensealg=icnf.sensealg_test)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -103,13 +103,13 @@ function inference(icnf::Planar{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     logp̂x
 end
 
-function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat}
+function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat}
     xs = xs |> icnf.array_mover
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, size(xs))
-    func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(xs, zrs), icnf.tspan, p)
-    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
+    f_aug = augmented_f(icnf, mode, size(xs))
+    func = ODEFunction(f_aug)
+    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, icnf.solvealg_train; sensealg=icnf.sensealg_train)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -117,27 +117,25 @@ function inference(icnf::Planar{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     logp̂x
 end
 
-function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
-    new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> icnf.array_mover
+function generate(icnf::Planar{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
+    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, size(new_xs))
-    func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
-    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
+    f_aug = augmented_f(icnf, mode, size(new_xs))
+    func = ODEFunction(f_aug)
+    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, icnf.solvealg_test; sensealg=icnf.sensealg_test)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
 end
 
-function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat}
-    new_xs = isnothing(rng) ? rand(icnf.basedist, n) : rand(rng, icnf.basedist, n)
-    new_xs = new_xs |> icnf.array_mover
+function generate(icnf::Planar{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
+    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
-    f_aug = augmented_f(icnf, size(new_xs))
-    func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
-    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
+    f_aug = augmented_f(icnf, mode, size(new_xs))
+    func = ODEFunction(f_aug)
+    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, icnf.solvealg_train; sensealg=icnf.sensealg_train)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z

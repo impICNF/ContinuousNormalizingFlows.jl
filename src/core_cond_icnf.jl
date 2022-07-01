@@ -4,11 +4,11 @@ export
     loss_f, callback_f,
     CondICNFModel, CondICNFDist
 
-function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat} end
-function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractVector where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat} end
+function inference(icnf::AbstractCondICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractVector where {T <: AbstractFloat} end
 
-function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::Union{AbstractRNG, Nothing}=nothing)::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractCondICNF{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat} end
 
 function loss(icnf::AbstractCondICNF{T}, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat} end
 
@@ -122,8 +122,8 @@ end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     X, Y = XY
-    x = collect(MLJModelInterface.matrix(X)')
-    y = collect(MLJModelInterface.matrix(Y)')
+    x = collect(transpose(MLJModelInterface.matrix(X)))
+    y = collect(transpose(MLJModelInterface.matrix(Y)))
     data = DataLoader((x, y); batchsize=model.batch_size, shuffle=true, partial=true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, x, y)
@@ -181,8 +181,8 @@ end
 
 function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     Xnew, Ynew = XYnew
-    xnew = collect(MLJModelInterface.matrix(Xnew)')
-    ynew = collect(MLJModelInterface.matrix(Ynew)')
+    xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
+    ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
 
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ynew)
     @info("Transforming",

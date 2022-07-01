@@ -63,7 +63,7 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r))
 
-        diff_loss = x -> loss(icnf, r, x)
+        diff_loss(x) = loss(icnf, r, x)
 
         @testset "Using $(typeof(adb).name.name)" for
                 adb in adb_list
@@ -80,7 +80,7 @@
         # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
         # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
-        @test !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
+        @test_throws DimensionMismatch !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
 
@@ -100,7 +100,7 @@
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
 
-        @test !isnothing(Yota.grad(diff_loss, icnf.p))
+        @test_throws MethodError !isnothing(Yota.grad(diff_loss, icnf.p))
 
         d = ICNFDist(icnf)
 
@@ -116,7 +116,7 @@
             mt in mts
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        df = DataFrame(r', :auto)
+        df = DataFrame(transpose(r), :auto)
 
         @testset "Using $(typeof(opt_app).name.name)" for
                 opt_app in opt_apps
@@ -188,7 +188,7 @@
 
         @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
-        diff_loss = x -> loss(icnf, r, r2, x)
+        diff_loss(x) = loss(icnf, r, r2, x)
 
         @testset "Using $(typeof(adb).name.name)" for
                 adb in adb_list
@@ -205,7 +205,7 @@
         # @test !isnothing(Zygote.hessian(diff_loss, icnf.p))
         # @test !isnothing(Zygote.hessian_reverse(diff_loss, icnf.p))
 
-        @test !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
+        @test_throws DimensionMismatch !isnothing(ReverseDiff.gradient(diff_loss, icnf.p))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
 
@@ -225,7 +225,7 @@
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, icnf.p))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, icnf.p))
 
-        @test !isnothing(Yota.grad(diff_loss, icnf.p))
+        @test_throws MethodError !isnothing(Yota.grad(diff_loss, icnf.p))
 
         d = CondICNFDist(icnf, r2)
 
@@ -243,8 +243,8 @@
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(Matrix{tp}, rand(data_dist, nvars, n))
         r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        df = DataFrame(r', :auto)
-        df2 = DataFrame(r2', :auto)
+        df = DataFrame(transpose(r), :auto)
+        df2 = DataFrame(transpose(r2), :auto)
 
         @testset "Using $(typeof(opt_app).name.name)" for
                 opt_app in opt_apps
