@@ -45,7 +45,6 @@ struct Planar{T <: AbstractFloat} <: AbstractICNF{T}
     acceleration::AbstractResource
 
     array_mover::Function
-    ϵ::AbstractVector{T}
 
     # trace_test
     # trace_train
@@ -65,8 +64,6 @@ function Planar{T}(
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
 
         acceleration::AbstractResource=default_acceleration,
-
-        rng::AbstractRNG=Random.default_rng(),
         ) where {T <: AbstractFloat}
     array_mover = make_mover(acceleration, T)
     nn = fmap(x -> adapt(T, x), nn)
@@ -75,7 +72,7 @@ function Planar{T}(
         re, p |> array_mover, nvars, basedist, tspan,
         solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
-        acceleration, array_mover, randn(rng, T, nvars) |> array_mover,
+        acceleration, array_mover,
     )
 end
 
