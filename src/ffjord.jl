@@ -75,7 +75,7 @@ function augmented_f(icnf::FFJORD{T}, mode::TrainMode)::Function where {T <: Abs
         z = u[1:end - 1, :]
         mz, back = Zygote.pullback(m, z)
         ϵJ = only(back(icnf.ϵ))
-        trace_J = transpose(transpose(ϵJ) * icnf.ϵ)
+        trace_J = transpose(icnf.ϵ) * ϵJ
         vcat(mz, -trace_J)
     end
     f_aug

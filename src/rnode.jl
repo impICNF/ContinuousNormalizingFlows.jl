@@ -75,7 +75,7 @@ function augmented_f(icnf::RNODE{T}, mode::TrainMode)::Function where {T <: Abst
         z = u[1:end - 3, :]
         ż, back = Zygote.pullback(m, z)
         ϵJ = only(back(icnf.ϵ))
-        l̇ = transpose(transpose(ϵJ) * icnf.ϵ)
+        l̇ = transpose(icnf.ϵ) * ϵJ
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
         vcat(ż, -l̇, Ė, ṅ)
