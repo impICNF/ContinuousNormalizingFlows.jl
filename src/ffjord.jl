@@ -89,8 +89,8 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p; alg=icnf.solver_test, sensealg=icnf.sensealg_test)
-    sol = solve(prob)
+    prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p)
+    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -103,8 +103,8 @@ function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode; rng)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p; alg=icnf.solver_train, sensealg=icnf.sensealg_train)
-    sol = solve(prob)
+    prob = ODEProblem{false, true}(func, vcat(xs, zrs), icnf.tspan, p)
+    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     Δlogp = fsol[end, :]
@@ -117,8 +117,8 @@ function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer, p::AbstractVector
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p; alg=icnf.solver_test, sensealg=icnf.sensealg_test)
-    sol = solve(prob)
+    prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
+    sol = solve(prob, icnf.solver_test; sensealg=icnf.sensealg_test)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
@@ -129,8 +129,8 @@ function generate(icnf::FFJORD{T}, mode::TrainMode, n::Integer, p::AbstractVecto
     zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
     f_aug = augmented_f(icnf, mode; rng)
     func = ODEFunction{false, true}(f_aug)
-    prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p; alg=icnf.solver_train, sensealg=icnf.sensealg_train)
-    sol = solve(prob)
+    prob = ODEProblem{false, true}(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
+    sol = solve(prob, icnf.solver_train; sensealg=icnf.sensealg_train)
     fsol = sol[:, :, end]
     z = fsol[1:end - 1, :]
     z
