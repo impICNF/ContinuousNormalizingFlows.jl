@@ -137,6 +137,7 @@
             if !(mt <: Planar) || !(opt_app isa OptimOptApp)
                 @test !isnothing(fit!(mach))
                 @test !isnothing(MLJBase.transform(mach, df))
+                @test !isnothing(MLJBase.fitted_params(mach))
             end
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
@@ -155,6 +156,7 @@
             if !(mt <: Planar) || !(go_md isa pfm)
                 @test !isnothing(fit!(mach))
                 @test !isnothing(MLJBase.transform(mach, df))
+                @test !isnothing(MLJBase.fitted_params(mach))
             end
         end
     end
@@ -269,6 +271,7 @@
             if !(mt <: CondPlanar) || !(opt_app isa OptimOptApp)
                 @test !isnothing(fit!(mach))
                 @test !isnothing(MLJBase.transform(mach, (df, df2)))
+                @test !isnothing(MLJBase.fitted_params(mach))
             end
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
@@ -287,6 +290,7 @@
             if !(mt <: CondPlanar) || !(go_md isa pfm)
                 @test !isnothing(fit!(mach))
                 @test !isnothing(MLJBase.transform(mach, (df, df2)))
+                @test !isnothing(MLJBase.fitted_params(mach))
             end
         end
     end

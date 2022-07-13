@@ -210,7 +210,6 @@ MLJBase.metadata_model(
     target_scitype=Table{AbstractVector{ScientificTypes.Continuous}},
     output_scitype=Table{AbstractVector{ScientificTypes.Continuous}},
     supports_weights=false,
-    docstring="ICNFModel",
     load_path="ICNF.ICNFModel",
 )
 

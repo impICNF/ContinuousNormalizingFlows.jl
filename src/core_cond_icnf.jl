@@ -214,18 +214,17 @@ MLJBase.metadata_model(
     target_scitype=Table{AbstractVector{ScientificTypes.Continuous}},
     output_scitype=Table{AbstractVector{ScientificTypes.Continuous}},
     supports_weights=false,
-    docstring="CondICNFModel",
     load_path="ICNF.CondICNFModel",
 )
 
 # Distributions interface
 
-struct CondICNFDist{T, T2} <: ICNFDistribution where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
+struct CondICNFDist{T, T2} <: ICNFDistribution where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
     m::T2
     ys::AbstractMatrix{T}
 end
 
-function CondICNFDist(m::T2, ys::AbstractMatrix{T}) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
+function CondICNFDist(m::T2, ys::AbstractMatrix{T}) where {T <: AbstractFloat, T2 <: AbstractCondICNF{T}}
     CondICNFDist{T, T2}(m, ys)
 end
 
