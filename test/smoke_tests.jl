@@ -43,7 +43,7 @@
             nn = PlanarNN(nvars, tanh)
         else
             nn = Chain(
-                Dense(nvars, nvars, tanh),
+                Dense(nvars => nvars, tanh),
             )
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
@@ -128,7 +128,7 @@
                 nn = PlanarNN(nvars, tanh)
             else
                 nn = Chain(
-                    Dense(nvars, nvars, tanh),
+                    Dense(nvars => nvars, tanh),
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
@@ -147,7 +147,7 @@
                 nn = PlanarNN(nvars, tanh)
             else
                 nn = Chain(
-                    Dense(nvars, nvars, tanh),
+                    Dense(nvars => nvars, tanh),
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
@@ -174,7 +174,7 @@
             nn = PlanarNN(nvars, tanh; cond=true)
         else
             nn = Chain(
-                Dense(nvars*2, nvars, tanh),
+                Dense(2*nvars => nvars, tanh),
             )
         end
         icnf = mt{tp}(nn, nvars; acceleration=cr)
@@ -262,7 +262,7 @@
                 nn = PlanarNN(nvars, tanh; cond=true)
             else
                 nn = Chain(
-                    Dense(nvars*2, nvars, tanh),
+                    Dense(2*nvars => nvars, tanh),
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)
@@ -281,7 +281,7 @@
                 nn = PlanarNN(nvars, tanh; cond=true)
             else
                 nn = Chain(
-                    Dense(nvars*2, nvars, tanh),
+                    Dense(2*nvars => nvars, tanh),
                 )
             end
             icnf = mt{tp}(nn, nvars; acceleration=cr)

@@ -8,6 +8,7 @@ module ICNF
         DifferentialEquations,
         Distributions,
         DistributionsAD,
+        FillArrays,
         Flux,
         IterTools,
         MLJBase,

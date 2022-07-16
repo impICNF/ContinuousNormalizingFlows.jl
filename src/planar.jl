@@ -54,7 +54,7 @@ function Planar{T}(
         nn::PlanarNN,
         nvars::Integer,
         ;
-        basedist::Distribution=MvNormal(zeros(T, nvars), Diagonal(ones(T, nvars))),
+        basedist::Distribution=MvNormal(Zeros{T}(nvars), one(T)*I),
         tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
 
         solvealg_test::SciMLBase.AbstractODEAlgorithm=default_solvealg,
