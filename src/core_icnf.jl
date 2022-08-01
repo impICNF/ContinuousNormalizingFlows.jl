@@ -123,7 +123,7 @@ function ICNFModel(
         m, loss,
         opt_app, optimizer, n_epochs, adtype,
         batch_size,
-        eval(m.name.name),
+        eval(typeof(m).name.name),
     )
 end
 
