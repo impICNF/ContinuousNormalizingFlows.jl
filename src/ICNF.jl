@@ -3,7 +3,6 @@ module ICNF
     using
         Adapt,
         CUDA,
-        ComputationalResources,
         DataFrames,
         DifferentialEquations,
         Distributions,

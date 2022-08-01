@@ -104,7 +104,8 @@ mutable struct ICNFModel <: MLJICNF
     adtype::SciMLBase.AbstractADType
 
     batch_size::Integer
-    acceleration::AbstractResource
+
+    array_type::UnionAll
 end
 
 function ICNFModel(
@@ -117,18 +118,18 @@ function ICNFModel(
         adtype::SciMLBase.AbstractADType=Optimization.AutoZygote(),
 
         batch_size::Integer=128,
-        acceleration::AbstractResource=CPU1(),
         )
     ICNFModel(
         m, loss,
         opt_app, optimizer, n_epochs, adtype,
-        batch_size, acceleration,
+        batch_size,
+        eval(m.name.name),
     )
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    x = model.acceleration isa CUDALibs ? convert(CuArray, x) : convert(Array, x)
+    x = convert(model.array_type, x)
     data = DataLoader((x,); batchsize=model.batch_size, shuffle=true, partial=true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, x)
@@ -186,7 +187,7 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    xnew = model.acceleration isa CUDALibs ? convert(CuArray, xnew) : convert(Array, xnew)
+    xnew = convert(model.array_type, xnew)
 
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
     @info("Transforming",

@@ -2,7 +2,6 @@ using
     ICNF,
     AbstractDifferentiation,
     CUDA,
-    ComputationalResources,
     DataFrames,
     Distributions,
     FiniteDiff,
