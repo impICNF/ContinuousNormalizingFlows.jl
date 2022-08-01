@@ -53,9 +53,8 @@ function augmented_f(icnf::CondPlanar{T, AT}, mode::Mode, ys::AbstractMatrix, sz
             m_,
         )
         z = u[1:end - 1, :]
-        mz, back = Zygote.pullback(m, z)
-        J = only(back(o_))
-        trace_J = transpose(m_.u) * J
+        mz, J = jacobian_batched(m, z, T, AT)
+        trace_J = transpose(tr.(eachslice(J; dims=3)))
         vcat(mz, -trace_J)
     end
     f_aug

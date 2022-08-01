@@ -74,9 +74,8 @@ function augmented_f(icnf::Planar{T, AT}, mode::Mode, sz::Tuple{T2, T2})::Functi
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz, back = Zygote.pullback(m, z)
-        J = only(back(o_))
-        trace_J = transpose(m.u) * J
+        mz, J = jacobian_batched(m, z, T, AT)
+        trace_J = transpose(tr.(eachslice(J; dims=3)))
         vcat(mz, -trace_J)
     end
     f_aug
