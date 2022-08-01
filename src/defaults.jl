@@ -1,4 +1,3 @@
-default_acceleration = CPU1()
 default_solvealg = Tsit5(
     ;
     thread=OrdinaryDiffEq.True(),

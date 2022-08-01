@@ -7,8 +7,8 @@ abstract type NormalizingFlows <: Flows end
 abstract type ContinuousNormalizingFlows <: NormalizingFlows end
 abstract type InfinitesimalContinuousNormalizingFlows <: ContinuousNormalizingFlows end
 
-abstract type AbstractICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
-abstract type AbstractCondICNF{T} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat} end
+abstract type AbstractICNF{T, AT} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat, AT <: AbstractArray} end
+abstract type AbstractCondICNF{T, AT} <: InfinitesimalContinuousNormalizingFlows where {T <: AbstractFloat, AT <: AbstractArray} end
 
 abstract type Mode end
 struct TestMode <: Mode end

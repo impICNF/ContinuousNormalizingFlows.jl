@@ -3,9 +3,9 @@ export CondFFJORD
 """
 Implementation of FFJORD (Conditional Version)
 """
-struct CondFFJORD{T <: AbstractFloat} <: AbstractCondICNF{T}
+struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T, AT}
     re::Optimisers.Restructure
-    p::AbstractVector{T}
+    p::AbstractVector
 
     nvars::Integer
     basedist::Distribution
@@ -17,16 +17,13 @@ struct CondFFJORD{T <: AbstractFloat} <: AbstractCondICNF{T}
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
-    acceleration::AbstractResource
-
-    array_mover::Function
-    ϵ::AbstractVector{T}
+    ϵ::AbstractVector
 
     # trace_test
     # trace_train
 end
 
-function CondFFJORD{T}(
+function CondFFJORD{T, AT}(
         nn,
         nvars::Integer,
         ;
@@ -39,22 +36,19 @@ function CondFFJORD{T}(
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
 
-        acceleration::AbstractResource=default_acceleration,
-
         rng::AbstractRNG=Random.default_rng(),
-        ) where {T <: AbstractFloat}
-    array_mover = make_mover(acceleration, T)
+        ) where {T <: AbstractFloat, AT <: AbstractArray}
     nn = fmap(x -> adapt(T, x), nn)
     p, re = destructure(nn)
-    CondFFJORD{T}(
-        re, p |> array_mover, nvars, basedist, tspan,
+    CondFFJORD{T, AT}(
+        re, convert(AT{T}, p), nvars, basedist, tspan,
         solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
-        acceleration, array_mover, randn(rng, T, nvars) |> array_mover,
+        convert(AT, randn(rng, T, nvars)),
     )
 end
 
-function augmented_f(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T})::Function where {T <: AbstractFloat}
+function augmented_f(icnf::CondFFJORD{T, AT}, mode::TestMode, ys::AbstractMatrix)::Function where {T <: AbstractFloat, AT <: AbstractArray}
 
     function f_aug(u, p, t)
         m = Chain(
@@ -62,14 +56,14 @@ function augmented_f(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T})
             icnf.re(p),
         )
         z = u[1:end - 1, :]
-        mz, J = jacobian_batched(m, z, icnf.array_mover)
+        mz, J = jacobian_batched(m, z, T, AT)
         trace_J = transpose(tr.(eachslice(J; dims=3)))
         vcat(mz, -trace_J)
     end
     f_aug
 end
 
-function augmented_f(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T})::Function where {T <: AbstractFloat, T2 <: Integer}
+function augmented_f(icnf::CondFFJORD{T, AT}, mode::TrainMode, ys::AbstractMatrix)::Function where {T <: AbstractFloat, AT <: AbstractArray}
 
     function f_aug(u, p, t)
         m = Chain(
@@ -85,10 +79,8 @@ function augmented_f(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}
     f_aug
 end
 
-function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
-    xs = xs |> icnf.array_mover
-    ys = ys |> icnf.array_mover
-    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
+function inference(icnf::CondFFJORD{T, AT}, mode::TestMode, xs::AbstractMatrix, ys::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
+    zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
@@ -100,10 +92,8 @@ function inference(icnf::CondFFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, y
     logp̂x
 end
 
-function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
-    xs = xs |> icnf.array_mover
-    ys = ys |> icnf.array_mover
-    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
+function inference(icnf::CondFFJORD{T, AT}, mode::TrainMode, xs::AbstractMatrix, ys::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
+    zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
@@ -115,10 +105,9 @@ function inference(icnf::CondFFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, 
     logp̂x
 end
 
-function generate(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
-    ys = ys |> icnf.array_mover
-    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
-    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
+function generate(icnf::CondFFJORD{T, AT}, mode::TestMode, ys::AbstractMatrix, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
+    new_xs = convert(AT, rand(rng, icnf.basedist, n))
+    zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
@@ -128,10 +117,9 @@ function generate(icnf::CondFFJORD{T}, mode::TestMode, ys::AbstractMatrix{T}, n:
     z
 end
 
-function generate(icnf::CondFFJORD{T}, mode::TrainMode, ys::AbstractMatrix{T}, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
-    ys = ys |> icnf.array_mover
-    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
-    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
+function generate(icnf::CondFFJORD{T, AT}, mode::TrainMode, ys::AbstractMatrix, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
+    new_xs = convert(AT, rand(rng, icnf.basedist, n))
+    zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode, ys)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
@@ -143,7 +131,7 @@ end
 
 Flux.@functor CondFFJORD (p,)
 
-function loss(icnf::CondFFJORD{T}, xs::AbstractMatrix{T}, ys::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat}
+function loss(icnf::CondFFJORD{T, AT}, xs::AbstractMatrix, ys::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean)::Number where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x = inference(icnf, TrainMode(), xs, ys, p)
     agg(-logp̂x)
 end

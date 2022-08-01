@@ -5,9 +5,9 @@ Implementation of FFJORD from
 
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
-struct FFJORD{T <: AbstractFloat} <: AbstractICNF{T}
+struct FFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     re::Optimisers.Restructure
-    p::AbstractVector{T}
+    p::AbstractVector
 
     nvars::Integer
     basedist::Distribution
@@ -19,16 +19,13 @@ struct FFJORD{T <: AbstractFloat} <: AbstractICNF{T}
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
-    acceleration::AbstractResource
-
-    array_mover::Function
-    ϵ::AbstractVector{T}
+    ϵ::AbstractVector
 
     # trace_test
     # trace_train
 end
 
-function FFJORD{T}(
+function FFJORD{T, AT}(
         nn,
         nvars::Integer,
         ;
@@ -41,34 +38,31 @@ function FFJORD{T}(
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
 
-        acceleration::AbstractResource=default_acceleration,
-
         rng::AbstractRNG=Random.default_rng(),
-        ) where {T <: AbstractFloat}
-    array_mover = make_mover(acceleration, T)
+        ) where {T <: AbstractFloat, AT <: AbstractArray}
     nn = fmap(x -> adapt(T, x), nn)
     p, re = destructure(nn)
-    FFJORD{T}(
-        re, p |> array_mover, nvars, basedist, tspan,
+    FFJORD{T, AT}(
+        re, convert(AT{T}, p), nvars, basedist, tspan,
         solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
-        acceleration, array_mover, randn(rng, T, nvars) |> array_mover,
+        convert(AT, randn(rng, T, nvars)),
     )
 end
 
-function augmented_f(icnf::FFJORD{T}, mode::TestMode)::Function where {T <: AbstractFloat}
+function augmented_f(icnf::FFJORD{T, AT}, mode::TestMode)::Function where {T <: AbstractFloat, AT <: AbstractArray}
 
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:end - 1, :]
-        mz, J = jacobian_batched(m, z, icnf.array_mover)
+        mz, J = jacobian_batched(m, z, T, AT)
         trace_J = transpose(tr.(eachslice(J; dims=3)))
         vcat(mz, -trace_J)
     end
     f_aug
 end
 
-function augmented_f(icnf::FFJORD{T}, mode::TrainMode)::Function where {T <: AbstractFloat, T2 <: Integer}
+function augmented_f(icnf::FFJORD{T, AT}, mode::TrainMode)::Function where {T <: AbstractFloat, AT <: AbstractArray}
 
     function f_aug(u, p, t)
         m = icnf.re(p)
@@ -81,9 +75,8 @@ function augmented_f(icnf::FFJORD{T}, mode::TrainMode)::Function where {T <: Abs
     f_aug
 end
 
-function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
-    xs = xs |> icnf.array_mover
-    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
+function inference(icnf::FFJORD{T, AT}, mode::TestMode, xs::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
+    zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
@@ -95,9 +88,8 @@ function inference(icnf::FFJORD{T}, mode::TestMode, xs::AbstractMatrix{T}, p::Ab
     logp̂x
 end
 
-function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat}
-    xs = xs |> icnf.array_mover
-    zrs = zeros(T, 1, size(xs, 2)) |> icnf.array_mover
+function inference(icnf::FFJORD{T, AT}, mode::TrainMode, xs::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
+    zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
@@ -109,9 +101,9 @@ function inference(icnf::FFJORD{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::A
     logp̂x
 end
 
-function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
-    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
-    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
+function generate(icnf::FFJORD{T, AT}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
+    new_xs = convert(AT, rand(rng, icnf.basedist, n))
+    zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
@@ -121,9 +113,9 @@ function generate(icnf::FFJORD{T}, mode::TestMode, n::Integer, p::AbstractVector
     z
 end
 
-function generate(icnf::FFJORD{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat}
-    new_xs = rand(rng, icnf.basedist, n) |> icnf.array_mover
-    zrs = zeros(T, 1, size(new_xs, 2)) |> icnf.array_mover
+function generate(icnf::FFJORD{T, AT}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
+    new_xs = convert(AT, rand(rng, icnf.basedist, n))
+    zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
@@ -135,7 +127,7 @@ end
 
 Flux.@functor FFJORD (p,)
 
-function loss(icnf::FFJORD{T}, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat}
+function loss(icnf::FFJORD{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean)::Number where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x = inference(icnf, TrainMode(), xs, p)
     agg(-logp̂x)
 end
