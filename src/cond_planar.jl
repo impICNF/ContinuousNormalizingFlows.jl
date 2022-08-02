@@ -72,7 +72,7 @@ function augmented_f(icnf::CondPlanar{T, AT}, mode::TrainMode, ys::AbstractMatri
         )
         z = u[1:end - 1, :]
         mz, back = Zygote.pullback(m, z)
-        ϵJ = only(back(icnf.ϵ))
+        ϵJ = only(back(repeat(icnf.ϵ, 1, size(z, 2))))
         trace_J = transpose(icnf.ϵ) * ϵJ
         vcat(mz, -trace_J)
     end
