@@ -123,7 +123,7 @@ function CondICNFModel(
         m, loss,
         opt_app, optimizer, n_epochs, adtype,
         batch_size,
-        eval(typeof(m).name.name),
+        typeof(m).parameters[2],
     )
 end
 
