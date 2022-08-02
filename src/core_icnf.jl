@@ -4,21 +4,21 @@ export
     loss_f, callback_f,
     ICNFModel, ICNFDist
 
-function inference(icnf::AbstractICNF{T}, mode::TestMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat} end
-function inference(icnf::AbstractICNF{T}, mode::TrainMode, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat} end
+function inference(icnf::AbstractICNF{T, AT}, mode::TestMode, xs::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
+function inference(icnf::AbstractICNF{T, AT}, mode::TrainMode, xs::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 
-function generate(icnf::AbstractICNF{T}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat} end
-function generate(icnf::AbstractICNF{T}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat} end
+function generate(icnf::AbstractICNF{T, AT}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
+function generate(icnf::AbstractICNF{T, AT}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 
-function loss(icnf::AbstractICNF{T}, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean) where {T <: AbstractFloat} end
+function loss(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean)::Number where {T <: AbstractFloat, AT <: AbstractArray} end
 
-function loss_pn(icnf::AbstractICNF{T}, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4)) where {T <: AbstractFloat}
+function loss_pn(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4))::Number where {T <: AbstractFloat, AT <: AbstractArray}
     lv = loss(icnf, xs, p; agg)
     prm_n = norm(p)
     lv + nλ*prm_n
 end
 
-function loss_pln(icnf::AbstractICNF{T}, xs::AbstractMatrix{T}, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4)) where {T <: AbstractFloat}
+function loss_pln(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4))::Number where {T <: AbstractFloat, AT <: AbstractArray}
     lv = loss(icnf, xs, p; agg)
     prm_ln = log(norm(p))
     lv + nλ*prm_ln
@@ -26,18 +26,18 @@ end
 
 # -- Flux interface
 
-function (icnf::AbstractICNF{T})(xs::AbstractMatrix{T})::AbstractVector{T} where {T <: AbstractFloat}
+function (icnf::AbstractICNF{T, AT})(xs::AbstractMatrix)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     inference(icnf, TestMode(), xs)
 end
 
-function loss_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp)::Function where {T <: AbstractFloat}
-    function f(xs::AbstractMatrix{T})::T
+function loss_f(icnf::AbstractICNF{T, AT}, opt_app::FluxOptApp)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    function f(xs::AbstractMatrix)::T
         loss(icnf, xs)
     end
     f
 end
 
-function callback_f(icnf::AbstractICNF{T}, opt_app::FluxOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+function callback_f(icnf::AbstractICNF{T, AT}, opt_app::FluxOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, AT <: AbstractArray, T2 <: AbstractMatrix, T3 <: Tuple{T2}}
     xs, = first(data)
     function f()::Nothing
         vl = loss(icnf, xs)
@@ -49,15 +49,15 @@ end
 
 # -- Optim interface
 
-function loss_f(icnf::AbstractICNF{T}, opt_app::OptimOptApp, itrtr::AbstractVector)::Function where {T <: AbstractFloat}
-    function f(p::AbstractVector{T})::T
+function loss_f(icnf::AbstractICNF{T, AT}, opt_app::OptimOptApp, itrtr::AbstractVector)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    function f(p::AbstractVector)::T
         xs, = itrtr[1]
         loss(icnf, xs, p)
     end
     f
 end
 
-function callback_f(icnf::AbstractICNF{T}, opt_app::OptimOptApp, loss::Function, data::DataLoader{T3}, itrtr::AbstractVector)::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+function callback_f(icnf::AbstractICNF{T, AT}, opt_app::OptimOptApp, loss::Function, data::DataLoader{T3}, itrtr::AbstractVector)::Function where {T <: AbstractFloat, AT <: AbstractArray, T2 <: AbstractMatrix, T3 <: Tuple{T2}}
     xs, = first(data)
     function f(s::OptimizationState)::Bool
         vl = loss(icnf, xs, s.metadata["x"])
@@ -75,16 +75,16 @@ end
 
 # -- SciML interface
 
-function loss_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp)::Function where {T <: AbstractFloat}
-    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix{T})
+function loss_f(icnf::AbstractICNF{T, AT}, opt_app::SciMLOptApp)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix)
         loss(icnf, xs, p)
     end
     f
 end
 
-function callback_f(icnf::AbstractICNF{T}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, T2 <: AbstractMatrix{T}, T3 <: Tuple{T2}}
+function callback_f(icnf::AbstractICNF{T, AT}, opt_app::SciMLOptApp, loss::Function, data::DataLoader{T3})::Function where {T <: AbstractFloat, AT <: AbstractArray, T2 <: AbstractMatrix, T3 <: Tuple{T2}}
     xs, = first(data)
-    function f(p::AbstractVector{T}, l::T)::Bool
+    function f(p::AbstractVector, l::T)::Bool
         vl = loss(icnf, xs, p)
         @info "Training" loss=vl
         false
@@ -94,8 +94,8 @@ end
 
 # MLJ interface
 
-mutable struct ICNFModel{T, T2} <: MLJICNF where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
-    m::T2
+mutable struct ICNFModel <: MLJICNF
+    m::AbstractICNF
     loss::Function
 
     opt_app::OptApp
@@ -104,10 +104,12 @@ mutable struct ICNFModel{T, T2} <: MLJICNF where {T <: AbstractFloat, T2 <: Abst
     adtype::SciMLBase.AbstractADType
 
     batch_size::Integer
+
+    array_type::UnionAll
 end
 
 function ICNFModel(
-        m::T2,
+        m::AbstractICNF,
         loss::Function=loss,
         ;
         opt_app::OptApp=FluxOptApp(),
@@ -116,12 +118,18 @@ function ICNFModel(
         adtype::SciMLBase.AbstractADType=Optimization.AutoZygote(),
 
         batch_size::Integer=128,
-        ) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
-    ICNFModel{T, T2}(m, loss, opt_app, optimizer, n_epochs, adtype, batch_size)
+        )
+    ICNFModel(
+        m, loss,
+        opt_app, optimizer, n_epochs, adtype,
+        batch_size,
+        typeof(m).parameters[2],
+    )
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(transpose(MLJModelInterface.matrix(X)))
+    x = convert(model.array_type, x)
     data = DataLoader((x,); batchsize=model.batch_size, shuffle=true, partial=true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, x)
@@ -179,6 +187,7 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
+    xnew = convert(model.array_type, xnew)
 
     tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
     @info("Transforming",
@@ -215,12 +224,8 @@ MLJBase.metadata_model(
 
 # Distributions interface
 
-struct ICNFDist{T, T2} <: ICNFDistribution where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
-    m::T2
-end
-
-function ICNFDist(m::T2) where {T <: AbstractFloat, T2 <: AbstractICNF{T}}
-    ICNFDist{T, T2}(m)
+struct ICNFDist <: ICNFDistribution
+    m::AbstractICNF
 end
 
 Base.length(d::ICNFDist) = d.m.nvars

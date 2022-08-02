@@ -3,7 +3,6 @@ module ICNF
     using
         Adapt,
         CUDA,
-        ComputationalResources,
         DataFrames,
         DifferentialEquations,
         Distributions,
@@ -35,12 +34,12 @@ module ICNF
     include("core_icnf.jl")
     include("core_cond_icnf.jl")
 
-    include("ffjord.jl")
     include("rnode.jl")
+    include("ffjord.jl")
     include("planar.jl")
 
-    include("cond_ffjord.jl")
     include("cond_rnode.jl")
+    include("cond_ffjord.jl")
     include("cond_planar.jl")
 
     include("metrics.jl")

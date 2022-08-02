@@ -1,9 +1,9 @@
 @testset "Smoke Tests" begin
     mts = UnionAll[RNODE, FFJORD, Planar]
     cmts = UnionAll[CondRNODE, CondFFJORD, CondPlanar]
-    crs = AbstractResource[CPU1()]
+    ats = UnionAll[Array]
     if has_cuda_gpu()
-        push!(crs, CUDALibs())
+        push!(ats, CuArray)
     end
     tps = DataType[Float64, Float32, Float16]
     adb_list = AbstractDifferentiation.AbstractBackend[
@@ -24,15 +24,14 @@
         Optimization.AutoFiniteDiff(),
     ]
     go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp]]
-    pfm = typeof(ICNF.default_optimizer[OptimOptApp])
     nvars_ = (1:2)
     n_epochs = 2
     batch_size = 8
     n_batch = 2
     n = n_batch*batch_size
 
-    @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
-            cr in crs,
+    @testset "$at | $tp | $nvars Vars | $mt" for
+            at in ats,
             tp in tps,
             nvars in nvars_,
             mt in mts
@@ -46,7 +45,7 @@
                 Dense(nvars => nvars, tanh),
             )
         end
-        icnf = mt{tp}(nn, nvars; acceleration=cr)
+        icnf = mt{tp, at}(nn, nvars)
 
         @test !isnothing(inference(icnf, TestMode(), r))
         @test !isnothing(inference(icnf, TrainMode(), r))
@@ -113,8 +112,8 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, n))
     end
-    @testset "Fitting | $(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
-            cr in crs,
+    @testset "Fitting | $at | $tp | $nvars Vars | $mt" for
+            at in ats,
             tp in tps,
             nvars in nvars_,
             mt in mts
@@ -131,14 +130,12 @@
                     Dense(nvars => nvars, tanh),
                 )
             end
-            icnf = mt{tp}(nn, nvars; acceleration=cr)
+            icnf = mt{tp, at}(nn, nvars)
             model = ICNFModel(icnf; n_epochs, batch_size, opt_app)
             mach = machine(model, df)
-            if !(mt <: Planar) || !(opt_app isa OptimOptApp)
-                @test !isnothing(fit!(mach))
-                @test !isnothing(MLJBase.transform(mach, df))
-                @test !isnothing(MLJBase.fitted_params(mach))
-            end
+            @test !isnothing(fit!(mach))
+            @test !isnothing(MLJBase.transform(mach, df))
+            @test !isnothing(MLJBase.fitted_params(mach))
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
                 go_ad in go_ads,
@@ -150,18 +147,16 @@
                     Dense(nvars => nvars, tanh),
                 )
             end
-            icnf = mt{tp}(nn, nvars; acceleration=cr)
+            icnf = mt{tp, at}(nn, nvars)
             model = ICNFModel(icnf; n_epochs, batch_size, opt_app=go_oa, adtype=go_ad, optimizer=go_md)
             mach = machine(model, df)
-            if !(mt <: Planar) || !(go_md isa pfm)
-                @test !isnothing(fit!(mach))
-                @test !isnothing(MLJBase.transform(mach, df))
-                @test !isnothing(MLJBase.fitted_params(mach))
-            end
+            @test !isnothing(fit!(mach))
+            @test !isnothing(MLJBase.transform(mach, df))
+            @test !isnothing(MLJBase.fitted_params(mach))
         end
     end
-    @testset "$(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
-            cr in crs,
+    @testset "$at | $tp | $nvars Vars | $mt" for
+            at in ats,
             tp in tps,
             nvars in nvars_,
             mt in cmts
@@ -177,7 +172,7 @@
                 Dense(2*nvars => nvars, tanh),
             )
         end
-        icnf = mt{tp}(nn, nvars; acceleration=cr)
+        icnf = mt{tp, at}(nn, nvars)
 
         @test !isnothing(inference(icnf, TestMode(), r, r2))
         @test !isnothing(inference(icnf, TrainMode(), r, r2))
@@ -244,8 +239,8 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, n))
     end
-    @testset "Fitting | $(typeof(cr).name.name) | $tp | $nvars Vars | $mt" for
-            cr in crs,
+    @testset "Fitting | $at | $tp | $nvars Vars | $mt" for
+            at in ats,
             tp in tps,
             nvars in nvars_,
             mt in cmts
@@ -265,14 +260,12 @@
                     Dense(2*nvars => nvars, tanh),
                 )
             end
-            icnf = mt{tp}(nn, nvars; acceleration=cr)
+            icnf = mt{tp, at}(nn, nvars)
             model = CondICNFModel(icnf; n_epochs, batch_size, opt_app)
             mach = machine(model, (df, df2))
-            if !(mt <: CondPlanar) || !(opt_app isa OptimOptApp)
-                @test !isnothing(fit!(mach))
-                @test !isnothing(MLJBase.transform(mach, (df, df2)))
-                @test !isnothing(MLJBase.fitted_params(mach))
-            end
+            @test !isnothing(fit!(mach))
+            @test !isnothing(MLJBase.transform(mach, (df, df2)))
+            @test !isnothing(MLJBase.fitted_params(mach))
         end
         @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for
                 go_ad in go_ads,
@@ -284,14 +277,12 @@
                     Dense(2*nvars => nvars, tanh),
                 )
             end
-            icnf = mt{tp}(nn, nvars; acceleration=cr)
+            icnf = mt{tp, at}(nn, nvars)
             model = CondICNFModel(icnf; n_epochs, batch_size, opt_app=go_oa, adtype=go_ad, optimizer=go_md)
             mach = machine(model, (df, df2))
-            if !(mt <: CondPlanar) || !(go_md isa pfm)
-                @test !isnothing(fit!(mach))
-                @test !isnothing(MLJBase.transform(mach, (df, df2)))
-                @test !isnothing(MLJBase.fitted_params(mach))
-            end
+            @test !isnothing(fit!(mach))
+            @test !isnothing(MLJBase.transform(mach, (df, df2)))
+            @test !isnothing(MLJBase.fitted_params(mach))
         end
     end
 end
