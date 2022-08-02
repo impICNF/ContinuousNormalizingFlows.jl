@@ -42,6 +42,8 @@ struct Planar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
     sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
 
+    ϵ::AbstractVector
+
     # trace_test
     # trace_train
 end
@@ -58,6 +60,8 @@ function Planar{T, AT}(
 
         sensealg_test::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
         sensealg_train::SciMLBase.AbstractSensitivityAlgorithm=default_sensealg,
+
+        rng::AbstractRNG=Random.default_rng(),
         ) where {T <: AbstractFloat, AT <: AbstractArray}
     nn = fmap(x -> adapt(T, x), nn)
     p, re = destructure(nn)
@@ -65,11 +69,11 @@ function Planar{T, AT}(
         re, convert(AT{T}, p), nvars, basedist, tspan,
         solvealg_test, solvealg_train,
         sensealg_test, sensealg_train,
+        convert(AT, randn(rng, T, nvars)),
     )
 end
 
-function augmented_f(icnf::Planar{T, AT}, mode::Mode, sz::Tuple{T2, T2})::Function where {T <: AbstractFloat, AT <: AbstractArray, T2 <: Integer}
-    o_ = convert(AT, ones(T, sz))
+function augmented_f(icnf::Planar{T, AT}, mode::TestMode)::Function where {T <: AbstractFloat, AT <: AbstractArray}
 
     function f_aug(u, p, t)
         m = icnf.re(p)
@@ -81,9 +85,22 @@ function augmented_f(icnf::Planar{T, AT}, mode::Mode, sz::Tuple{T2, T2})::Functi
     f_aug
 end
 
+function augmented_f(icnf::Planar{T, AT}, mode::TrainMode)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+
+    function f_aug(u, p, t)
+        m = icnf.re(p)
+        z = u[1:end - 1, :]
+        mz, back = Zygote.pullback(m, z)
+        ϵJ = only(back(icnf.ϵ))
+        trace_J = transpose(icnf.ϵ) * ϵJ
+        vcat(mz, -trace_J)
+    end
+    f_aug
+end
+
 function inference(icnf::Planar{T, AT}, mode::TestMode, xs::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs))
+    f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solvealg_test; sensealg=icnf.sensealg_test)
@@ -96,7 +113,7 @@ end
 
 function inference(icnf::Planar{T, AT}, mode::TrainMode, xs::AbstractMatrix, p::AbstractVector=icnf.p)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs))
+    f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, icnf.solvealg_train; sensealg=icnf.sensealg_train)
@@ -110,7 +127,7 @@ end
 function generate(icnf::Planar{T, AT}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(new_xs))
+    f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solvealg_test; sensealg=icnf.sensealg_test)
@@ -122,7 +139,7 @@ end
 function generate(icnf::Planar{T, AT}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(new_xs))
+    f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, icnf.solvealg_train; sensealg=icnf.sensealg_train)
