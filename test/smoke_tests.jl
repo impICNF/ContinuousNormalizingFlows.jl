@@ -1,11 +1,11 @@
 @testset "Smoke Tests" begin
-    mts = UnionAll[RNODE, FFJORD, Planar]
-    cmts = UnionAll[CondRNODE, CondFFJORD, CondPlanar]
-    ats = UnionAll[Array]
+    mts = Type{<: ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts = Type{<: ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    ats = Type{<: AbstractArray}[Array]
     if has_cuda_gpu()
         push!(ats, CuArray)
     end
-    tps = DataType[Float64, Float32, Float16]
+    tps = Type{<: AbstractFloat}[Float64, Float32, Float16]
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),

@@ -10,15 +10,15 @@ function inference(icnf::AbstractICNF{T, AT}, mode::TrainMode, xs::AbstractMatri
 function generate(icnf::AbstractICNF{T, AT}, mode::TestMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 function generate(icnf::AbstractICNF{T, AT}, mode::TrainMode, n::Integer, p::AbstractVector=icnf.p; rng::AbstractRNG=Random.default_rng())::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 
-function loss(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean)::Number where {T <: AbstractFloat, AT <: AbstractArray} end
+function loss(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean)::Real where {T <: AbstractFloat, AT <: AbstractArray} end
 
-function loss_pn(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4))::Number where {T <: AbstractFloat, AT <: AbstractArray}
+function loss_pn(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4))::Real where {T <: AbstractFloat, AT <: AbstractArray}
     lv = loss(icnf, xs, p; agg)
     prm_n = norm(p)
     lv + nλ*prm_n
 end
 
-function loss_pln(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4))::Number where {T <: AbstractFloat, AT <: AbstractArray}
+function loss_pln(icnf::AbstractICNF{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p; agg::Function=mean, nλ::T=convert(T, 1e-4))::Real where {T <: AbstractFloat, AT <: AbstractArray}
     lv = loss(icnf, xs, p; agg)
     prm_ln = log(norm(p))
     lv + nλ*prm_ln
@@ -105,7 +105,7 @@ mutable struct ICNFModel <: MLJICNF
 
     batch_size::Integer
 
-    array_type::UnionAll
+    array_type::Type{<: AbstractArray}
 end
 
 function ICNFModel(
