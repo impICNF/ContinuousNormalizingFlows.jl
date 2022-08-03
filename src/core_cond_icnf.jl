@@ -236,8 +236,8 @@ struct CondICNFDist <: ICNFDistribution
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars
-Base.eltype(d::CondICNFDist) = eltype(d.m.p)
+Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
 Distributions._logpdf(d::CondICNFDist, x::AbstractVector) = first(Distributions._logpdf(d, hcat(x)))
 Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix) = inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)])
-Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector) = (x[:] = Distributions._rand!(rng, d, hcat(x)))
-Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix) = (A[:] = generate(d.m, TestMode(), d.ys[:, 1:size(A, 2)], size(A, 2); rng))
+Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector) = (x .= Distributions._rand!(rng, d, hcat(x)))
+Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix) = (A .= generate(d.m, TestMode(), d.ys[:, 1:size(A, 2)], size(A, 2); rng))
