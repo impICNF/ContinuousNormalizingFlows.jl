@@ -135,7 +135,7 @@ end
 
 Flux.@functor CondRNODE (p,)
 
-function loss(icnf::CondRNODE{T, AT}, xs::AbstractMatrix, ys::AbstractMatrix, p::AbstractVector=icnf.p, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Number where {T <: AbstractFloat, AT <: AbstractArray}
+function loss(icnf::CondRNODE{T, AT}, xs::AbstractMatrix, ys::AbstractMatrix, p::AbstractVector=icnf.p, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, ys, p)
     agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
 end

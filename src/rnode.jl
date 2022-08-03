@@ -131,7 +131,7 @@ end
 
 Flux.@functor RNODE (p,)
 
-function loss(icnf::RNODE{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Number where {T <: AbstractFloat, AT <: AbstractArray}
+function loss(icnf::RNODE{T, AT}, xs::AbstractMatrix, p::AbstractVector=icnf.p, λ₁::T=convert(T, 1e-2), λ₂::T=convert(T, 1e-2); agg::Function=mean)::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, p)
     agg(-logp̂x + λ₁*Ė + λ₂*ṅ)
 end
