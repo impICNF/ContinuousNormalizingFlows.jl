@@ -14,7 +14,6 @@ using
     SciMLBase,
     Test,
     Tracker,
-    Yota,
     Zygote
 
 CUDA.allowscalar() do
