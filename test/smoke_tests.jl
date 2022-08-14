@@ -23,7 +23,7 @@
         Optimization.AutoTracker(),
         Optimization.AutoFiniteDiff(),
     ]
-    go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp]]
+    go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp], ICNF.default_optimizer[SciMLOptApp]]
     nvars_ = (1:2)
     n_epochs = 2
     batch_size = 8

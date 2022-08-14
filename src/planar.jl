@@ -53,7 +53,7 @@ function Planar{T, AT}(
         nvars::Integer,
         ;
         basedist::Distribution=MvNormal(Zeros{T}(nvars), one(T)*I),
-        tspan::Tuple{T, T}=convert(Tuple{T, T}, (0, 1)),
+        tspan::Tuple{T, T}=convert(Tuple{T, T}, default_tspan),
 
         solvealg_test::SciMLBase.AbstractODEAlgorithm=default_solvealg,
         solvealg_train::SciMLBase.AbstractODEAlgorithm=default_solvealg,
