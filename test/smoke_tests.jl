@@ -25,9 +25,9 @@
     ]
     go_mds = Any[ICNF.default_optimizer[FluxOptApp], ICNF.default_optimizer[OptimOptApp], ICNF.default_optimizer[SciMLOptApp]]
     nvars_ = (1:2)
-    n_epochs = 2
-    batch_size = 8
-    n_batch = 2
+    n_epochs = 3
+    batch_size = 3
+    n_batch = 3
     n = n_batch*batch_size
 
     @testset "$at | $tp | $nvars Vars | $mt" for
