@@ -1,6 +1,7 @@
 using
     ICNF,
     AbstractDifferentiation,
+    Aqua,
     CUDA,
     DataFrames,
     Distributions,
@@ -22,4 +23,6 @@ CUDA.allowscalar() do
     @testset "Overall" begin
         include("smoke_tests.jl")
     end
+
+    # Aqua.test_all(ICNF)
 end
