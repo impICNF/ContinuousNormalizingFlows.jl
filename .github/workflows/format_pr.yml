@@ -8,6 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: nightly
+          arch: x64
+          show-versioninfo: true
+      - uses: julia-actions/cache@v1
       - name: Install JuliaFormatter and format
         run: |
           julia  -e 'import Pkg; Pkg.add("JuliaFormatter")'
