@@ -22,7 +22,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-      - name: doctest
+      - name: Documenter.doctest
         run: |
           julia --color=yes --project=docs -e '
             using ICNF

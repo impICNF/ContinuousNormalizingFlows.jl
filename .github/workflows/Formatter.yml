@@ -1,4 +1,4 @@
-name: format-pr
+name: Formatter
 on:
   schedule:
     - cron: '0 0 * * *'
