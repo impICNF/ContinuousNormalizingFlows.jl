@@ -1,5 +1,4 @@
-using
-    ICNF,
+using ICNF,
     AbstractDifferentiation,
     Aqua,
     CUDA,
