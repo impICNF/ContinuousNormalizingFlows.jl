@@ -27,4 +27,3 @@ align_matrix = false
 overwrite = true
 verbose = true
 format_markdown = true
-align_* = false
