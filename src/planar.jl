@@ -25,7 +25,7 @@ Flux.@functor PlanarNN (u, w, b)
 function (m::PlanarNN)(z::AbstractVecOrMat)::AbstractVecOrMat
     u, w, b = m.u, m.w, only(m.b)
     h = NNlib.fast_act(m.h, z)
-    u * h.(transpose(w) * z .+ b)
+    u * h.(muladd(transpose(w), z, b))
 end
 
 """
