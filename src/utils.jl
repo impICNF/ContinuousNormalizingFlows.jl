@@ -17,9 +17,9 @@ end
 
 function jacobian_batched(
     f,
-    xs::AbstractMatrix,
+    xs::AbstractMatrix{<:AbstractFloat},
     T::Type{<:AbstractFloat},
-    AT::Type{<:CuArray},
+    AT::Type{<:AbstractArray},
 )::Tuple
     y, back = Zygote.pullback(f, xs)
     z = convert(AT, zeros(T, size(xs)))
