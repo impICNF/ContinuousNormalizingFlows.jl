@@ -33,6 +33,6 @@ end
     Aqua.test_deps_compat(ICNF)
     Aqua.test_project_toml_formatting(ICNF)
 
-    @test isempty(Test.detect_ambiguities(ICNF; recursive=true))
-    @test isempty(Test.detect_unbound_args(ICNF; recursive=true))
+    @test isempty(Test.detect_ambiguities(ICNF; recursive = true))
+    @test isempty(Test.detect_unbound_args(ICNF; recursive = true))
 end
