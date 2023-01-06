@@ -182,7 +182,7 @@ function generate(
     z
 end
 
-Flux.@functor FFJORD (p,)
+@functor FFJORD (p,)
 
 function loss(
     icnf::FFJORD{T, AT},
