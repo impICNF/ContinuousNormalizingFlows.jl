@@ -180,7 +180,7 @@ function generate(
     z
 end
 
-Flux.@functor CondFFJORD (p,)
+@functor CondFFJORD (p,)
 
 function loss(
     icnf::CondFFJORD{T, AT},

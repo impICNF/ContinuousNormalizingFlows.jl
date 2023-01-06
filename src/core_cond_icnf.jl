@@ -88,7 +88,7 @@ function loss_f(
     icnf::AbstractCondICNF{T, AT},
     opt_app::FluxOptApp,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(xs::AbstractMatrix, ys::AbstractMatrix)::T
+    function f(xs::AbstractMatrix, ys::AbstractMatrix)::Real
         loss(icnf, xs, ys)
     end
     f
@@ -121,7 +121,7 @@ function loss_f(
     opt_app::OptimOptApp,
     itrtr::AbstractVector,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(p::AbstractVector)::T
+    function f(p::AbstractVector)::Real
         xs, ys = itrtr[1]
         loss(icnf, xs, ys, p)
     end
@@ -166,7 +166,7 @@ function loss_f(
         θ::SciMLBase.NullParameters,
         xs::AbstractMatrix,
         ys::AbstractMatrix,
-    )
+    )::Real
         loss(icnf, xs, ys, p)
     end
     f

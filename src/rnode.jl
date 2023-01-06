@@ -180,7 +180,7 @@ function generate(
     z
 end
 
-Flux.@functor RNODE (p,)
+@functor RNODE (p,)
 
 function loss(
     icnf::RNODE{T, AT},

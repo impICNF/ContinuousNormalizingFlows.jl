@@ -180,7 +180,7 @@ function generate(
     z
 end
 
-Flux.@functor CondPlanar (p,)
+@functor CondPlanar (p,)
 
 function loss(
     icnf::CondPlanar{T, AT},
