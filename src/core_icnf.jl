@@ -5,27 +5,35 @@ function inference(
     mode::TestMode,
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
+    args...;
+    kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 function inference(
     icnf::AbstractICNF{T, AT},
     mode::TrainMode,
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
+    args...;
+    kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 
 function generate(
     icnf::AbstractICNF{T, AT},
     mode::TestMode,
     n::Integer,
-    p::AbstractVector = icnf.p;
+    p::AbstractVector = icnf.p,
+    args...;
     rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 function generate(
     icnf::AbstractICNF{T, AT},
     mode::TrainMode,
     n::Integer,
-    p::AbstractVector = icnf.p;
+    p::AbstractVector = icnf.p,
+    args...;
     rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 
 function loss(

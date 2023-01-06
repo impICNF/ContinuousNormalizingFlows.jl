@@ -7,6 +7,8 @@ function inference(
     xs::AbstractMatrix,
     ys::AbstractMatrix,
     p::AbstractVector = icnf.p,
+    args...;
+    kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 function inference(
     icnf::AbstractCondICNF{T, AT},
@@ -14,6 +16,8 @@ function inference(
     xs::AbstractMatrix,
     ys::AbstractMatrix,
     p::AbstractVector = icnf.p,
+    args...;
+    kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 
 function generate(
@@ -21,16 +25,20 @@ function generate(
     mode::TestMode,
     ys::AbstractMatrix,
     n::Integer,
-    p::AbstractVector = icnf.p;
+    p::AbstractVector = icnf.p,
+    args...;
     rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 function generate(
     icnf::AbstractCondICNF{T, AT},
     mode::TrainMode,
     ys::AbstractMatrix,
     n::Integer,
-    p::AbstractVector = icnf.p;
+    p::AbstractVector = icnf.p,
+    args...;
     rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
 
 function loss(
