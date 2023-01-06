@@ -8,7 +8,7 @@ default_sensealg = InterpolatingAdjoint(;
     autojacvec = ZygoteVJP(),
 )
 default_optimizer = Dict(
-    FluxOptApp => Flux.AMSGrad(0.001, (0.9, 0.999), eps()),
+    FluxOptApp => Optimisers.AMSGrad(0.001, (0.9, 0.999), eps()),
     OptimOptApp => BFGS(;
         alphaguess = InitialHagerZhang(),
         linesearch = HagerZhang(),

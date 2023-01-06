@@ -190,7 +190,7 @@ function generate(
     z
 end
 
-Flux.@functor CondRNODE (p,)
+@functor CondRNODE (p,)
 
 function loss(
     icnf::CondRNODE{T, AT},
