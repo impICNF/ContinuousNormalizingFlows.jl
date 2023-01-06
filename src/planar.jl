@@ -41,12 +41,6 @@ struct Planar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    solvealg_test::SciMLBase.AbstractODEAlgorithm
-    solvealg_train::SciMLBase.AbstractODEAlgorithm
-
-    sensealg_test::SciMLBase.AbstractSensitivityAlgorithm
-    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm
-
     ϵ::AbstractVector
 
     # trace_test
@@ -59,10 +53,6 @@ function Planar{T, AT}(
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
-    solvealg_test::SciMLBase.AbstractODEAlgorithm = default_solvealg,
-    solvealg_train::SciMLBase.AbstractODEAlgorithm = default_solvealg,
-    sensealg_test::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg,
-    sensealg_train::SciMLBase.AbstractSensitivityAlgorithm = default_sensealg,
     rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
     nn = fmap(x -> adapt(T, x), nn)
@@ -73,10 +63,6 @@ function Planar{T, AT}(
         nvars,
         basedist,
         tspan,
-        solvealg_test,
-        solvealg_train,
-        sensealg_test,
-        sensealg_train,
         convert(AT, randn(rng, T, nvars)),
     )
 end
@@ -115,6 +101,8 @@ function inference(
     mode::TestMode,
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
+    args...;
+    kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode)
@@ -123,9 +111,9 @@ function inference(
         func,
         vcat(xs, zrs),
         icnf.tspan,
-        p;
-        alg = icnf.solvealg_test,
-        sensealg = icnf.sensealg_test,
+        p,
+        args...;
+        kwargs...,
     )
     sol = solve(prob)
     fsol = sol[:, :, end]
@@ -140,6 +128,8 @@ function inference(
     mode::TrainMode,
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
+    args...;
+    kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode)
@@ -148,9 +138,9 @@ function inference(
         func,
         vcat(xs, zrs),
         icnf.tspan,
-        p;
-        alg = icnf.solvealg_train,
-        sensealg = icnf.sensealg_train,
+        p,
+        args...;
+        kwargs...,
     )
     sol = solve(prob)
     fsol = sol[:, :, end]
@@ -164,8 +154,10 @@ function generate(
     icnf::Planar{T, AT},
     mode::TestMode,
     n::Integer,
-    p::AbstractVector = icnf.p;
+    p::AbstractVector = icnf.p,
+    args...;
     rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
 )::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
@@ -175,9 +167,9 @@ function generate(
         func,
         vcat(new_xs, zrs),
         reverse(icnf.tspan),
-        p;
-        alg = icnf.solvealg_test,
-        sensealg = icnf.sensealg_test,
+        p,
+        args...;
+        kwargs...,
     )
     sol = solve(prob)
     fsol = sol[:, :, end]
@@ -189,8 +181,10 @@ function generate(
     icnf::Planar{T, AT},
     mode::TrainMode,
     n::Integer,
-    p::AbstractVector = icnf.p;
+    p::AbstractVector = icnf.p,
+    args...;
     rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
 )::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
@@ -200,9 +194,9 @@ function generate(
         func,
         vcat(new_xs, zrs),
         reverse(icnf.tspan),
-        p;
-        alg = icnf.solvealg_train,
-        sensealg = icnf.sensealg_train,
+        p,
+        args...;
+        kwargs...,
     )
     sol = solve(prob)
     fsol = sol[:, :, end]
