@@ -20,7 +20,7 @@ function PlanarNN(
     PlanarNN(u, w, b, h)
 end
 
-Flux.@functor PlanarNN (u, w, b)
+@functor PlanarNN (u, w, b)
 
 function (m::PlanarNN)(z::AbstractVecOrMat)::AbstractVecOrMat
     u, w, b = m.u, m.w, only(m.b)
@@ -210,7 +210,7 @@ function generate(
     z
 end
 
-Flux.@functor Planar (p,)
+@functor Planar (p,)
 
 function loss(
     icnf::Planar{T, AT},
