@@ -7,13 +7,13 @@ Implementation of FFJORD from
 """
 struct FFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     re::Optimisers.Restructure
-    p::AT{T, 1}
+    p::AbstractVector{T}
 
     nvars::Integer
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    ϵ::AT{T, 1}
+    ϵ::AbstractVector{T}
 
     # trace_test
     # trace_train
