@@ -7,13 +7,13 @@ Implementation of RNODE from
 """
 struct RNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     re::Optimisers.Restructure
-    p::AbstractVector
+    p::AT{T, 1}
 
     nvars::Integer
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    ϵ::AbstractVector
+    ϵ::AT{T, 1}
 
     # trace_test
     # trace_train

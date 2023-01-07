@@ -5,13 +5,13 @@ Implementation of RNODE (Conditional Version)
 """
 struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T, AT}
     re::Optimisers.Restructure
-    p::AbstractVector
+    p::AT{T, 1}
 
     nvars::Integer
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    ϵ::AbstractVector{T}
+    ϵ::AT{T, 1}
 
     # trace_test
     # trace_train
