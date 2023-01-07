@@ -107,14 +107,7 @@ function inference(
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
-    prob = ODEProblem(
-        func,
-        vcat(xs, zrs),
-        icnf.tspan,
-        p,
-        args...;
-        kwargs...,
-    )
+    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:(end - 1), :]
@@ -134,14 +127,7 @@ function inference(
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
-    prob = ODEProblem(
-        func,
-        vcat(xs, zrs),
-        icnf.tspan,
-        p,
-        args...;
-        kwargs...,
-    )
+    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:(end - 1), :]
@@ -163,14 +149,7 @@ function generate(
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
-    prob = ODEProblem(
-        func,
-        vcat(new_xs, zrs),
-        reverse(icnf.tspan),
-        p,
-        args...;
-        kwargs...,
-    )
+    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:(end - 1), :]
@@ -190,14 +169,7 @@ function generate(
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode)
     func = ODEFunction(f_aug)
-    prob = ODEProblem(
-        func,
-        vcat(new_xs, zrs),
-        reverse(icnf.tspan),
-        p,
-        args...;
-        kwargs...,
-    )
+    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[1:(end - 1), :]
