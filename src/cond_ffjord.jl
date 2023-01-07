@@ -17,6 +17,19 @@ struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T
     # trace_train
 end
 
+function CondFFJORD(
+    re::Optimisers.Restructure,
+    p::AbstractVector{T},
+
+    nvars::Integer,
+    basedist::Distribution,
+    tspan::Tuple{T, T},
+
+    ϵ::AbstractVector{T},
+) where {T <: AbstractFloat, AT <: AbstractArray}
+    CondFFJORD{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan, ϵ)
+end
+
 function CondFFJORD{T, AT}(
     nn,
     nvars::Integer,
