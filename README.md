@@ -49,7 +49,7 @@ icnf = RNODE{Float32, Array}(nn, nvars; tspan=(0.0f0, 8.0f0))
 
 # Training
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf)
+model = ICNFModel(icnf; opt_app=SciMLOptApp())
 mach = machine(model, df)
 fit!(mach)
 
