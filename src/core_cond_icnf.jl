@@ -88,10 +88,7 @@ function loss_f(
     icnf::AbstractCondICNF{T, AT},
     opt_app::FluxOptApp,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(xs::AbstractMatrix, ys::AbstractMatrix)::Real
-        loss(icnf, xs, ys)
-    end
-    f
+    loss
 end
 
 function callback_f(
@@ -241,13 +238,13 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     initial_loss_value = model.loss(model.m, x, y)
 
     if model.opt_app isa FluxOptApp
-        model.optimizer isa Flux.Optimise.AbstractOptimiser ||
-            error("model.optimizer must be a Flux optimizer")
+        model.optimizer isa Optimisers.AbstractRule ||
+            error("model.optimizer must be an Optimisers optimizer")
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
-        _p = Flux.params(model.m)
+        opt_state = Flux.setup(model.optimizer, model.m)
         tst =
-            @timed Flux.Optimise.train!(_loss, _p, ncdata, model.optimizer; cb = _callback)
+            @timed Flux.train!(_loss, model.m, ncdata, opt_state)
     elseif model.opt_app isa OptimOptApp
         model.optimizer isa Optim.AbstractOptimizer ||
             error("model.optimizer must be an Optim optimizer")

@@ -55,11 +55,14 @@
             @test !isnothing(generate(icnf, TestMode(), n))
             @test !isnothing(generate(icnf, TrainMode(), n))
 
+            @test !isnothing(mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ))
+            @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ)
+
             @test !isnothing(icnf(r))
             @test !isnothing(loss(icnf, r))
             @test !isnothing(loss_pn(icnf, r))
             @test !isnothing(loss_pln(icnf, r))
-            @test !isnothing(loss_f(icnf, FluxOptApp())(r))
+            @test !isnothing(loss_f(icnf, FluxOptApp())(icnf, r))
             @test !isnothing(loss_f(icnf, OptimOptApp(), [(r,), nothing])(icnf.p))
             @test !isnothing(
                 loss_f(icnf, SciMLOptApp())(icnf.p, SciMLBase.NullParameters(), r),
@@ -146,11 +149,14 @@
             @test !isnothing(generate(icnf, TestMode(), r2, n))
             @test !isnothing(generate(icnf, TrainMode(), r2, n))
 
+            @test !isnothing(mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ))
+            @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ)
+
             @test !isnothing(icnf(r, r2))
             @test !isnothing(loss(icnf, r, r2))
             @test !isnothing(loss_pn(icnf, r, r2))
             @test !isnothing(loss_pln(icnf, r, r2))
-            @test !isnothing(loss_f(icnf, FluxOptApp())(r, r2))
+            @test !isnothing(loss_f(icnf, FluxOptApp())(icnf, r, r2))
             @test !isnothing(loss_f(icnf, OptimOptApp(), [(r, r2), nothing])(icnf.p))
             @test !isnothing(
                 loss_f(icnf, SciMLOptApp())(icnf.p, SciMLBase.NullParameters(), r, r2),

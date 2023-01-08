@@ -7,16 +7,29 @@ Implementation of FFJORD from
 """
 struct FFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     re::Optimisers.Restructure
-    p::AbstractVector
+    p::AbstractVector{T}
 
     nvars::Integer
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    ϵ::AbstractVector
+    ϵ::AbstractVector{T}
 
     # trace_test
     # trace_train
+end
+
+function FFJORD(
+    re::Optimisers.Restructure,
+    p::AbstractVector{T},
+
+    nvars::Integer,
+    basedist::Distribution,
+    tspan::Tuple{T, T},
+
+    ϵ::AbstractVector{T},
+) where {T <: AbstractFloat, AT <: AbstractArray}
+    FFJORD{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan, ϵ)
 end
 
 function FFJORD{T, AT}(
