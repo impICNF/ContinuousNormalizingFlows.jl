@@ -20,11 +20,9 @@ end
 function CondPlanar(
     re::Optimisers.Restructure,
     p::AbstractVector{T},
-
     nvars::Integer,
     basedist::Distribution,
     tspan::Tuple{T, T},
-
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, AT <: AbstractArray}
     CondPlanar{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan, ϵ)

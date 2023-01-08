@@ -226,8 +226,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         _loss = loss_f(model.m, model.opt_app)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         opt_state = Flux.setup(model.optimizer, model.m)
-        tst =
-            @timed Flux.train!(_loss, model.m, ncdata, opt_state)
+        tst = @timed Flux.train!(_loss, model.m, ncdata, opt_state)
     elseif model.opt_app isa OptimOptApp
         model.optimizer isa Optim.AbstractOptimizer ||
             error("model.optimizer must be an Optim optimizer")
