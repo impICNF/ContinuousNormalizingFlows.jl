@@ -13,3 +13,55 @@ Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Juli
 ## Citing
 
 See [`CITATION.bib`](CITATION.bib) for the relevant reference(s).
+
+## Usage
+
+To add this package, we can do it by
+```julia
+] add https://github.com/impICNF/ICNF.jl
+```
+or
+```julia
+using Pkg
+Pkg.add(url="https://github.com/impICNF/ICNF.jl")
+```
+To use this package, here is an example:
+```julia
+using ICNF
+using Distributions, Flux
+using DifferentialEquations, SciMLSensitivity
+
+# Parameters
+nvars = 1
+n = 128
+
+# Data
+data_dist = Beta(2.0, 4.0)
+r = rand(data_dist, nvars, n)
+
+# Model
+nn = Chain(
+    Dense(nvars => 4*nvars, tanh),
+    Dense(4*nvars => nvars, tanh),
+) |> f64
+icnf = RNODE{Float64, Array}(nn, nvars; tspan=(0.0, 8.0))
+
+# Training
+using DataFrames, MLJBase
+df = DataFrame(transpose(r), :auto)
+model = ICNFModel(icnf; opt_app=SciMLOptApp())
+mach = machine(model, df)
+fit!(mach)
+
+# Use It
+d = ICNFDist(icnf)
+actual_pdf = pdf.(data_dist, vec(r))
+estimated_pdf = pdf(d, r)
+new_data = rand(d, n)
+
+# Evaluation
+using LinearAlgebra, Distances
+n1 = norm(estimated_pdf - actual_pdf, 1) / n
+n2 = norm(estimated_pdf - actual_pdf, 2) / n
+tv_dis = totalvariation(estimated_pdf, actual_pdf) / n
+```
