@@ -167,7 +167,7 @@ function callback_f(
     T3 <: Tuple{T2},
 }
     xs, = first(data)
-    function f(p::AbstractVector, l::T)::Bool
+    function f(p::AbstractVector, l::Real)::Bool
         vl = loss(icnf, xs, p)
         @info "Training" loss = vl
         false
