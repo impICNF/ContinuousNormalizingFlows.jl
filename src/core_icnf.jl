@@ -6,6 +6,7 @@ function inference(
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
     args...;
+    rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 function inference(
@@ -14,6 +15,7 @@ function inference(
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
     args...;
+    rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
 
@@ -41,6 +43,7 @@ function loss(
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p;
     agg::Function = mean,
+    rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray} end
 
 function loss_pn(
