@@ -20,7 +20,7 @@ To add this package, we can do it by
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/impICNF/ICNF.jl")
+Pkg.add(; url = "https://github.com/impICNF/ICNF.jl")
 ```
 
 To use this package, here is an example:
@@ -39,16 +39,13 @@ data_dist = Beta(2.0, 4.0)
 r = rand(data_dist, nvars, n)
 
 # Model
-nn = Chain(
-    Dense(nvars => 4*nvars, tanh),
-    Dense(4*nvars => nvars, tanh),
-) |> f64
-icnf = RNODE{Float64, Array}(nn, nvars; tspan=(0.0, 4.0))
+nn = f64(Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh)))
+icnf = RNODE{Float64, Array}(nn, nvars; tspan = (0.0, 4.0))
 
 # Training
 using DataFrames, MLJBase
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf; opt_app=SciMLOptApp())
+model = ICNFModel(icnf; opt_app = SciMLOptApp())
 mach = machine(model, df)
 fit!(mach)
 
