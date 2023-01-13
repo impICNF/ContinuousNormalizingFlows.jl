@@ -65,13 +65,7 @@ function Planar{T, AT}(
 ) where {T <: AbstractFloat, AT <: AbstractArray}
     nn = fmap(x -> adapt(T, x), nn)
     p, re = destructure(nn)
-    Planar{T, AT}(
-        re,
-        convert(AT{T}, p),
-        nvars,
-        basedist,
-        tspan,
-    )
+    Planar{T, AT}(re, convert(AT{T}, p), nvars, basedist, tspan)
 end
 
 function augmented_f(
