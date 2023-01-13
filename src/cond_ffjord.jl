@@ -48,7 +48,7 @@ end
 function augmented_f(
     icnf::CondFFJORD{T, AT},
     mode::TestMode,
-    ys::AbstractMatrix,;
+    ys::AbstractMatrix;
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f_aug(u, p, t)
