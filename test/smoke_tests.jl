@@ -56,9 +56,9 @@
             @test !isnothing(generate(icnf, TrainMode(), n))
 
             @test !isnothing(
-                mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ),
+                mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan),
             )
-            @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ)
+            @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan)
 
             @test !isnothing(icnf(r))
             @test !isnothing(loss(icnf, r))
@@ -152,9 +152,9 @@
             @test !isnothing(generate(icnf, TrainMode(), r2, n))
 
             @test !isnothing(
-                mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ),
+                mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan),
             )
-            @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan, icnf.ϵ)
+            @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan)
 
             @test !isnothing(icnf(r, r2))
             @test !isnothing(loss(icnf, r, r2))

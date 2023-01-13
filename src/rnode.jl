@@ -13,8 +13,6 @@ struct RNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     basedist::Distribution
     tspan::Tuple{T, T}
 
-    ϵ::AbstractVector{T}
-
     # trace_test
     # trace_train
 end
@@ -25,9 +23,8 @@ function RNODE(
     nvars::Integer,
     basedist::Distribution,
     tspan::Tuple{T, T},
-    ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    RNODE{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan, ϵ)
+    RNODE{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan)
 end
 
 function RNODE{T, AT}(
@@ -52,7 +49,8 @@ end
 
 function augmented_f(
     icnf::RNODE{T, AT},
-    mode::TestMode,
+    mode::TestMode;
+    rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f_aug(u, p, t)
         m = icnf.re(p)
@@ -66,14 +64,17 @@ end
 
 function augmented_f(
     icnf::RNODE{T, AT},
-    mode::TrainMode,
+    mode::TrainMode;
+    rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    ϵ = convert(AT, randn(rng, T, icnf.nvars))
+
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:(end - 3), :]
         ż, back = Zygote.pullback(m, z)
-        ϵJ = only(back(icnf.ϵ))
-        l̇ = transpose(icnf.ϵ) * ϵJ
+        ϵJ = only(back(ϵ))
+        l̇ = transpose(ϵ) * ϵJ
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
         vcat(ż, -l̇, Ė, ṅ)
@@ -87,10 +88,11 @@ function inference(
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
     args...;
+    rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode)
+    f_aug = augmented_f(icnf, mode; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
@@ -107,10 +109,11 @@ function inference(
     xs::AbstractMatrix,
     p::AbstractVector = icnf.p,
     args...;
+    rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::Tuple where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 3, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode)
+    f_aug = augmented_f(icnf, mode; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
@@ -134,7 +137,7 @@ function generate(
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode)
+    f_aug = augmented_f(icnf, mode; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
@@ -154,7 +157,7 @@ function generate(
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 3, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode)
+    f_aug = augmented_f(icnf, mode; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
@@ -172,7 +175,8 @@ function loss(
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     agg::Function = mean,
+    rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, p)
+    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, p; rng)
     agg(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
 end
