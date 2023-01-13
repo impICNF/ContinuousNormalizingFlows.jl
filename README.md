@@ -19,12 +19,6 @@ See [`CITATION.bib`](CITATION.bib) for the relevant reference(s).
 To add this package, we can do it by
 
 ```julia
-] add https://github.com/impICNF/ICNF.jl
-```
-
-or
-
-```julia
 using Pkg
 Pkg.add(url="https://github.com/impICNF/ICNF.jl")
 ```
