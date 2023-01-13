@@ -17,15 +17,20 @@ See [`CITATION.bib`](CITATION.bib) for the relevant reference(s).
 ## Usage
 
 To add this package, we can do it by
+
 ```julia
 ] add https://github.com/impICNF/ICNF.jl
 ```
+
 or
+
 ```julia
 using Pkg
 Pkg.add(url="https://github.com/impICNF/ICNF.jl")
 ```
+
 To use this package, here is an example:
+
 ```julia
 using ICNF
 using Distributions, Flux
@@ -33,7 +38,7 @@ using DifferentialEquations, SciMLSensitivity
 
 # Parameters
 nvars = 1
-n = 128
+n = 1024
 
 # Data
 data_dist = Beta(2.0, 4.0)
@@ -44,7 +49,7 @@ nn = Chain(
     Dense(nvars => 4*nvars, tanh),
     Dense(4*nvars => nvars, tanh),
 ) |> f64
-icnf = RNODE{Float64, Array}(nn, nvars; tspan=(0.0, 8.0))
+icnf = RNODE{Float64, Array}(nn, nvars; tspan=(0.0, 4.0))
 
 # Training
 using DataFrames, MLJBase
