@@ -41,7 +41,6 @@ function CondRNODE{T, AT}(
         nvars,
         basedist,
         tspan,
-        convert(AT, randn(rng, T, nvars)),
     )
 end
 
