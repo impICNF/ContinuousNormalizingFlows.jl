@@ -81,6 +81,7 @@ end
 function loss_f(
     icnf::AbstractICNF{T, AT},
     opt_app::FluxOptApp,
+    loss::Function,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     loss
 end
@@ -110,6 +111,7 @@ end
 function loss_f(
     icnf::AbstractICNF{T, AT},
     opt_app::OptimOptApp,
+    loss::Function,
     itrtr::AbstractVector,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f(p::AbstractVector)::Real
@@ -151,6 +153,7 @@ end
 function loss_f(
     icnf::AbstractICNF{T, AT},
     opt_app::SciMLOptApp,
+    loss::Function,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix)::Real
         loss(icnf, xs, p)
@@ -226,7 +229,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     if model.opt_app isa FluxOptApp
         model.optimizer isa Optimisers.AbstractRule ||
             error("model.optimizer must be an Optimisers optimizer")
-        _loss = loss_f(model.m, model.opt_app)
+        _loss = loss_f(model.m, model.opt_app, model.loss)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         opt_state = Flux.setup(model.optimizer, model.m)
         tst = @timed Flux.train!(_loss, model.m, ncdata, opt_state)
@@ -235,7 +238,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
             error("model.optimizer must be an Optim optimizer")
         itrtr = Any[nothing, nothing]
         itrtr .= iterate(ncdata)
-        _loss = loss_f(model.m, model.opt_app, itrtr)
+        _loss = loss_f(model.m, model.opt_app, model.loss, itrtr)
         _callback = callback_f(model.m, model.opt_app, model.loss, data, itrtr)
         ops = Optim.Options(;
             x_abstol = -Inf,
@@ -269,7 +272,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         tst = @timed res = optimize(_loss, model.m.p, model.optimizer, ops)
         model.m.p .= res.minimizer
     elseif model.opt_app isa SciMLOptApp
-        _loss = loss_f(model.m, model.opt_app)
+        _loss = loss_f(model.m, model.opt_app, model.loss)
         _callback = callback_f(model.m, model.opt_app, model.loss, data)
         optfunc = OptimizationFunction(_loss, model.adtype)
         optprob = OptimizationProblem(optfunc, model.m.p)
