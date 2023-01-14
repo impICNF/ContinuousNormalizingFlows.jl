@@ -62,10 +62,10 @@
             @test !isnothing(loss(icnf, r))
             @test !isnothing(loss_pn(icnf, r))
             @test !isnothing(loss_pln(icnf, r))
-            @test !isnothing(loss_f(icnf, FluxOptApp())(icnf, r))
-            @test !isnothing(loss_f(icnf, OptimOptApp(), [(r,), nothing])(icnf.p))
+            @test !isnothing(loss_f(icnf, FluxOptApp(), loss)(icnf, r))
+            @test !isnothing(loss_f(icnf, OptimOptApp(), loss, [(r,), nothing])(icnf.p))
             @test !isnothing(
-                loss_f(icnf, SciMLOptApp())(icnf.p, SciMLBase.NullParameters(), r),
+                loss_f(icnf, SciMLOptApp(), loss)(icnf.p, SciMLBase.NullParameters(), r),
             )
 
             @test !isnothing(agg_loglikelihood(icnf, r))
@@ -156,10 +156,10 @@
             @test !isnothing(loss(icnf, r, r2))
             @test !isnothing(loss_pn(icnf, r, r2))
             @test !isnothing(loss_pln(icnf, r, r2))
-            @test !isnothing(loss_f(icnf, FluxOptApp())(icnf, r, r2))
-            @test !isnothing(loss_f(icnf, OptimOptApp(), [(r, r2), nothing])(icnf.p))
+            @test !isnothing(loss_f(icnf, FluxOptApp(), loss)(icnf, r, r2))
+            @test !isnothing(loss_f(icnf, OptimOptApp(), loss, [(r, r2), nothing])(icnf.p))
             @test !isnothing(
-                loss_f(icnf, SciMLOptApp())(icnf.p, SciMLBase.NullParameters(), r, r2),
+                loss_f(icnf, SciMLOptApp(), loss)(icnf.p, SciMLBase.NullParameters(), r, r2),
             )
 
             @test !isnothing(agg_loglikelihood(icnf, r, r2))
