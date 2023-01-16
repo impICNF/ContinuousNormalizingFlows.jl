@@ -79,9 +79,16 @@ function loss_pln(
 end
 
 # pretty-printing
-Base.show(io::IO, icnf::AbstractICNF) = print(io, typeof(icnf),
-    "\n\tNumber of Variables: ", icnf.nvars,
-    "\n\tTime Span: ", icnf.tspan)
+function Base.show(io::IO, icnf::AbstractICNF)
+    print(
+        io,
+        typeof(icnf),
+        "\n\tNumber of Variables: ",
+        icnf.nvars,
+        "\n\tTime Span: ",
+        icnf.tspan,
+    )
+end
 
 # -- Flux interface
 
