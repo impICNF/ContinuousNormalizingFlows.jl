@@ -236,7 +236,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = convert(model.array_type, x)
     data = DataLoader((x,); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
-    initial_loss_value = model.loss(model.m, x)
+    initial_loss_value = model.loss(model.m, first(data)...)
 
     if model.opt_app isa FluxOptApp
         model.optimizer isa Optimisers.AbstractRule ||
@@ -291,7 +291,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
         model.m.p .= res.u
     end
-    final_loss_value = model.loss(model.m, x)
+    final_loss_value = model.loss(model.m, first(data)...)
     @info(
         "Fitting",
         "elapsed time (seconds)" = tst.time,
