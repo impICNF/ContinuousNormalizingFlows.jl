@@ -79,7 +79,7 @@ function loss_pln(
 end
 
 # pretty-printing
-function Base.show(io::IO, icnf::AbstractICNF)
+function Base.show(io::IO, icnf::AbstractCondICNF)
     print(
         io,
         typeof(icnf),
