@@ -253,7 +253,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     y = convert(model.array_type, y)
     data = DataLoader((x, y); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
-    initial_loss_value = model.loss(model.m, x, y)
+    initial_loss_value = model.loss(model.m, first(data)...)
 
     if model.opt_app isa FluxOptApp
         model.optimizer isa Optimisers.AbstractRule ||
@@ -308,7 +308,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
         model.m.p .= res.u
     end
-    final_loss_value = model.loss(model.m, x, y)
+    final_loss_value = model.loss(model.m, first(data)...)
     @info(
         "Fitting",
         "elapsed time (seconds)" = tst.time,
