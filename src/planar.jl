@@ -85,17 +85,18 @@ end
 
 function augmented_f(
     icnf::Planar{T, AT},
-    mode::TrainMode;
+    mode::TrainMode,
+    n_batch::Integer;
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    ϵ = convert(AT, randn(rng, T, icnf.nvars))
+    ϵ = convert(AT, randn(rng, T, icnf.nvars), n_batch)
 
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:(end - 1), :]
         mz, back = Zygote.pullback(m, z)
         ϵJ = only(back(repeat(ϵ, 1, size(z, 2))))
-        trace_J = transpose(ϵ) * ϵJ
+        trace_J = sum(ϵJ .* ϵ, dims=1)
         vcat(mz, -trace_J)
     end
     f_aug
@@ -111,7 +112,7 @@ function inference(
     kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
@@ -132,7 +133,7 @@ function inference(
     kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
@@ -154,7 +155,7 @@ function generate(
 )::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
@@ -174,7 +175,7 @@ function generate(
 )::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)

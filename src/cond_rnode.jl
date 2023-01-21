@@ -57,17 +57,18 @@ end
 function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TrainMode,
+    n_batch::Integer,
     ys::AbstractMatrix;
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    ϵ = convert(AT, randn(rng, T, icnf.nvars))
+    ϵ = convert(AT, randn(rng, T, icnf.nvars), n_batch)
 
     function f_aug(u, p, t)
         m = Chain(x -> vcat(x, ys), icnf.re(p))
         z = u[1:(end - 3), :]
         ż, back = Zygote.pullback(m, z)
         ϵJ = only(back(ϵ))
-        l̇ = transpose(ϵ) * ϵJ
+        l̇ = sum(ϵJ .* ϵ, dims=1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
         vcat(ż, -l̇, Ė, ṅ)
@@ -86,7 +87,7 @@ function inference(
     kwargs...,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, ys; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2), ys; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
@@ -108,7 +109,7 @@ function inference(
     kwargs...,
 )::Tuple where {T <: AbstractFloat, AT <: AbstractArray}
     zrs = convert(AT, zeros(T, 3, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, ys; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2), ys; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
     sol = solve(prob)
@@ -133,7 +134,7 @@ function generate(
 )::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, ys; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2), ys; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
@@ -154,7 +155,7 @@ function generate(
 )::AbstractMatrix{T} where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 3, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, ys; rng)
+    f_aug = augmented_f(icnf, mode, size(xs, 2), ys; rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
