@@ -61,7 +61,7 @@ function augmented_f(
     n_batch::Integer;
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    ϵ = convert(AT, randn(rng, T, icnf.nvars), n_batch)
+    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
 
     function f_aug(u, p, t)
         m = icnf.re(p)
