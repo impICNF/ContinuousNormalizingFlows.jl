@@ -96,7 +96,7 @@ function augmented_f(
         m = icnf.re(p)
         z = u[1:(end - 1), :]
         mz, back = Zygote.pullback(m, z)
-        ϵJ = only(back(repeat(ϵ, 1, size(z, 2))))
+        ϵJ = only(back(ϵ))
         trace_J = sum(ϵJ .* ϵ, dims=1)
         vcat(mz, -trace_J)
     end
