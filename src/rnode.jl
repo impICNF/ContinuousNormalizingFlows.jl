@@ -132,7 +132,7 @@ function generate(
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
+    f_aug = augmented_f(icnf, mode, size(new_xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
@@ -152,7 +152,7 @@ function generate(
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, 3, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
+    f_aug = augmented_f(icnf, mode, size(new_xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
     sol = solve(prob)
