@@ -41,6 +41,7 @@ end
 function augmented_f(
     icnf::CondPlanar{T, AT},
     mode::TestMode,
+    n_batch::Integer,
     ys::AbstractMatrix;
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
