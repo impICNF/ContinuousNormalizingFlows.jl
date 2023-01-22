@@ -69,7 +69,7 @@ function augmented_f(
         z = u[1:(end - 3), :]
         ż, back = Zygote.pullback(m, z)
         ϵJ = only(back(ϵ))
-        l̇ = sum(ϵJ .* ϵ, dims=1)
+        l̇ = sum(ϵJ .* ϵ; dims = 1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
         vcat(ż, -l̇, Ė, ṅ)
