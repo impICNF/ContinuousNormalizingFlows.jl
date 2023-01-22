@@ -9,6 +9,7 @@ using ICNF,
     FiniteDifferences,
     Flux,
     ForwardDiff,
+    Logging,
     Optimization,
     ReverseDiff,
     MLJBase,
@@ -17,6 +18,9 @@ using ICNF,
     Test,
     Tracker,
     Zygote
+
+debuglogger = ConsoleLogger(Logging.Debug)
+global_logger(debuglogger)
 
 include("core.jl")
 
