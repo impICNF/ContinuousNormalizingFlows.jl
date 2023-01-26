@@ -45,7 +45,7 @@ icnf = RNODE{Float64, Array}(nn, nvars; tspan = (0.0, 4.0))
 # Training
 using DataFrames, MLJBase
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf; opt_app = SciMLOptApp())
+model = ICNFModel(icnf)
 mach = machine(model, df)
 fit!(mach)
 

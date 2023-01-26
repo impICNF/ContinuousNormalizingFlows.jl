@@ -9,81 +9,10 @@ function (icnf::AbstractCondICNF{T, AT})(
     first(inference(icnf, TestMode(), xs, ys))
 end
 
-function loss_f(
-    icnf::AbstractCondICNF{T, AT},
-    opt_app::FluxOptApp,
-    loss::Function,
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    loss
-end
-
-function callback_f(
-    icnf::AbstractCondICNF{T, AT},
-    opt_app::FluxOptApp,
-    loss::Function,
-    data::DataLoader{T3},
-)::Function where {
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    T2 <: AbstractMatrix,
-    T3 <: Tuple{T2, T2},
-}
-    xs, ys = first(data)
-    function f()::Nothing
-        vl = loss(icnf, xs, ys)
-        @info "Training" loss = vl
-        nothing
-    end
-    f
-end
-
-# -- Optim interface
-
-function loss_f(
-    icnf::AbstractCondICNF{T, AT},
-    opt_app::OptimOptApp,
-    loss::Function,
-    itrtr::AbstractVector,
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(p::AbstractVector)::Real
-        xs, ys = itrtr[1]
-        loss(icnf, xs, ys, p)
-    end
-    f
-end
-
-function callback_f(
-    icnf::AbstractCondICNF{T, AT},
-    opt_app::OptimOptApp,
-    loss::Function,
-    data::DataLoader{T3},
-    itrtr::AbstractVector,
-)::Function where {
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    T2 <: AbstractMatrix,
-    T3 <: Tuple{T2, T2},
-}
-    xs, ys = first(data)
-    function f(s::OptimizationState)::Bool
-        vl = loss(icnf, xs, ys, s.metadata["x"])
-        @info "Training" loss = vl
-        nxitr = iterate(data, itrtr[2])
-        if isnothing(nxitr)
-            true
-        else
-            itrtr .= nxitr
-            false
-        end
-    end
-    f
-end
-
 # -- SciML interface
 
 function loss_f(
     icnf::AbstractCondICNF{T, AT},
-    opt_app::SciMLOptApp,
     loss::Function,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f(
@@ -99,7 +28,6 @@ end
 
 function callback_f(
     icnf::AbstractCondICNF{T, AT},
-    opt_app::SciMLOptApp,
     loss::Function,
     data::DataLoader{T3},
 )::Function where {
@@ -123,7 +51,6 @@ mutable struct CondICNFModel <: MLJICNF
     m::AbstractCondICNF
     loss::Function
 
-    opt_app::OptApp
     optimizer::Any
     n_epochs::Integer
     adtype::SciMLBase.AbstractADType
@@ -137,8 +64,7 @@ function CondICNFModel(
     m::AbstractCondICNF,
     loss::Function = loss,
     ;
-    opt_app::OptApp = FluxOptApp(),
-    optimizer::Any = default_optimizer[typeof(opt_app)],
+    optimizer::Any = default_optimizer,
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
@@ -146,7 +72,6 @@ function CondICNFModel(
     CondICNFModel(
         m,
         loss,
-        opt_app,
         optimizer,
         n_epochs,
         adtype,
@@ -164,60 +89,12 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     data = DataLoader((x, y); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, first(data)...)
-
-    if model.opt_app isa FluxOptApp
-        model.optimizer isa Optimisers.AbstractRule ||
-            error("model.optimizer must be an Optimisers optimizer")
-        _loss = loss_f(model.m, model.opt_app, model.loss)
-        _callback = callback_f(model.m, model.opt_app, model.loss, data)
-        opt_state = Flux.setup(model.optimizer, model.m)
-        tst = @timed Flux.train!(_loss, model.m, ncdata, opt_state)
-    elseif model.opt_app isa OptimOptApp
-        model.optimizer isa Optim.AbstractOptimizer ||
-            error("model.optimizer must be an Optim optimizer")
-        itrtr = Any[nothing, nothing]
-        itrtr .= iterate(ncdata)
-        _loss = loss_f(model.m, model.opt_app, model.loss, itrtr)
-        _callback = callback_f(model.m, model.opt_app, model.loss, data, itrtr)
-        ops = Optim.Options(;
-            x_abstol = -Inf,
-            x_reltol = -Inf,
-            f_abstol = -Inf,
-            f_reltol = -Inf,
-            g_abstol = -Inf,
-            g_reltol = -Inf,
-            outer_x_abstol = -Inf,
-            outer_x_reltol = -Inf,
-            outer_f_abstol = -Inf,
-            outer_f_reltol = -Inf,
-            outer_g_abstol = -Inf,
-            outer_g_reltol = -Inf,
-            f_calls_limit = 0,
-            g_calls_limit = 0,
-            h_calls_limit = 0,
-            allow_f_increases = true,
-            allow_outer_f_increases = true,
-            successive_f_tol = typemax(Int),
-            iterations = typemax(Int),
-            outer_iterations = typemax(Int),
-            store_trace = false,
-            trace_simplex = true,
-            show_trace = false,
-            extended_trace = true,
-            show_every = 1,
-            callback = _callback,
-            time_limit = Inf,
-        )
-        tst = @timed res = optimize(_loss, model.m.p, model.optimizer, ops)
-        model.m.p .= res.minimizer
-    elseif model.opt_app isa SciMLOptApp
-        _loss = loss_f(model.m, model.opt_app, model.loss)
-        _callback = callback_f(model.m, model.opt_app, model.loss, data)
-        optfunc = OptimizationFunction(_loss, model.adtype)
-        optprob = OptimizationProblem(optfunc, model.m.p)
-        tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
-        model.m.p .= res.u
-    end
+    _loss = loss_f(model.m, model.loss)
+    _callback = callback_f(model.m, model.loss, data)
+    optfunc = OptimizationFunction(_loss, model.adtype)
+    optprob = OptimizationProblem(optfunc, model.m.p)
+    tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
+    model.m.p .= res.u
     final_loss_value = model.loss(model.m, first(data)...)
     @info(
         "Fitting",
