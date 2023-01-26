@@ -5,7 +5,7 @@ export loss_f, callback_f, ICNFModel, ICNFDist
 function (icnf::AbstractICNF{T, AT})(
     xs::AbstractMatrix,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
-    inference(icnf, TestMode(), xs)
+    first(inference(icnf, TestMode(), xs))
 end
 
 function loss_f(
@@ -230,7 +230,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     xnew = convert(model.array_type, xnew)
 
-    tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
+    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew)
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -273,7 +273,7 @@ Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector)
     first(Distributions._logpdf(d, hcat(x)))
 end
-Distributions._logpdf(d::ICNFDist, A::AbstractMatrix) = inference(d.m, TestMode(), A)
+Distributions._logpdf(d::ICNFDist, A::AbstractMatrix) = first(inference(d.m, TestMode(), A))
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector)
     (x .= Distributions._rand!(rng, d, hcat(x)))
 end

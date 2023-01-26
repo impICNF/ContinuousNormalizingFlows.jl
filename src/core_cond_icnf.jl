@@ -6,7 +6,7 @@ function (icnf::AbstractCondICNF{T, AT})(
     xs::AbstractMatrix,
     ys::AbstractMatrix,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
-    inference(icnf, TestMode(), xs, ys)
+    first(inference(icnf, TestMode(), xs, ys))
 end
 
 function loss_f(
@@ -242,7 +242,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     ynew = convert(model.array_type, ynew)
 
-    tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ynew)
+    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew, ynew)
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -290,7 +290,7 @@ function Distributions._logpdf(d::CondICNFDist, x::AbstractVector)
     first(Distributions._logpdf(d, hcat(x)))
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix)
-    inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)])
+    first(inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)]))
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector)
     (x .= Distributions._rand!(rng, d, hcat(x)))
