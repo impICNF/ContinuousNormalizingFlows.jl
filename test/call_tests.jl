@@ -1,14 +1,22 @@
-adb_list = AbstractDifferentiation.AbstractBackend[
-    AbstractDifferentiation.ZygoteBackend(),
-    AbstractDifferentiation.ReverseDiffBackend(),
-    AbstractDifferentiation.ForwardDiffBackend(),
-    AbstractDifferentiation.TrackerBackend(),
-    AbstractDifferentiation.FiniteDifferencesBackend(),
-]
-fd_m = FiniteDifferences.central_fdm(5, 1)
-n = 2
-
 @testset "Call Tests" begin
+    mts = Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts = Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    ats = Type{<:AbstractArray}[Array]
+    if has_cuda_gpu()
+        push!(ats, CuArray)
+    end
+    tps = Type{<:AbstractFloat}[Float64, Float32, Float16]
+    nvars_ = (1:2)
+    adb_list = AbstractDifferentiation.AbstractBackend[
+        AbstractDifferentiation.ZygoteBackend(),
+        AbstractDifferentiation.ReverseDiffBackend(),
+        AbstractDifferentiation.ForwardDiffBackend(),
+        AbstractDifferentiation.TrackerBackend(),
+        AbstractDifferentiation.FiniteDifferencesBackend(),
+    ]
+    fd_m = FiniteDifferences.central_fdm(5, 1)
+    n = 2
+
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
         nvars in nvars_,

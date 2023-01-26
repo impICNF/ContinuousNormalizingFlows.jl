@@ -1,16 +1,24 @@
-go_ads = SciMLBase.AbstractADType[
-    Optimization.AutoZygote(),
-    Optimization.AutoReverseDiff(),
-    Optimization.AutoForwardDiff(),
-    Optimization.AutoTracker(),
-    Optimization.AutoFiniteDiff(),
-]
-n_epochs = 2
-batch_size = 2
-n_batch = 2
-n = n_batch * batch_size
-
 @testset "Fit Tests" begin
+    mts = Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts = Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    ats = Type{<:AbstractArray}[Array]
+    if has_cuda_gpu()
+        push!(ats, CuArray)
+    end
+    tps = Type{<:AbstractFloat}[Float64, Float32, Float16]
+    nvars_ = (1:2)
+    go_ads = SciMLBase.AbstractADType[
+        Optimization.AutoZygote(),
+        Optimization.AutoReverseDiff(),
+        Optimization.AutoForwardDiff(),
+        Optimization.AutoTracker(),
+        Optimization.AutoFiniteDiff(),
+    ]
+    n_epochs = 2
+    batch_size = 2
+    n_batch = 2
+    n = n_batch * batch_size
+
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
         nvars in nvars_,
