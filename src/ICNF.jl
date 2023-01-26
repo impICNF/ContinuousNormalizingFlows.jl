@@ -30,6 +30,8 @@ using Adapt,
 
 include("types.jl")
 include("defaults.jl")
+include("base_icnf.jl")
+include("base_cond_icnf.jl")
 include("core_icnf.jl")
 include("core_cond_icnf.jl")
 

@@ -60,8 +60,6 @@
 
             @test !isnothing(icnf(r))
             @test !isnothing(loss(icnf, r))
-            @test !isnothing(loss_pn(icnf, r))
-            @test !isnothing(loss_pln(icnf, r))
             @test !isnothing(loss_f(icnf, FluxOptApp(), loss)(icnf, r))
             @test !isnothing(loss_f(icnf, OptimOptApp(), loss, [(r,), nothing])(icnf.p))
             @test !isnothing(
@@ -154,8 +152,6 @@
 
             @test !isnothing(icnf(r, r2))
             @test !isnothing(loss(icnf, r, r2))
-            @test !isnothing(loss_pn(icnf, r, r2))
-            @test !isnothing(loss_pln(icnf, r, r2))
             @test !isnothing(loss_f(icnf, FluxOptApp(), loss)(icnf, r, r2))
             @test !isnothing(loss_f(icnf, OptimOptApp(), loss, [(r, r2), nothing])(icnf.p))
             @test !isnothing(
