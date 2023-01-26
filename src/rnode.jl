@@ -77,90 +77,6 @@ function augmented_f(
     f_aug
 end
 
-function inference(
-    icnf::RNODE{T, AT},
-    mode::TestMode,
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
-    zrs = convert(AT, zeros(T, 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
-    sol = solve(prob)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - 1), :]
-    Δlogp = fsol[end, :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    logp̂x
-end
-
-function inference(
-    icnf::RNODE{T, AT},
-    mode::TrainMode,
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::Tuple where {T <: AbstractFloat, AT <: AbstractArray}
-    zrs = convert(AT, zeros(T, 3, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
-    sol = solve(prob)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - 3), :]
-    Δlogp = fsol[end - 2, :]
-    Ė = fsol[end - 1, :]
-    ṅ = fsol[end, :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    logp̂x, Ė, ṅ
-end
-
-function generate(
-    icnf::RNODE{T, AT},
-    mode::TestMode,
-    n::Integer,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
-    new_xs = convert(AT, rand(rng, icnf.basedist, n))
-    zrs = convert(AT, zeros(T, 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(new_xs, 2); rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
-    sol = solve(prob)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - 1), :]
-    z
-end
-
-function generate(
-    icnf::RNODE{T, AT},
-    mode::TrainMode,
-    n::Integer,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
-    new_xs = convert(AT, rand(rng, icnf.basedist, n))
-    zrs = convert(AT, zeros(T, 3, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(new_xs, 2); rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
-    sol = solve(prob)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - 3), :]
-    z
-end
-
 @functor RNODE (p,)
 
 function loss(
@@ -174,4 +90,11 @@ function loss(
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, p; rng)
     agg(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
+end
+
+function n_augment(
+    icnf::RNODE{T, AT},
+    mode::TrainMode,
+)::Integer where {T <: AbstractFloat, AT <: AbstractArray}
+    2
 end

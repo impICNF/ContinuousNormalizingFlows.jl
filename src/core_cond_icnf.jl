@@ -1,94 +1,4 @@
-export inference,
-    generate, loss, loss_pn, loss_pln, loss_f, callback_f, CondICNFModel, CondICNFDist
-
-function inference(
-    icnf::AbstractCondICNF{T, AT},
-    mode::TestMode,
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
-function inference(
-    icnf::AbstractCondICNF{T, AT},
-    mode::TrainMode,
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
-
-function generate(
-    icnf::AbstractCondICNF{T, AT},
-    mode::TestMode,
-    ys::AbstractMatrix,
-    n::Integer,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
-function generate(
-    icnf::AbstractCondICNF{T, AT},
-    mode::TrainMode,
-    ys::AbstractMatrix,
-    n::Integer,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
-
-function loss(
-    icnf::AbstractCondICNF{T, AT},
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p;
-    agg::Function = mean,
-    rng::AbstractRNG = Random.default_rng(),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray} end
-
-function loss_pn(
-    icnf::AbstractCondICNF{T, AT},
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p;
-    agg::Function = mean,
-    nλ::T = convert(T, 1e-4),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    lv = loss(icnf, xs, ys, p; agg)
-    prm_n = norm(p)
-    lv + nλ * prm_n
-end
-
-function loss_pln(
-    icnf::AbstractCondICNF{T, AT},
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p;
-    agg::Function = mean,
-    nλ::T = convert(T, 1e-4),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    lv = loss(icnf, xs, ys, p; agg)
-    prm_ln = log(norm(p))
-    lv + nλ * prm_ln
-end
-
-# pretty-printing
-function Base.show(io::IO, icnf::AbstractCondICNF)
-    print(
-        io,
-        typeof(icnf),
-        "\n\tNumber of Variables: ",
-        icnf.nvars,
-        "\n\tTime Span: ",
-        icnf.tspan,
-    )
-end
+export loss_f, callback_f, CondICNFModel, CondICNFDist
 
 # -- Flux interface
 
@@ -96,7 +6,7 @@ function (icnf::AbstractCondICNF{T, AT})(
     xs::AbstractMatrix,
     ys::AbstractMatrix,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
-    inference(icnf, TestMode(), xs, ys)
+    first(inference(icnf, TestMode(), xs, ys))
 end
 
 # -- SciML interface
@@ -209,7 +119,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     ynew = convert(model.array_type, ynew)
 
-    tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ynew)
+    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew, ynew)
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -257,7 +167,7 @@ function Distributions._logpdf(d::CondICNFDist, x::AbstractVector)
     first(Distributions._logpdf(d, hcat(x)))
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix)
-    inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)])
+    first(inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)]))
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector)
     (x .= Distributions._rand!(rng, d, hcat(x)))

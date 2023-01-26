@@ -1,93 +1,11 @@
-export inference, generate, loss, loss_pn, loss_pln, loss_f, callback_f, ICNFModel, ICNFDist
-
-function inference(
-    icnf::AbstractICNF{T, AT},
-    mode::TestMode,
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
-function inference(
-    icnf::AbstractICNF{T, AT},
-    mode::TrainMode,
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray} end
-
-function generate(
-    icnf::AbstractICNF{T, AT},
-    mode::TestMode,
-    n::Integer,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
-function generate(
-    icnf::AbstractICNF{T, AT},
-    mode::TrainMode,
-    n::Integer,
-    p::AbstractVector = icnf.p,
-    args...;
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray} end
-
-function loss(
-    icnf::AbstractICNF{T, AT},
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p;
-    agg::Function = mean,
-    rng::AbstractRNG = Random.default_rng(),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray} end
-
-function loss_pn(
-    icnf::AbstractICNF{T, AT},
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p;
-    agg::Function = mean,
-    nλ::T = convert(T, 1e-4),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    lv = loss(icnf, xs, p; agg)
-    prm_n = norm(p)
-    lv + nλ * prm_n
-end
-
-function loss_pln(
-    icnf::AbstractICNF{T, AT},
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p;
-    agg::Function = mean,
-    nλ::T = convert(T, 1e-4),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    lv = loss(icnf, xs, p; agg)
-    prm_ln = log(norm(p))
-    lv + nλ * prm_ln
-end
-
-# pretty-printing
-function Base.show(io::IO, icnf::AbstractICNF)
-    print(
-        io,
-        typeof(icnf),
-        "\n\tNumber of Variables: ",
-        icnf.nvars,
-        "\n\tTime Span: ",
-        icnf.tspan,
-    )
-end
+export loss_f, callback_f, ICNFModel, ICNFDist
 
 # -- Flux interface
 
 function (icnf::AbstractICNF{T, AT})(
     xs::AbstractMatrix,
 )::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
-    inference(icnf, TestMode(), xs)
+    first(inference(icnf, TestMode(), xs))
 end
 
 # -- SciML interface
@@ -189,7 +107,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     xnew = convert(model.array_type, xnew)
 
-    tst = @timed logp̂x = inference(model.m, TestMode(), xnew)
+    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew)
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -232,7 +150,7 @@ Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector)
     first(Distributions._logpdf(d, hcat(x)))
 end
-Distributions._logpdf(d::ICNFDist, A::AbstractMatrix) = inference(d.m, TestMode(), A)
+Distributions._logpdf(d::ICNFDist, A::AbstractMatrix) = first(inference(d.m, TestMode(), A))
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector)
     (x .= Distributions._rand!(rng, d, hcat(x)))
 end
