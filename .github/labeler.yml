@@ -1,0 +1,11 @@
+repo:
+- '*'
+
+src:
+- src/**/*
+
+test:
+- test/**/*
+
+doc:
+- docs/**/*
