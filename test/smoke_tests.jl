@@ -14,19 +14,12 @@
         AbstractDifferentiation.FiniteDifferencesBackend(),
     ]
     fd_m = FiniteDifferences.central_fdm(5, 1)
-    opt_apps = ICNF.OptApp[FluxOptApp(), OptimOptApp(), SciMLOptApp()]
-    go_oa = SciMLOptApp()
     go_ads = SciMLBase.AbstractADType[
         Optimization.AutoZygote(),
         Optimization.AutoReverseDiff(),
         Optimization.AutoForwardDiff(),
         Optimization.AutoTracker(),
         Optimization.AutoFiniteDiff(),
-    ]
-    go_mds = Any[
-        ICNF.default_optimizer[FluxOptApp],
-        ICNF.default_optimizer[OptimOptApp],
-        ICNF.default_optimizer[SciMLOptApp],
     ]
     nvars_ = (1:2)
     n_epochs = 3
@@ -62,11 +55,7 @@
             @test !isnothing(loss(icnf, r))
             @test !isnothing(loss_pn(icnf, r))
             @test !isnothing(loss_pln(icnf, r))
-            @test !isnothing(loss_f(icnf, FluxOptApp(), loss)(icnf, r))
-            @test !isnothing(loss_f(icnf, OptimOptApp(), loss, [(r,), nothing])(icnf.p))
-            @test !isnothing(
-                loss_f(icnf, SciMLOptApp(), loss)(icnf.p, SciMLBase.NullParameters(), r),
-            )
+            @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r))
 
             @test !isnothing(agg_loglikelihood(icnf, r))
 
@@ -156,16 +145,12 @@
             @test !isnothing(loss(icnf, r, r2))
             @test !isnothing(loss_pn(icnf, r, r2))
             @test !isnothing(loss_pln(icnf, r, r2))
-            @test !isnothing(loss_f(icnf, FluxOptApp(), loss)(icnf, r, r2))
-            @test !isnothing(loss_f(icnf, OptimOptApp(), loss, [(r, r2), nothing])(icnf.p))
-            @test !isnothing(
-                loss_f(icnf, SciMLOptApp(), loss)(
-                    icnf.p,
-                    SciMLBase.NullParameters(),
-                    r,
-                    r2,
-                ),
-            )
+            @test !isnothing(loss_f(icnf, loss)(
+                icnf.p,
+                SciMLBase.NullParameters(),
+                r,
+                r2,
+            ))
 
             @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
@@ -237,23 +222,7 @@
             r = convert(Matrix{tp}, rand(data_dist, nvars, n))
             df = DataFrame(transpose(r), :auto)
 
-            @testset "Using $(typeof(opt_app).name.name)" for opt_app in opt_apps
-                if mt <: Planar
-                    nn = PlanarNN(nvars, tanh)
-                else
-                    nn = Chain(Dense(nvars => nvars, tanh))
-                end
-                icnf = mt{tp, at}(nn, nvars)
-                model = ICNFModel(icnf; n_epochs, batch_size, opt_app)
-                mach = machine(model, df)
-                @test !isnothing(fit!(mach))
-                @test !isnothing(MLJBase.transform(mach, df))
-                @test !isnothing(MLJBase.fitted_params(mach))
-            end
-            @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for go_ad in
-                                                                                                                      go_ads,
-                go_md in go_mds
-
+            @testset "Using $(typeof(go_ad).name.name)" for go_ad in go_ads
                 if mt <: Planar
                     nn = PlanarNN(nvars, tanh)
                 else
@@ -264,9 +233,7 @@
                     icnf;
                     n_epochs,
                     batch_size,
-                    opt_app = go_oa,
                     adtype = go_ad,
-                    optimizer = go_md,
                 )
                 mach = machine(model, df)
                 @test !isnothing(fit!(mach))
@@ -286,23 +253,7 @@
             df = DataFrame(transpose(r), :auto)
             df2 = DataFrame(transpose(r2), :auto)
 
-            @testset "Using $(typeof(opt_app).name.name)" for opt_app in opt_apps
-                if mt <: CondPlanar
-                    nn = PlanarNN(nvars, tanh; cond = true)
-                else
-                    nn = Chain(Dense(2 * nvars => nvars, tanh))
-                end
-                icnf = mt{tp, at}(nn, nvars)
-                model = CondICNFModel(icnf; n_epochs, batch_size, opt_app)
-                mach = machine(model, (df, df2))
-                @test !isnothing(fit!(mach))
-                @test !isnothing(MLJBase.transform(mach, (df, df2)))
-                @test !isnothing(MLJBase.fitted_params(mach))
-            end
-            @testset "$(typeof(go_oa).name.name) | Using $(typeof(go_ad).name.name) & $(typeof(go_md).name.name)" for go_ad in
-                                                                                                                      go_ads,
-                go_md in go_mds
-
+            @testset "Using $(typeof(go_ad).name.name)" for go_ad in go_ads
                 if mt <: CondPlanar
                     nn = PlanarNN(nvars, tanh; cond = true)
                 else
@@ -313,9 +264,7 @@
                     icnf;
                     n_epochs,
                     batch_size,
-                    opt_app = go_oa,
                     adtype = go_ad,
-                    optimizer = go_md,
                 )
                 mach = machine(model, (df, df2))
                 @test !isnothing(fit!(mach))
