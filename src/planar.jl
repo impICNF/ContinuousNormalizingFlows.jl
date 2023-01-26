@@ -45,16 +45,6 @@ struct Planar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     # trace_train
 end
 
-function Planar(
-    re::Optimisers.Restructure,
-    p::AbstractVector{T},
-    nvars::Integer,
-    basedist::Distribution,
-    tspan::Tuple{T, T},
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    Planar{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan)
-end
-
 function Planar{T, AT}(
     nn::PlanarNN,
     nvars::Integer,

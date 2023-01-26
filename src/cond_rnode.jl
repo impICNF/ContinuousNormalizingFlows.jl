@@ -15,16 +15,6 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T,
     # trace_train
 end
 
-function CondRNODE(
-    re::Optimisers.Restructure,
-    p::AbstractVector{T},
-    nvars::Integer,
-    basedist::Distribution,
-    tspan::Tuple{T, T},
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    CondRNODE{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan)
-end
-
 function CondRNODE{T, AT}(
     nn,
     nvars::Integer,
