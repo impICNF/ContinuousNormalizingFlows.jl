@@ -69,15 +69,7 @@ function CondICNFModel(
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
 )
-    CondICNFModel(
-        m,
-        loss,
-        optimizer,
-        n_epochs,
-        adtype,
-        batch_size,
-        typeof(m).parameters[2],
-    )
+    CondICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, typeof(m).parameters[2])
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)

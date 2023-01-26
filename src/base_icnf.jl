@@ -10,7 +10,7 @@ function inference(
     kwargs...,
 )::Tuple where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    zrs = convert(AT, zeros(T, n_aug+1, size(xs, 2)))
+    zrs = convert(AT, zeros(T, n_aug + 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode, size(xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p, args...; kwargs...)
@@ -33,7 +33,7 @@ function generate(
 )::AbstractMatrix where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
-    zrs = convert(AT, zeros(T, n_aug+1, size(new_xs, 2)))
+    zrs = convert(AT, zeros(T, n_aug + 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode, size(new_xs, 2); rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p, args...; kwargs...)
