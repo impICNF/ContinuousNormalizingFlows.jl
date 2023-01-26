@@ -141,12 +141,7 @@
 
             @test !isnothing(icnf(r, r2))
             @test !isnothing(loss(icnf, r, r2))
-            @test !isnothing(loss_f(icnf, loss)(
-                icnf.p,
-                SciMLBase.NullParameters(),
-                r,
-                r2,
-            ))
+            @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r, r2))
 
             @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
@@ -225,12 +220,7 @@
                     nn = Chain(Dense(nvars => nvars, tanh))
                 end
                 icnf = mt{tp, at}(nn, nvars)
-                model = ICNFModel(
-                    icnf;
-                    n_epochs,
-                    batch_size,
-                    adtype = go_ad,
-                )
+                model = ICNFModel(icnf; n_epochs, batch_size, adtype = go_ad)
                 mach = machine(model, df)
                 @test !isnothing(fit!(mach))
                 @test !isnothing(MLJBase.transform(mach, df))
@@ -256,12 +246,7 @@
                     nn = Chain(Dense(2 * nvars => nvars, tanh))
                 end
                 icnf = mt{tp, at}(nn, nvars)
-                model = CondICNFModel(
-                    icnf;
-                    n_epochs,
-                    batch_size,
-                    adtype = go_ad,
-                )
+                model = CondICNFModel(icnf; n_epochs, batch_size, adtype = go_ad)
                 mach = machine(model, (df, df2))
                 @test !isnothing(fit!(mach))
                 @test !isnothing(MLJBase.transform(mach, (df, df2)))
