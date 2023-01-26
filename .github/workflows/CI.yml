@@ -15,6 +15,7 @@ jobs:
         group:
           - Call
           - Fit
+          - Quality
         version:
           # - '1.6'
           - '1'
