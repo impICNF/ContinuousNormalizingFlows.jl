@@ -1,4 +1,4 @@
-export TestMode, TrainMode, FluxOptApp, OptimOptApp, SciMLOptApp
+export TestMode, TrainMode
 
 abstract type Flows end
 abstract type NormalizingFlows <: Flows end
@@ -17,11 +17,6 @@ abstract type AbstractCondICNF{T, AT} <: InfinitesimalContinuousNormalizingFlows
 abstract type Mode end
 struct TestMode <: Mode end
 struct TrainMode <: Mode end
-
-abstract type OptApp end
-struct FluxOptApp <: OptApp end
-struct OptimOptApp <: OptApp end
-struct SciMLOptApp <: OptApp end
 
 # MLJ interface
 
