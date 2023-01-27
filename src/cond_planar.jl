@@ -15,16 +15,6 @@ struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T
     # trace_train
 end
 
-function CondPlanar(
-    re::Optimisers.Restructure,
-    p::AbstractVector{T},
-    nvars::Integer,
-    basedist::Distribution,
-    tspan::Tuple{T, T},
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    CondPlanar{eltype(p), eval(typeof(p).name.name)}(re, p, nvars, basedist, tspan)
-end
-
 function CondPlanar{T, AT}(
     nn::PlanarNN,
     nvars::Integer,
