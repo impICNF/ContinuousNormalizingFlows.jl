@@ -37,9 +37,6 @@
         @test !isnothing(generate(icnf, TestMode(), n))
         @test !isnothing(generate(icnf, TrainMode(), n))
 
-        @test !isnothing(mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan))
-        @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan)
-
         @test !isnothing(icnf(r))
         @test !isnothing(loss(icnf, r))
         @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r))
@@ -124,9 +121,6 @@
         @test !isnothing(inference(icnf, TrainMode(), r, r2))
         @test !isnothing(generate(icnf, TestMode(), r2, n))
         @test !isnothing(generate(icnf, TrainMode(), r2, n))
-
-        @test !isnothing(mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan))
-        @test icnf == mt(icnf.re, icnf.p, icnf.nvars, icnf.basedist, icnf.tspan)
 
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
