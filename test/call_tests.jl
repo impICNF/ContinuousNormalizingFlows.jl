@@ -55,9 +55,7 @@
                     AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p),
                 )
             else
-                @test !isnothing(
-                    AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p),
-                )
+                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
             end
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, icnf.p))
         end
@@ -74,9 +72,7 @@
         # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
 
         @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
-        @test_throws DimensionMismatch !isnothing(
-            ForwardDiff.jacobian(diff_loss, icnf.p),
-        )
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
 
         @test !isnothing(Tracker.gradient(diff_loss, icnf.p))
@@ -140,9 +136,7 @@
                     AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p),
                 )
             else
-                @test !isnothing(
-                    AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p),
-                )
+                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, icnf.p))
             end
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, icnf.p))
         end
@@ -159,9 +153,7 @@
         # @test !isnothing(ReverseDiff.hessian(diff_loss, icnf.p))
 
         @test !isnothing(ForwardDiff.gradient(diff_loss, icnf.p))
-        @test_throws DimensionMismatch !isnothing(
-            ForwardDiff.jacobian(diff_loss, icnf.p),
-        )
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, icnf.p))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, icnf.p))
 
         @test !isnothing(Tracker.gradient(diff_loss, icnf.p))
