@@ -103,7 +103,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     xnew = convert(model.array_type, xnew)
 
-    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew)
+    tst = @timed logp̂x = Folds.map(x -> first(inference(model.m, TestMode(), x)), eachcol(xnew))
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
