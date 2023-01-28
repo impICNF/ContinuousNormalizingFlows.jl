@@ -4,8 +4,14 @@ export loss_f, callback_f, ICNFModel, ICNFDist
 
 function (icnf::AbstractICNF{T, AT})(
     xs::AbstractVector{<:Real},
-)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
+)::Real where {T <: AbstractFloat, AT <: AbstractArray}
     first(inference(icnf, TestMode(), xs))
+end
+
+function (icnf::AbstractICNF{T, AT})(
+    xs::AbstractMatrix{<:Real},
+)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
+    Folds.map(x -> first(inference(icnf, TestMode(), x)), eachcol(xs))
 end
 
 # -- SciML interface

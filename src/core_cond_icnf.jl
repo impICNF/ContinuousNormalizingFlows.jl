@@ -5,8 +5,15 @@ export loss_f, callback_f, CondICNFModel, CondICNFDist
 function (icnf::AbstractCondICNF{T, AT})(
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
-)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
+)::Real where {T <: AbstractFloat, AT <: AbstractArray}
     first(inference(icnf, TestMode(), xs, ys))
+end
+
+function (icnf::AbstractCondICNF{T, AT})(
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
+    Folds.map(((x, y),) -> first(inference(icnf, TestMode(), x, y)), zip(eachcol(xs), eachcol(ys)))
 end
 
 # -- SciML interface
