@@ -32,7 +32,7 @@ function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TestMode,
     n_batch::Integer,
-    ys::AbstractMatrix;
+    ys::AbstractMatrix{<:Real};
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f_aug(u, p, t)
@@ -49,7 +49,7 @@ function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TrainMode,
     n_batch::Integer,
-    ys::AbstractMatrix;
+    ys::AbstractMatrix{<:Real};
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
@@ -71,9 +71,9 @@ end
 
 function loss(
     icnf::CondRNODE{T, AT},
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p,
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+    p::AbstractVector{<:Real} = icnf.p,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     agg::Function = mean,

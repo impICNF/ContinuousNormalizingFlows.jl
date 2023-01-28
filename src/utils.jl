@@ -1,6 +1,6 @@
 function jacobian_batched(
     f,
-    xs::AbstractMatrix,
+    xs::AbstractMatrix{<:Real},
     T::Type{<:AbstractFloat},
     AT::Type{<:AbstractArray},
 )::Tuple

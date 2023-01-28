@@ -32,7 +32,7 @@ function augmented_f(
     icnf::CondFFJORD{T, AT},
     mode::TestMode,
     n_batch::Integer,
-    ys::AbstractMatrix;
+    ys::AbstractMatrix{<:Real};
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f_aug(u, p, t)
@@ -49,7 +49,7 @@ function augmented_f(
     icnf::CondFFJORD{T, AT},
     mode::TrainMode,
     n_batch::Integer,
-    ys::AbstractMatrix;
+    ys::AbstractMatrix{<:Real};
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))

@@ -71,8 +71,8 @@ end
 
 function loss(
     icnf::RNODE{T, AT},
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p,
+    xs::AbstractMatrix{<:Real},
+    p::AbstractVector{<:Real} = icnf.p,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     agg::Function = mean,
