@@ -172,5 +172,5 @@ function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVect
     x .= generate(d.m, TestMode(), d.ys; rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
-    A .= Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))
+    A .= Folds.mapreduce(x -> Distributions._rand!(rng, d, x), (x...) -> hcat(x...), eachcol(A))
 end
