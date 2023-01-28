@@ -14,7 +14,11 @@ function loss_f(
     icnf::AbstractICNF{T, AT},
     loss::Function,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(p::AbstractVector{<:Real}, θ::SciMLBase.NullParameters, xs::AbstractMatrix{<:Real})::Real
+    function f(
+        p::AbstractVector{<:Real},
+        θ::SciMLBase.NullParameters,
+        xs::AbstractMatrix{<:Real},
+    )::Real
         loss(icnf, xs, p)
     end
     f
@@ -142,7 +146,9 @@ Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     first(Distributions._logpdf(d, hcat(x)))
 end
-Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real}) = first(inference(d.m, TestMode(), A))
+function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
+    first(inference(d.m, TestMode(), A))
+end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
     (x .= Distributions._rand!(rng, d, hcat(x)))
 end
