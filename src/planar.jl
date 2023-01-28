@@ -60,34 +60,17 @@ end
 
 function augmented_f(
     icnf::Planar{T, AT},
-    mode::TestMode,
-    n_batch::Integer;
+    mode::Mode;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f_aug(u, p, t)
-        m = icnf.re(p)
-        z = u[1:(end - 1), :]
-        mz, J = jacobian_batched(m, z, T, AT)
-        trace_J = transpose(tr.(eachslice(J; dims = 3)))
-        vcat(mz, -trace_J)
-    end
-    f_aug
-end
-
-function augmented_f(
-    icnf::Planar{T, AT},
-    mode::TrainMode,
-    n_batch::Integer;
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
         m = icnf.re(p)
-        z = u[1:(end - 1), :]
-        mz, back = Zygote.pullback(m, z)
-        ϵJ = only(back(ϵ))
-        trace_J = sum(ϵJ .* ϵ; dims = 1)
+        z = u[1:(end - n_aug)]
+        mz = m(z)
+        trace_J = transpose(m.u) * only(AbstractDifferentiation.jacobian(differentiation_backend, m.h, z))
         vcat(mz, -trace_J)
     end
     f_aug

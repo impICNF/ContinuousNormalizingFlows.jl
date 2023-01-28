@@ -15,7 +15,6 @@
         AbstractDifferentiation.FiniteDifferencesBackend(),
     ]
     fd_m = FiniteDifferences.central_fdm(5, 1)
-    n = 2
 
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -23,7 +22,7 @@
         mt in mts
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r = convert(Matrix{tp}, rand(data_dist, nvars))
 
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -34,8 +33,8 @@
 
         @test !isnothing(inference(icnf, TestMode(), r))
         @test !isnothing(inference(icnf, TrainMode(), r))
-        @test !isnothing(generate(icnf, TestMode(), n))
-        @test !isnothing(generate(icnf, TrainMode(), n))
+        @test !isnothing(generate(icnf, TestMode()))
+        @test !isnothing(generate(icnf, TrainMode()))
 
         @test !isnothing(icnf(r))
         @test !isnothing(loss(icnf, r))
@@ -94,7 +93,7 @@
         @test !isnothing(logpdf(d, r))
         @test !isnothing(pdf(d, r))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, n))
+        @test !isnothing(rand(d, 2))
     end
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -103,8 +102,8 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r = convert(Matrix{tp}, rand(data_dist, nvars))
+        r2 = convert(Matrix{tp}, rand(data_dist, nvars))
 
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond = true)
@@ -115,8 +114,8 @@
 
         @test !isnothing(inference(icnf, TestMode(), r, r2))
         @test !isnothing(inference(icnf, TrainMode(), r, r2))
-        @test !isnothing(generate(icnf, TestMode(), r2, n))
-        @test !isnothing(generate(icnf, TrainMode(), r2, n))
+        @test !isnothing(generate(icnf, TestMode(), r2))
+        @test !isnothing(generate(icnf, TrainMode(), r2))
 
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
@@ -175,6 +174,6 @@
         @test !isnothing(logpdf(d, r))
         @test !isnothing(pdf(d, r))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, n))
+        @test !isnothing(rand(d, 2))
     end
 end

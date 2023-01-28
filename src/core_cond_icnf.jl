@@ -156,14 +156,14 @@ end
 Base.length(d::CondICNFDist) = d.m.nvars
 Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
-    first(Distributions._logpdf(d, hcat(x)))
+    first(inference(d.m, TestMode(), x))
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
-    first(inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)]))
+    Folds.map(x -> Distributions._logpdf(d, x), eachcol(A))
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
-    (x .= Distributions._rand!(rng, d, hcat(x)))
+    x .= generate(d.m, TestMode(); rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
-    (A .= generate(d.m, TestMode(), d.ys[:, 1:size(A, 2)], size(A, 2); rng))
+    A .= Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))
 end

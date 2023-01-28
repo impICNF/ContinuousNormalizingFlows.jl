@@ -1,12 +1,14 @@
 module ICNF
 
-using Adapt,
+using AbstractDifferentiation,
+    Adapt,
     CUDA,
     DataFrames,
     Distributions,
     DistributionsAD,
     FillArrays,
     Flux,
+    Folds,
     Functors,
     IterTools,
     MLJBase,
