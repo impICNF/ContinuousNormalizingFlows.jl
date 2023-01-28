@@ -20,7 +20,7 @@ function inference(
     z = fsol[1:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    [logp̂x, fsol[(end - n_aug + 1):end]...]
+    iszero(n_aug) ? [logp̂x] : [logp̂x, fsol[(end - n_aug + 1):end]...]
 end
 
 function generate(
