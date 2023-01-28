@@ -42,7 +42,7 @@ function augmented_f(
         m = Chain(x -> vcat(x, ys), m_a)
         z = u[1:(end - 1)]
         mz = m(z)
-        trace_J = transpose(m_a.u) * only(AbstractDifferentiation.jacobian(differentiation_backend, m_a.h, z))
+        trace_J = transpose(m_a.u) * only(AbstractDifferentiation.jacobian(differentiation_backend, x -> pl_h(m, x), z))
         vcat(mz, -trace_J)
     end
     f_aug
