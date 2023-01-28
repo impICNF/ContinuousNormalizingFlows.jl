@@ -63,7 +63,7 @@ function augmented_f(
         v_pb = AbstractDifferentiation.value_and_pullback_function(differentiation_backend, m, z)
         mz, ϵJ = v_pb(ϵ)
         ϵJ = only(ϵJ)
-        trace_J = ϵJ * ϵ
+        trace_J = ϵJ ⋅ ϵ
         vcat(mz, -trace_J)
     end
     f_aug

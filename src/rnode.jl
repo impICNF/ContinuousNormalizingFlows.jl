@@ -63,7 +63,7 @@ function augmented_f(
         v_pb = AbstractDifferentiation.value_and_pullback_function(differentiation_backend, m, z)
         ż, ϵJ = v_pb(ϵ)
         ϵJ = only(ϵJ)
-        l̇ = ϵJ * ϵ
+        l̇ = ϵJ ⋅ ϵ
         Ė = norm(ż)
         ṅ = norm(ϵJ)
         vcat(ż, -l̇, Ė, ṅ)
