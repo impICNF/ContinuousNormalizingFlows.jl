@@ -3,8 +3,8 @@ export loss_f, callback_f, ICNFModel, ICNFDist
 # -- Flux interface
 
 function (icnf::AbstractICNF{T, AT})(
-    xs::AbstractMatrix,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
+    xs::AbstractMatrix{<:Real},
+)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     first(inference(icnf, TestMode(), xs))
 end
 
@@ -14,7 +14,7 @@ function loss_f(
     icnf::AbstractICNF{T, AT},
     loss::Function,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(p::AbstractVector, θ::SciMLBase.NullParameters, xs::AbstractMatrix)::Real
+    function f(p::AbstractVector{<:Real}, θ::SciMLBase.NullParameters, xs::AbstractMatrix{<:Real})::Real
         loss(icnf, xs, p)
     end
     f
@@ -27,11 +27,11 @@ function callback_f(
 )::Function where {
     T <: AbstractFloat,
     AT <: AbstractArray,
-    T2 <: AbstractMatrix,
+    T2 <: AbstractMatrix{<:Real},
     T3 <: Tuple{T2},
 }
     xs, = first(data)
-    function f(p::AbstractVector, l::Real)::Bool
+    function f(p::AbstractVector{<:Real}, l::Real)::Bool
         vl = loss(icnf, xs, p)
         @info "Training" loss = vl
         false
@@ -139,13 +139,13 @@ end
 
 Base.length(d::ICNFDist) = d.m.nvars
 Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
-function Distributions._logpdf(d::ICNFDist, x::AbstractVector)
+function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     first(Distributions._logpdf(d, hcat(x)))
 end
-Distributions._logpdf(d::ICNFDist, A::AbstractMatrix) = first(inference(d.m, TestMode(), A))
-function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector)
+Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real}) = first(inference(d.m, TestMode(), A))
+function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
     (x .= Distributions._rand!(rng, d, hcat(x)))
 end
-function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix)
+function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
     (A .= generate(d.m, TestMode(), size(A, 2); rng))
 end

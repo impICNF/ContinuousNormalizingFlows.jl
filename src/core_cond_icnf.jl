@@ -3,9 +3,9 @@ export loss_f, callback_f, CondICNFModel, CondICNFDist
 # -- Flux interface
 
 function (icnf::AbstractCondICNF{T, AT})(
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-)::AbstractVector where {T <: AbstractFloat, AT <: AbstractArray}
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     first(inference(icnf, TestMode(), xs, ys))
 end
 
@@ -16,10 +16,10 @@ function loss_f(
     loss::Function,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     function f(
-        p::AbstractVector,
+        p::AbstractVector{<:Real},
         θ::SciMLBase.NullParameters,
-        xs::AbstractMatrix,
-        ys::AbstractMatrix,
+        xs::AbstractMatrix{<:Real},
+        ys::AbstractMatrix{<:Real},
     )::Real
         loss(icnf, xs, ys, p)
     end
@@ -33,11 +33,11 @@ function callback_f(
 )::Function where {
     T <: AbstractFloat,
     AT <: AbstractArray,
-    T2 <: AbstractMatrix,
+    T2 <: AbstractMatrix{<:Real},
     T3 <: Tuple{T2, T2},
 }
     xs, ys = first(data)
-    function f(p::AbstractVector, l::T)::Bool
+    function f(p::AbstractVector{<:Real}, l::Real)::Bool
         vl = loss(icnf, xs, ys, p)
         @info "Training" loss = vl
         false
@@ -150,20 +150,20 @@ MLJBase.metadata_model(
 
 struct CondICNFDist <: ICNFDistribution
     m::AbstractCondICNF
-    ys::AbstractMatrix
+    ys::AbstractMatrix{<:Real}
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars
 Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
-function Distributions._logpdf(d::CondICNFDist, x::AbstractVector)
+function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
     first(Distributions._logpdf(d, hcat(x)))
 end
-function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix)
+function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
     first(inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)]))
 end
-function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector)
+function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
     (x .= Distributions._rand!(rng, d, hcat(x)))
 end
-function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix)
+function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
     (A .= generate(d.m, TestMode(), d.ys[:, 1:size(A, 2)], size(A, 2); rng))
 end

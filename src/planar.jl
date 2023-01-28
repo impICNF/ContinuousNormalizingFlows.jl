@@ -1,9 +1,9 @@
 export Planar, PlanarNN
 
 struct PlanarNN
-    u::AbstractVector
-    w::AbstractVector
-    b::AbstractVector
+    u::AbstractVector{<:Real}
+    w::AbstractVector{<:Real}
+    b::AbstractVector{<:Real}
 
     h::Function
 end

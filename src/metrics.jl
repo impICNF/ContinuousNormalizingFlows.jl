@@ -2,8 +2,8 @@ export agg_loglikelihood
 
 function agg_loglikelihood(
     icnf::AbstractICNF{T, AT},
-    xs::AbstractMatrix,
-    p::AbstractVector = icnf.p;
+    xs::AbstractMatrix{<:Real},
+    p::AbstractVector{<:Real} = icnf.p;
     agg::Function = mean,
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
@@ -13,9 +13,9 @@ end
 
 function agg_loglikelihood(
     icnf::AbstractCondICNF{T, AT},
-    xs::AbstractMatrix,
-    ys::AbstractMatrix,
-    p::AbstractVector = icnf.p;
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+    p::AbstractVector{<:Real} = icnf.p;
     agg::Function = mean,
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
