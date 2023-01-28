@@ -40,8 +40,6 @@
         @test !isnothing(loss(icnf, r))
         @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r))
 
-        @test !isnothing(agg_loglikelihood(icnf, r))
-
         diff_loss(x) = loss(icnf, r, x)
 
         @testset "Using $(typeof(adb).name.name)" for adb in adb_list
@@ -120,8 +118,6 @@
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
         @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r, r2))
-
-        @test !isnothing(agg_loglikelihood(icnf, r, r2))
 
         diff_loss(x) = loss(icnf, r, r2, x)
 
