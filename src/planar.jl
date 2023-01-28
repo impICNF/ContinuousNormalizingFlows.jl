@@ -28,7 +28,7 @@ function (m::PlanarNN)(z::AbstractVecOrMat)::AbstractVecOrMat
     u * h.(muladd(transpose(w), z, b))
 end
 
-function pl_h(m::PlanarNN, z::AbstractVecOrMat)::AbstractVecOrMat
+function pl_h(m::PlanarNN, z::AbstractVecOrMat)::Union{AbstractVecOrMat, Real}
     u, w, b = m.u, m.w, only(m.b)
     h = NNlib.fast_act(m.h, z)
     h.(muladd(transpose(w), z, b))
