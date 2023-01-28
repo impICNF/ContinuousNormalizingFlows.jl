@@ -41,8 +41,4 @@ include("cond_rnode.jl")
 include("cond_ffjord.jl")
 include("cond_planar.jl")
 
-include("metrics.jl")
-
-include("utils.jl")
-
 end
