@@ -3,7 +3,7 @@ export loss_f, callback_f, ICNFModel, ICNFDist
 # -- Flux interface
 
 function (icnf::AbstractICNF{T, AT})(
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractVector{<:Real},
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     first(inference(icnf, TestMode(), xs))
 end

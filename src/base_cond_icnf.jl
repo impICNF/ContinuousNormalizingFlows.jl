@@ -4,7 +4,7 @@ function inference(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,
     xs::AbstractVector{<:Real},
-    ys::AbstractMatrix{<:Real},
+    ys::AbstractVector{<:Real},
     p::AbstractVector{<:Real} = icnf.p,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),

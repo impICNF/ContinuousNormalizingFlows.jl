@@ -31,7 +31,7 @@ end
 function augmented_f(
     icnf::CondPlanar{T, AT},
     mode::Mode,
-    ys::AbstractMatrix{<:Real};
+    ys::AbstractVector{<:Real};
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}

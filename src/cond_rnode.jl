@@ -31,7 +31,7 @@ end
 function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TestMode,
-    ys::AbstractMatrix{<:Real};
+    ys::AbstractVector{<:Real};
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -50,7 +50,7 @@ end
 function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real};
+    ys::AbstractVector{<:Real};
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}

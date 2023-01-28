@@ -3,8 +3,8 @@ export loss_f, callback_f, CondICNFModel, CondICNFDist
 # -- Flux interface
 
 function (icnf::AbstractCondICNF{T, AT})(
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     first(inference(icnf, TestMode(), xs, ys))
 end
@@ -150,19 +150,19 @@ MLJBase.metadata_model(
 
 struct CondICNFDist <: ICNFDistribution
     m::AbstractCondICNF
-    ys::AbstractMatrix{<:Real}
+    ys::AbstractVector{<:Real}
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars
 Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
-    first(inference(d.m, TestMode(), x))
+    first(inference(d.m, TestMode(), x, d.ys))
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
     Folds.map(x -> Distributions._logpdf(d, x), eachcol(A))
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
-    x .= generate(d.m, TestMode(); rng)
+    x .= generate(d.m, TestMode(), d.ys; rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
     A .= Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))
