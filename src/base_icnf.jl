@@ -9,7 +9,7 @@ function inference(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
-)::Any where {T <: AbstractFloat, AT <: AbstractArray}
+)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1))
     f_aug = augmented_f(icnf, mode; differentiation_backend, rng)
@@ -20,7 +20,7 @@ function inference(
     z = fsol[1:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    logp̂x, fsol[(end - n_aug + 1):end]...
+    vcat(logp̂x, fsol[(end - n_aug + 1):end])
 end
 
 function generate(
