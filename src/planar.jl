@@ -76,7 +76,7 @@ function augmented_f(
         m = icnf.re(p)
         z = u[1:(end - n_aug)]
         mz = m(z)
-        trace_J = transpose(m.u) * only(AbstractDifferentiation.jacobian(differentiation_backend, x -> pl_h(m, x), z))
+        trace_J = m.u ⋅ transpose(only(AbstractDifferentiation.jacobian(differentiation_backend, x -> pl_h(m, x), z)))
         vcat(mz, -trace_J)
     end
     f_aug

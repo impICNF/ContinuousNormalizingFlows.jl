@@ -10,7 +10,7 @@ function inference(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
-)::Tuple where {T <: AbstractFloat, AT <: AbstractArray}
+)::Any where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1))
     f_aug = augmented_f(icnf, mode, ys; differentiation_backend, rng)
