@@ -32,7 +32,7 @@ end
 
 function augmented_f(
     icnf::RNODE{T, AT},
-    mode::TestMode,
+    mode::TestMode;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
