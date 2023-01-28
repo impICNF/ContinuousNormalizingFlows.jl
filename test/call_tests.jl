@@ -23,6 +23,7 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = rand(data_dist, nvars)
+        r_arr = rand(data_dist, nvars, 2)
 
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -38,7 +39,8 @@
 
         @test !isnothing(icnf(r))
         @test !isnothing(loss(icnf, r))
-        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r))
+        @test !isnothing(loss(icnf, r_arr))
+        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r_arr))
 
         diff_loss(x) = loss(icnf, r, x)
 
@@ -89,7 +91,9 @@
         d = ICNFDist(icnf)
 
         @test !isnothing(logpdf(d, r))
+        @test !isnothing(logpdf(d, r_arr))
         @test !isnothing(pdf(d, r))
+        @test !isnothing(pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
@@ -101,7 +105,9 @@
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = rand(data_dist, nvars)
+        r_arr = rand(data_dist, nvars, 2)
         r2 = rand(data_dist, nvars)
+        r2_arr = rand(data_dist, nvars, 2)
 
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond = true)
@@ -117,7 +123,8 @@
 
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
-        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r, r2))
+        @test !isnothing(loss(icnf, r_arr, r2_arr))
+        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r_arr, r2_arr))
 
         diff_loss(x) = loss(icnf, r, r2, x)
 
@@ -168,7 +175,9 @@
         d = CondICNFDist(icnf, r2)
 
         @test !isnothing(logpdf(d, r))
+        @test !isnothing(logpdf(d, r_arr))
         @test !isnothing(pdf(d, r))
+        @test !isnothing(pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
