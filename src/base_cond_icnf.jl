@@ -25,7 +25,7 @@ function inference(
 end
 
 function inference(
-    icnf::AbstractICNF{T, AT},
+    icnf::AbstractCondICNF{T, AT},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractVector{<:Real},
@@ -78,7 +78,7 @@ function generate(
 end
 
 function generate(
-    icnf::AbstractICNF{T, AT},
+    icnf::AbstractCondICNF{T, AT},
     mode::Mode,
     ys::AbstractVector{<:Real},
     n::Integer,
