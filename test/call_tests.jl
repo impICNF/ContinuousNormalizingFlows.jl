@@ -1,8 +1,8 @@
 @testset "Call Tests" begin
-    mts = Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
-    cmts = Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    mts = SMALL ? Type{<:ICNF.AbstractICNF}[RNODE] : Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts = SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] : Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
-    if has_cuda_gpu()
+    if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
     tps = Type{<:AbstractFloat}[Float64, Float32, Float16]
@@ -15,7 +15,6 @@
         AbstractDifferentiation.FiniteDifferencesBackend(),
     ]
     fd_m = FiniteDifferences.central_fdm(5, 1)
-    n = 2
 
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -23,7 +22,8 @@
         mt in mts
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r = convert(Vector{tp}, rand(data_dist, nvars))
+        r_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
 
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -34,14 +34,13 @@
 
         @test !isnothing(inference(icnf, TestMode(), r))
         @test !isnothing(inference(icnf, TrainMode(), r))
-        @test !isnothing(generate(icnf, TestMode(), n))
-        @test !isnothing(generate(icnf, TrainMode(), n))
+        @test !isnothing(generate(icnf, TestMode()))
+        @test !isnothing(generate(icnf, TrainMode()))
 
         @test !isnothing(icnf(r))
         @test !isnothing(loss(icnf, r))
-        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r))
-
-        @test !isnothing(agg_loglikelihood(icnf, r))
+        @test !isnothing(loss(icnf, r_arr))
+        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r_arr))
 
         diff_loss(x) = loss(icnf, r, x)
 
@@ -92,9 +91,11 @@
         d = ICNFDist(icnf)
 
         @test !isnothing(logpdf(d, r))
+        @test !isnothing(logpdf(d, r_arr))
         @test !isnothing(pdf(d, r))
+        @test !isnothing(pdf(d, r_arr))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, n))
+        @test !isnothing(rand(d, 2))
     end
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -103,8 +104,10 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r = convert(Vector{tp}, rand(data_dist, nvars))
+        r_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r2 = convert(Vector{tp}, rand(data_dist, nvars))
+        r2_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
 
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond = true)
@@ -115,14 +118,13 @@
 
         @test !isnothing(inference(icnf, TestMode(), r, r2))
         @test !isnothing(inference(icnf, TrainMode(), r, r2))
-        @test !isnothing(generate(icnf, TestMode(), r2, n))
-        @test !isnothing(generate(icnf, TrainMode(), r2, n))
+        @test !isnothing(generate(icnf, TestMode(), r2))
+        @test !isnothing(generate(icnf, TrainMode(), r2))
 
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
-        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r, r2))
-
-        @test !isnothing(agg_loglikelihood(icnf, r, r2))
+        @test !isnothing(loss(icnf, r_arr, r2_arr))
+        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r_arr, r2_arr))
 
         diff_loss(x) = loss(icnf, r, r2, x)
 
@@ -173,8 +175,10 @@
         d = CondICNFDist(icnf, r2)
 
         @test !isnothing(logpdf(d, r))
+        @test !isnothing(logpdf(d, r_arr))
         @test !isnothing(pdf(d, r))
+        @test !isnothing(pdf(d, r_arr))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, n))
+        @test !isnothing(rand(d, 2))
     end
 end

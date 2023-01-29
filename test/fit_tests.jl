@@ -1,8 +1,8 @@
 @testset "Fit Tests" begin
-    mts = Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
-    cmts = Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    mts = SMALL ? Type{<:ICNF.AbstractICNF}[RNODE] : Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts = SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] : Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
-    if has_cuda_gpu()
+    if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
     tps = Type{<:AbstractFloat}[Float64, Float32, Float16]

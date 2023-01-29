@@ -3,10 +3,17 @@ export loss_f, callback_f, CondICNFModel, CondICNFDist
 # -- Flux interface
 
 function (icnf::AbstractCondICNF{T, AT})(
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
+)::Real where {T <: AbstractFloat, AT <: AbstractArray}
+    first(inference(icnf, TestMode(), xs, ys))
+end
+
+function (icnf::AbstractCondICNF{T, AT})(
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
-    first(inference(icnf, TestMode(), xs, ys))
+    Folds.map(((x, y),) -> first(inference(icnf, TestMode(), x, y)), zip(eachcol(xs), eachcol(ys)))
 end
 
 # -- SciML interface
@@ -111,7 +118,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     ynew = convert(model.array_type, ynew)
 
-    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew, ynew)
+    tst = @timed logp̂x = Folds.map(((x, y),) -> first(inference(model.m, TestMode(), x, y)), zip(eachcol(xnew), eachcol(ynew)))
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -150,20 +157,20 @@ MLJBase.metadata_model(
 
 struct CondICNFDist <: ICNFDistribution
     m::AbstractCondICNF
-    ys::AbstractMatrix{<:Real}
+    ys::AbstractVector{<:Real}
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars
 Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
-    first(Distributions._logpdf(d, hcat(x)))
+    first(inference(d.m, TestMode(), x, d.ys))
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
-    first(inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)]))
+    Folds.map(x -> Distributions._logpdf(d, x), eachcol(A))
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
-    (x .= Distributions._rand!(rng, d, hcat(x)))
+    x .= generate(d.m, TestMode(), d.ys; rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
-    (A .= generate(d.m, TestMode(), d.ys[:, 1:size(A, 2)], size(A, 2); rng))
+    A .= hcat(Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
 end

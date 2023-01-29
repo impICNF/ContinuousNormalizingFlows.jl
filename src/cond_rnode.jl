@@ -31,15 +31,17 @@ end
 function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TestMode,
-    n_batch::Integer,
-    ys::AbstractMatrix{<:Real};
+    ys::AbstractVector{<:Real};
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    n_aug = n_augment(icnf, mode) + 1
+
     function f_aug(u, p, t)
         m = Chain(x -> vcat(x, ys), icnf.re(p))
-        z = u[1:(end - 1), :]
-        ż, J = jacobian_batched(m, z, T, AT)
-        l̇ = transpose(tr.(eachslice(J; dims = 3)))
+        z = u[1:(end - n_aug)]
+        ż, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, m, z)
+        l̇ = tr(only(J))
         vcat(ż, -l̇)
     end
     f_aug
@@ -48,20 +50,22 @@ end
 function augmented_f(
     icnf::CondRNODE{T, AT},
     mode::TrainMode,
-    n_batch::Integer,
-    ys::AbstractMatrix{<:Real};
+    ys::AbstractVector{<:Real};
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    n_aug = n_augment(icnf, mode) + 1
+    ϵ = convert(AT, randn(rng, T, icnf.nvars))
 
     function f_aug(u, p, t)
         m = Chain(x -> vcat(x, ys), icnf.re(p))
-        z = u[1:(end - 3), :]
-        ż, back = Zygote.pullback(m, z)
-        ϵJ = only(back(ϵ))
-        l̇ = sum(ϵJ .* ϵ; dims = 1)
-        Ė = transpose(norm.(eachcol(ż)))
-        ṅ = transpose(norm.(eachcol(ϵJ)))
+        z = u[1:(end - n_aug)]
+        v_pb = AbstractDifferentiation.value_and_pullback_function(differentiation_backend, m, z)
+        ż, ϵJ = v_pb(ϵ)
+        ϵJ = only(ϵJ)
+        l̇ = ϵJ ⋅ ϵ
+        Ė = norm(ż)
+        ṅ = norm(ϵJ)
         vcat(ż, -l̇, Ė, ṅ)
     end
     f_aug
@@ -71,16 +75,15 @@ end
 
 function loss(
     icnf::CondRNODE{T, AT},
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
     p::AbstractVector{<:Real} = icnf.p,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    agg::Function = mean,
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, ys, p; rng)
-    agg(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
+    -logp̂x + λ₁ * Ė + λ₂ * ṅ
 end
 
 function n_augment(

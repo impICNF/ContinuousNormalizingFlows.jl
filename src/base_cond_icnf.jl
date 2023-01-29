@@ -3,46 +3,58 @@ export inference, generate, loss
 function inference(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
     p::AbstractVector{<:Real} = icnf.p,
     args...;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
-)::Tuple{Vararg{AbstractVector{<:Real}}} where {T <: AbstractFloat, AT <: AbstractArray}
+)::Tuple{Vararg{Real}} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    zrs = convert(AT, zeros(T, n_aug + 1, size(xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(xs, 2), ys; rng)
+    zrs = convert(AT, zeros(T, n_aug + 1))
+    f_aug = augmented_f(icnf, mode, ys; differentiation_backend, rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
     sol = solve(prob, args...; kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - n_aug - 1), :]
-    Δlogp = fsol[(end - n_aug), :]
+    fsol = sol[:, end]
+    z = fsol[1:(end - n_aug - 1)]
+    Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    iszero(n_aug) ? (logp̂x,) : (logp̂x, eachrow(fsol[(end - n_aug + 1):end, :])...)
+    iszero(n_aug) ? (logp̂x,) : (logp̂x, fsol[(end - n_aug + 1):end]...)
 end
 
 function generate(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,
-    ys::AbstractMatrix{<:Real},
-    n::Integer,
+    ys::AbstractVector{<:Real},
     p::AbstractVector{<:Real} = icnf.p,
     args...;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
-)::AbstractMatrix{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
+)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT, rand(rng, icnf.basedist, n))
-    zrs = convert(AT, zeros(T, n_aug + 1, size(new_xs, 2)))
-    f_aug = augmented_f(icnf, mode, size(new_xs, 2), ys; rng)
+    new_xs = convert(AT, rand(rng, icnf.basedist))
+    zrs = convert(AT, zeros(T, n_aug + 1))
+    f_aug = augmented_f(icnf, mode, ys; differentiation_backend, rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
     sol = solve(prob, args...; kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - n_aug - 1), :]
+    fsol = sol[:, end]
+    z = fsol[1:(end - n_aug - 1)]
     z
+end
+
+function loss(
+    icnf::AbstractCondICNF{T, AT},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
+    p::AbstractVector{<:Real} = icnf.p;
+    rng::AbstractRNG = Random.default_rng(),
+)::Real where {T <: AbstractFloat, AT <: AbstractArray}
+    logp̂x, = inference(icnf, TrainMode(), xs, ys, p; rng)
+    -logp̂x
 end
 
 function loss(
@@ -50,11 +62,9 @@ function loss(
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     p::AbstractVector{<:Real} = icnf.p;
-    agg::Function = mean,
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, TrainMode(), xs, ys, p; rng)
-    agg(-logp̂x)
+    Folds.sum(((x, y),) -> loss(icnf, x, y, p; rng), zip(eachcol(xs), eachcol(ys))) / size(xs, 2)
 end
 
 function n_augment(

@@ -3,9 +3,15 @@ export loss_f, callback_f, ICNFModel, ICNFDist
 # -- Flux interface
 
 function (icnf::AbstractICNF{T, AT})(
+    xs::AbstractVector{<:Real},
+)::Real where {T <: AbstractFloat, AT <: AbstractArray}
+    first(inference(icnf, TestMode(), xs))
+end
+
+function (icnf::AbstractICNF{T, AT})(
     xs::AbstractMatrix{<:Real},
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
-    first(inference(icnf, TestMode(), xs))
+    Folds.map(x -> first(inference(icnf, TestMode(), x)), eachcol(xs))
 end
 
 # -- SciML interface
@@ -103,7 +109,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     xnew = convert(model.array_type, xnew)
 
-    tst = @timed logp̂x, = inference(model.m, TestMode(), xnew)
+    tst = @timed logp̂x = Folds.map(x -> first(inference(model.m, TestMode(), x)), eachcol(xnew))
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -144,14 +150,14 @@ end
 Base.length(d::ICNFDist) = d.m.nvars
 Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
-    first(Distributions._logpdf(d, hcat(x)))
+    first(inference(d.m, TestMode(), x))
 end
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
-    first(inference(d.m, TestMode(), A))
+    Folds.map(x -> Distributions._logpdf(d, x), eachcol(A))
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
-    (x .= Distributions._rand!(rng, d, hcat(x)))
+    x .= generate(d.m, TestMode(); rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
-    (A .= generate(d.m, TestMode(), size(A, 2); rng))
+    A .= hcat(Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
 end

@@ -1,12 +1,14 @@
 module ICNF
 
-using Adapt,
+using AbstractDifferentiation,
+    Adapt,
     CUDA,
     DataFrames,
     Distributions,
     DistributionsAD,
     FillArrays,
     Flux,
+    Folds,
     Functors,
     IterTools,
     MLJBase,
@@ -38,9 +40,5 @@ include("planar.jl")
 include("cond_rnode.jl")
 include("cond_ffjord.jl")
 include("cond_planar.jl")
-
-include("metrics.jl")
-
-include("utils.jl")
 
 end
