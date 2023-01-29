@@ -34,8 +34,25 @@ function inference(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
-)::Base.Iterators.Zip{<:Tuple{Vararg{Tuple{Vararg{Real}}}}} where {T <: AbstractFloat, AT <: AbstractArray}
-    zip(Folds.map(x -> inference(icnf, mode, x, ys, p, args...; differentiation_backend, rng, kwargs...), eachcol(xs))...)
+)::Base.Iterators.Zip{
+    <:Tuple{Vararg{Tuple{Vararg{Real}}}},
+} where {T <: AbstractFloat, AT <: AbstractArray}
+    zip(
+        Folds.map(
+            x -> inference(
+                icnf,
+                mode,
+                x,
+                ys,
+                p,
+                args...;
+                differentiation_backend,
+                rng,
+                kwargs...,
+            ),
+            eachcol(xs),
+        )...,
+    )
 end
 
 function generate(
@@ -71,7 +88,10 @@ function generate(
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector{<:AbstractVector{<:Real}} where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.map(x -> generate(icnf, mode, ys, p, args...; differentiation_backend, rng, kwargs...), 1:n)
+    Folds.map(
+        x -> generate(icnf, mode, ys, p, args...; differentiation_backend, rng, kwargs...),
+        1:n,
+    )
 end
 
 function loss(
