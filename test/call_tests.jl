@@ -1,8 +1,8 @@
 @testset "Call Tests" begin
-    mts = Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
-    cmts = Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    mts = SMALL ? Type{<:ICNF.AbstractICNF}[RNODE] : Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts = SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] : Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
-    if has_cuda_gpu()
+    if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
     tps = Type{<:AbstractFloat}[Float64, Float32, Float16]
@@ -22,8 +22,8 @@
         mt in mts
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = rand(data_dist, nvars)
-        r_arr = rand(data_dist, nvars, 2)
+        r = convert(Vector{tp}, rand(data_dist, nvars))
+        r_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
 
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -104,10 +104,10 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = rand(data_dist, nvars)
-        r_arr = rand(data_dist, nvars, 2)
-        r2 = rand(data_dist, nvars)
-        r2_arr = rand(data_dist, nvars, 2)
+        r = convert(Vector{tp}, rand(data_dist, nvars))
+        r_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r2 = convert(Vector{tp}, rand(data_dist, nvars))
+        r2_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
 
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond = true)
