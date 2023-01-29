@@ -2,6 +2,7 @@ module ICNF
 
 using AbstractDifferentiation,
     Adapt,
+    Base.Iterators,
     CUDA,
     DataFrames,
     Distributions,

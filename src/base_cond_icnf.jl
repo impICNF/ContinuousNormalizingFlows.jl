@@ -24,6 +24,20 @@ function inference(
     iszero(n_aug) ? (logp̂x,) : (logp̂x, fsol[(end - n_aug + 1):end]...)
 end
 
+function inference(
+    icnf::AbstractICNF{T, AT},
+    mode::Mode,
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractVector{<:Real},
+    p::AbstractVector{<:Real} = icnf.p,
+    args...;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
+)::Base.Iterators.Zip{<:Tuple{Vararg{Tuple{Vararg{Real}}}}} where {T <: AbstractFloat, AT <: AbstractArray}
+    zip(Folds.map(x -> inference(icnf, mode, x, ys, p, args...; differentiation_backend, rng, kwargs...), eachcol(xs))...)
+end
+
 function generate(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,
@@ -44,6 +58,20 @@ function generate(
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
     z
+end
+
+function generate(
+    icnf::AbstractICNF{T, AT},
+    mode::Mode,
+    ys::AbstractVector{<:Real},
+    n::Integer,
+    p::AbstractVector{<:Real} = icnf.p,
+    args...;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    rng::AbstractRNG = Random.default_rng(),
+    kwargs...,
+)::AbstractVector{<:AbstractVector{<:Real}} where {T <: AbstractFloat, AT <: AbstractArray}
+    Folds.map(x -> generate(icnf, mode, ys, p, args...; differentiation_backend, rng, kwargs...), 1:n)
 end
 
 function loss(

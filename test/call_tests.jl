@@ -37,9 +37,13 @@
         icnf = mt{tp, at}(nn, nvars)
 
         @test !isnothing(inference(icnf, TestMode(), r))
+        @test !isnothing(inference(icnf, TestMode(), r_arr))
         @test !isnothing(inference(icnf, TrainMode(), r))
+        @test !isnothing(inference(icnf, TrainMode(), r_arr))
         @test !isnothing(generate(icnf, TestMode()))
+        @test !isnothing(generate(icnf, TestMode(), 2))
         @test !isnothing(generate(icnf, TrainMode()))
+        @test !isnothing(generate(icnf, TrainMode(), 2))
 
         @test !isnothing(icnf(r))
         @test !isnothing(loss(icnf, r))
@@ -121,9 +125,13 @@
         icnf = mt{tp, at}(nn, nvars)
 
         @test !isnothing(inference(icnf, TestMode(), r, r2))
+        @test !isnothing(inference(icnf, TestMode(), r_arr, r2))
         @test !isnothing(inference(icnf, TrainMode(), r, r2))
+        @test !isnothing(inference(icnf, TrainMode(), r_arr, r2))
         @test !isnothing(generate(icnf, TestMode(), r2))
+        @test !isnothing(generate(icnf, TestMode(), r2, 2))
         @test !isnothing(generate(icnf, TrainMode(), r2))
+        @test !isnothing(generate(icnf, TrainMode(), r2, 2))
 
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
