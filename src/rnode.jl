@@ -60,7 +60,11 @@ function augmented_f(
     function f_aug(u, p, t)
         m = icnf.re(p)
         z = u[1:(end - n_aug)]
-        v_pb = AbstractDifferentiation.value_and_pullback_function(differentiation_backend, m, z)
+        v_pb = AbstractDifferentiation.value_and_pullback_function(
+            differentiation_backend,
+            m,
+            z,
+        )
         ż, ϵJ = v_pb(ϵ)
         ϵJ = only(ϵJ)
         l̇ = ϵJ ⋅ ϵ

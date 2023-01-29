@@ -64,7 +64,8 @@ function loss(
     p::AbstractVector{<:Real} = icnf.p;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.sum(((x, y),) -> loss(icnf, x, y, p; rng), zip(eachcol(xs), eachcol(ys))) / size(xs, 2)
+    Folds.sum(((x, y),) -> loss(icnf, x, y, p; rng), zip(eachcol(xs), eachcol(ys))) /
+    size(xs, 2)
 end
 
 function n_augment(
