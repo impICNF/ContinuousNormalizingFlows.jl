@@ -60,7 +60,11 @@ function augmented_f(
     function f_aug(u, p, t)
         m = Chain(x -> vcat(x, ys), icnf.re(p))
         z = u[1:(end - 1)]
-        v_pb = AbstractDifferentiation.value_and_pullback_function(differentiation_backend, m, z)
+        v_pb = AbstractDifferentiation.value_and_pullback_function(
+            differentiation_backend,
+            m,
+            z,
+        )
         mz, ϵJ = v_pb(ϵ)
         ϵJ = only(ϵJ)
         trace_J = ϵJ ⋅ ϵ

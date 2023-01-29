@@ -1,6 +1,10 @@
 @testset "Call Tests" begin
-    mts = SMALL ? Type{<:ICNF.AbstractICNF}[RNODE] : Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
-    cmts = SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] : Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+    mts =
+        SMALL ? Type{<:ICNF.AbstractICNF}[RNODE] :
+        Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+    cmts =
+        SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] :
+        Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
     if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
@@ -124,7 +128,9 @@
         @test !isnothing(icnf(r, r2))
         @test !isnothing(loss(icnf, r, r2))
         @test !isnothing(loss(icnf, r_arr, r2_arr))
-        @test !isnothing(loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r_arr, r2_arr))
+        @test !isnothing(
+            loss_f(icnf, loss)(icnf.p, SciMLBase.NullParameters(), r_arr, r2_arr),
+        )
 
         diff_loss(x) = loss(icnf, r, r2, x)
 

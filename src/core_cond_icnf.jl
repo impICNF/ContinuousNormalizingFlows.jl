@@ -13,7 +13,10 @@ function (icnf::AbstractCondICNF{T, AT})(
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.map(((x, y),) -> first(inference(icnf, TestMode(), x, y)), zip(eachcol(xs), eachcol(ys)))
+    Folds.map(
+        ((x, y),) -> first(inference(icnf, TestMode(), x, y)),
+        zip(eachcol(xs), eachcol(ys)),
+    )
 end
 
 # -- SciML interface
@@ -118,7 +121,10 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     ynew = convert(model.array_type, ynew)
 
-    tst = @timed logp̂x = Folds.map(((x, y),) -> first(inference(model.m, TestMode(), x, y)), zip(eachcol(xnew), eachcol(ynew)))
+    tst = @timed logp̂x = Folds.map(
+        ((x, y),) -> first(inference(model.m, TestMode(), x, y)),
+        zip(eachcol(xnew), eachcol(ynew)),
+    )
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
