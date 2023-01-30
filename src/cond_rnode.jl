@@ -81,7 +81,7 @@ function loss(
     λ₂::T = convert(T, 1e-2);
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, ys, p, st; rng)
+    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, ys, ps, st; rng)
     -logp̂x + λ₁ * Ė + λ₂ * ṅ
 end
 
