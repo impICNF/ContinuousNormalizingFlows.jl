@@ -35,7 +35,7 @@
             nn = Chain(Dense(nvars => nvars, tanh))
         end
         icnf = mt{tp, at}(nn, nvars)
-        ps, st = Lux.setup(rng, model.m)
+        ps, st = Lux.setup(rng, icnf)
 
         @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
             @test !isnothing(inference(icnf, TestMode(), r, ps, st; differentiation_backend=adb))
@@ -125,7 +125,7 @@
             nn = Chain(Dense(2 * nvars => nvars, tanh))
         end
         icnf = mt{tp, at}(nn, nvars)
-        ps, st = Lux.setup(rng, model.m)
+        ps, st = Lux.setup(rng, icnf)
 
         @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
             @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend=adb))
