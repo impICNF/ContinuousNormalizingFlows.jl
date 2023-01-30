@@ -38,7 +38,7 @@ function inference(
     <:Tuple{Vararg{Tuple{Vararg{Real}}}},
 } where {T <: AbstractFloat, AT <: AbstractArray}
     zip(
-        Folds.map(
+        broadcast(
             x -> inference(
                 icnf,
                 mode,
@@ -88,7 +88,7 @@ function generate(
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector{<:AbstractVector{<:Real}} where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.map(
+    broadcast(
         x -> generate(icnf, mode, ps, st, args...; differentiation_backend, rng, kwargs...),
         1:n,
     )
@@ -112,7 +112,7 @@ function loss(
     st::Any;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.sum(x -> loss(icnf, x, ps, st; rng), eachcol(xs)) / size(xs, 2)
+    sum(x -> loss(icnf, x, ps, st; rng), eachcol(xs)) / size(xs, 2)
 end
 
 function n_augment(

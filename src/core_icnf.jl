@@ -50,15 +50,15 @@ mutable struct ICNFModel <: MLJICNF
 end
 
 function ICNFModel(
-    m::AbstractICNF,
+    m::AbstractICNF{T, AT},
     loss::Function = loss,
     ;
     optimizer::Any = default_optimizer,
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
-)
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, typeof(m).parameters[1], typeof(m).parameters[2])
+) where {T <: AbstractFloat, AT <: AbstractArray}
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, T, AT)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -99,7 +99,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     (ps, st) = fitresult
 
     tst = @timed logp̂x =
-        Folds.map(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
+        broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -146,11 +146,11 @@ function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     first(inference(d.m, TestMode(), x, d.ps, d.st))
 end
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
-    Folds.map(x -> Distributions._logpdf(d, x), eachcol(A))
+    broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
     x .= generate(d.m, TestMode(), d.ps, d.st; rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
-    A .= hcat(Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
+    A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
 end
