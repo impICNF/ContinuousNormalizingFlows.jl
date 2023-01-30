@@ -37,7 +37,7 @@
         end
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, icnf)
-        ps = map(at{tp}, ps)
+        ps = ComponentArray(map(at{tp}, ps))
 
         @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
             @test !isnothing(inference(icnf, TestMode(), r, ps, st; differentiation_backend=adb))
@@ -128,7 +128,7 @@
         end
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, icnf)
-        ps = map(at{tp}, ps)
+        ps = ComponentArray(map(at{tp}, ps))
 
         @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
             @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend=adb))
