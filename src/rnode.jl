@@ -29,7 +29,7 @@ end
 function augmented_f(
     icnf::RNODE{T, AT},
     mode::TestMode,
-    st::NamedTuple;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -47,7 +47,7 @@ end
 function augmented_f(
     icnf::RNODE{T, AT},
     mode::TrainMode,
-    st::NamedTuple;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -74,8 +74,8 @@ end
 function loss(
     icnf::RNODE{T, AT},
     xs::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     rng::AbstractRNG = Random.default_rng(),

@@ -28,7 +28,7 @@ function augmented_f(
     icnf::CondPlanar{T, AT},
     mode::Mode,
     ys::AbstractVector{<:Real},
-    st::NamedTuple;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}

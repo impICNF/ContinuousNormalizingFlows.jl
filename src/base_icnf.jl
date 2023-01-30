@@ -4,8 +4,8 @@ function inference(
     icnf::AbstractICNF{T, AT},
     mode::Mode,
     xs::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -28,8 +28,8 @@ function inference(
     icnf::AbstractICNF{T, AT},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -58,8 +58,8 @@ end
 function generate(
     icnf::AbstractICNF{T, AT},
     mode::Mode,
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -81,8 +81,8 @@ function generate(
     icnf::AbstractICNF{T, AT},
     mode::Mode,
     n::Integer,
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -97,8 +97,8 @@ end
 function loss(
     icnf::AbstractICNF{T, AT},
     xs::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple;
+    ps::Any,
+    st::Any;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, = inference(icnf, TrainMode(), xs, ps, st; rng)
@@ -108,8 +108,8 @@ end
 function loss(
     icnf::AbstractICNF{T, AT},
     xs::AbstractMatrix{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple;
+    ps::Any,
+    st::Any;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     Folds.sum(x -> loss(icnf, x, ps, st; rng), eachcol(xs)) / size(xs, 2)

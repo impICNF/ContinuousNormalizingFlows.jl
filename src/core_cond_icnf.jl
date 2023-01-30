@@ -5,14 +5,9 @@ export loss_f, callback_f, CondICNFModel, CondICNFDist
 function loss_f(
     icnf::AbstractCondICNF{T, AT},
     loss::Function,
-    st::NamedTuple,
+    st::Any,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(
-        ps::AbstractVector{<:Real},
-        θ::SciMLBase.NullParameters,
-        xs::AbstractMatrix{<:Real},
-        ys::AbstractMatrix{<:Real},
-    )::Real
+    function f(ps, θ, xs, ys)
         loss(icnf, xs, ys, ps, st)
     end
     f
@@ -22,7 +17,7 @@ function callback_f(
     icnf::AbstractCondICNF{T, AT},
     loss::Function,
     data::DataLoader{T3},
-    st::NamedTuple,
+    st::Any,
 )::Function where {
     T <: AbstractFloat,
     AT <: AbstractArray,
@@ -30,7 +25,7 @@ function callback_f(
     T3 <: Tuple{T2, T2},
 }
     xs, ys = first(data)
-    function f(ps::AbstractVector{<:Real}, l::Real)::Bool
+    function f(ps, l)
         vl = loss(icnf, xs, ys, ps, st)
         @info "Training" loss = vl
         false
@@ -151,8 +146,8 @@ MLJBase.metadata_model(
 struct CondICNFDist <: ICNFDistribution
     m::AbstractCondICNF
     ys::AbstractVector{<:Real}
-    ps::AbstractVector{<:Real}
-    st::NamedTuple
+    ps::Any
+    st::Any
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars

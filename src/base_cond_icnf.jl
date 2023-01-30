@@ -5,8 +5,8 @@ function inference(
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -30,8 +30,8 @@ function inference(
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -62,8 +62,8 @@ function generate(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,
     ys::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -86,8 +86,8 @@ function generate(
     mode::Mode,
     ys::AbstractVector{<:Real},
     n::Integer,
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -103,8 +103,8 @@ function loss(
     icnf::AbstractCondICNF{T, AT},
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple;
+    ps::Any,
+    st::Any;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, = inference(icnf, TrainMode(), xs, ys, ps, st; rng)
@@ -115,8 +115,8 @@ function loss(
     icnf::AbstractCondICNF{T, AT},
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
-    ps::AbstractVector{<:Real},
-    st::NamedTuple;
+    ps::Any,
+    st::Any;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     Folds.sum(((x, y),) -> loss(icnf, x, y, ps, st; rng), zip(eachcol(xs), eachcol(ys))) /

@@ -29,7 +29,7 @@ end
 function augmented_f(
     icnf::FFJORD{T, AT},
     mode::TestMode,
-    st::NamedTuple;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -47,7 +47,7 @@ end
 function augmented_f(
     icnf::FFJORD{T, AT},
     mode::TrainMode,
-    st::NamedTuple;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}

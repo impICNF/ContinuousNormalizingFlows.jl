@@ -24,8 +24,8 @@ end
 
 function (m::PlanarNN)(
     z::AbstractVecOrMat,
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
 )::Tuple{<:AbstractVecOrMat, <:NamedTuple}
     ps.u * m.h.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
@@ -33,8 +33,8 @@ end
 function pl_h(
     m::PlanarNN,
     z::AbstractVecOrMat,
-    ps::AbstractVector{<:Real},
-    st::NamedTuple,
+    ps::Any,
+    st::Any,
 )::Tuple{<:Union{AbstractVecOrMat, Real}, <:NamedTuple}
     m.h.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
@@ -68,7 +68,7 @@ end
 function augmented_f(
     icnf::Planar{T, AT},
     mode::Mode,
-    st::NamedTuple;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
