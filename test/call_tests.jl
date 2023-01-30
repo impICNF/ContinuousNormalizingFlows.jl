@@ -147,7 +147,7 @@
             loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r_arr, r2_arr),
         )
 
-        diff_loss(x) = loss(icnf, r, r2, x)
+        diff_loss(x) = loss(icnf, r, r2, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
