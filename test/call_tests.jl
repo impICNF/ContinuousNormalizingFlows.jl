@@ -19,6 +19,7 @@
         AbstractDifferentiation.FiniteDifferencesBackend(),
     ]
     fd_m = FiniteDifferences.central_fdm(5, 1)
+    rng = Random.default_rng()
 
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
