@@ -37,14 +37,16 @@
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, model.m)
 
-        @test !isnothing(inference(icnf, TestMode(), r, ps, st))
-        @test !isnothing(inference(icnf, TestMode(), r_arr, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r_arr, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), ps, st))
-        @test !isnothing(generate(icnf, TestMode(), 2, ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), 2, ps, st))
+        @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
+            @test !isnothing(inference(icnf, TestMode(), r, ps, st; differentiation_backend=adb))
+            @test !isnothing(inference(icnf, TestMode(), r_arr, ps, st; differentiation_backend=adb))
+            @test !isnothing(inference(icnf, TrainMode(), r, ps, st; differentiation_backend=adb))
+            @test !isnothing(inference(icnf, TrainMode(), r_arr, ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TestMode(), ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TestMode(), 2, ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TrainMode(), ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TrainMode(), 2, ps, st; differentiation_backend=adb))
+        end
 
         @test !isnothing(loss(icnf, r, ps, st))
         @test !isnothing(loss(icnf, r_arr, ps, st))
@@ -52,7 +54,7 @@
 
         diff_loss(x) = loss(icnf, r, x, st)
 
-        @testset "Using $(typeof(adb).name.name)" for adb in adb_list
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -125,14 +127,16 @@
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, model.m)
 
-        @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st))
-        @test !isnothing(inference(icnf, TestMode(), r_arr, r2, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r_arr, r2, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), r2, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), r2, 2, ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), r2, ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), r2, 2, ps, st))
+        @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
+            @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend=adb))
+            @test !isnothing(inference(icnf, TestMode(), r_arr, r2, ps, st; differentiation_backend=adb))
+            @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend=adb))
+            @test !isnothing(inference(icnf, TrainMode(), r_arr, r2, ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TestMode(), r2, ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TestMode(), r2, 2, ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TrainMode(), r2, ps, st; differentiation_backend=adb))
+            @test !isnothing(generate(icnf, TrainMode(), r2, 2, ps, st; differentiation_backend=adb))
+        end
 
         @test !isnothing(loss(icnf, r, r2, ps, st))
         @test !isnothing(loss(icnf, r_arr, r2_arr, ps, st))
@@ -142,7 +146,7 @@
 
         diff_loss(x) = loss(icnf, r, r2, x)
 
-        @testset "Using $(typeof(adb).name.name)" for adb in adb_list
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
