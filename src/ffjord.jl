@@ -6,8 +6,7 @@ Implementation of FFJORD from
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
 struct FFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
-    re::Optimisers.Restructure
-    p::AbstractVector{T}
+    nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
     basedist::Distribution
@@ -18,30 +17,27 @@ struct FFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
 end
 
 function FFJORD{T, AT}(
-    nn,
+    nn::LuxCore.AbstractExplicitLayer,
     nvars::Integer,
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
-    rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    nn = fmap(x -> adapt(T, x), nn)
-    p, re = destructure(nn)
-    FFJORD{T, AT}(re, convert(AT{T}, p), nvars, basedist, tspan)
+    FFJORD{T, AT}(nn, nvars, basedist, tspan)
 end
 
 function augmented_f(
     icnf::FFJORD{T, AT},
-    mode::TestMode;
+    mode::TestMode,
+    st::NamedTuple;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        m = icnf.re(p)
         z = u[1:(end - n_aug)]
-        mz, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, m, z)
+        mz, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
         trace_J = tr(only(J))
         vcat(mz, -trace_J)
     end
@@ -50,7 +46,8 @@ end
 
 function augmented_f(
     icnf::FFJORD{T, AT},
-    mode::TrainMode;
+    mode::TrainMode,
+    st::NamedTuple;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -58,11 +55,10 @@ function augmented_f(
     ϵ = convert(AT, randn(rng, T, icnf.nvars))
 
     function f_aug(u, p, t)
-        m = icnf.re(p)
         z = u[1:(end - n_aug)]
         v_pb = AbstractDifferentiation.value_and_pullback_function(
             differentiation_backend,
-            m,
+            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
             z,
         )
         mz, ϵJ = v_pb(ϵ)
@@ -72,5 +68,3 @@ function augmented_f(
     end
     f_aug
 end
-
-@functor FFJORD (p,)

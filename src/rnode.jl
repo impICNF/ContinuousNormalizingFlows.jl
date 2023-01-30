@@ -6,8 +6,7 @@ Implementation of RNODE from
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
 struct RNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
-    re::Optimisers.Restructure
-    p::AbstractVector{T}
+    nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
     basedist::Distribution
@@ -18,30 +17,27 @@ struct RNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
 end
 
 function RNODE{T, AT}(
-    nn,
+    nn::LuxCore.AbstractExplicitLayer,
     nvars::Integer,
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
-    rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    nn = fmap(x -> adapt(T, x), nn)
-    p, re = destructure(nn)
-    RNODE{T, AT}(re, convert(AT{T}, p), nvars, basedist, tspan)
+    RNODE{T, AT}(nn, nvars, basedist, tspan)
 end
 
 function augmented_f(
     icnf::RNODE{T, AT},
-    mode::TestMode;
+    mode::TestMode,
+    st::NamedTuple;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        m = icnf.re(p)
         z = u[1:(end - n_aug)]
-        ż, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, m, z)
+        ż, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
         l̇ = tr(only(J))
         vcat(ż, -l̇)
     end
@@ -50,7 +46,8 @@ end
 
 function augmented_f(
     icnf::RNODE{T, AT},
-    mode::TrainMode;
+    mode::TrainMode,
+    st::NamedTuple;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -58,11 +55,10 @@ function augmented_f(
     ϵ = convert(AT, randn(rng, T, icnf.nvars))
 
     function f_aug(u, p, t)
-        m = icnf.re(p)
         z = u[1:(end - n_aug)]
         v_pb = AbstractDifferentiation.value_and_pullback_function(
             differentiation_backend,
-            m,
+            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
             z,
         )
         ż, ϵJ = v_pb(ϵ)
@@ -75,17 +71,16 @@ function augmented_f(
     f_aug
 end
 
-@functor RNODE (p,)
-
 function loss(
     icnf::RNODE{T, AT},
     xs::AbstractVector{<:Real},
-    p::AbstractVector{<:Real} = icnf.p,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, p; rng)
+    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, p, st; rng)
     -logp̂x + λ₁ * Ė + λ₂ * ṅ
 end
 

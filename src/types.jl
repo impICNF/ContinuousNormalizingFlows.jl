@@ -1,15 +1,10 @@
 export TestMode, TrainMode
 
-abstract type Flows end
-abstract type NormalizingFlows <: Flows end
-abstract type ContinuousNormalizingFlows <: NormalizingFlows end
-abstract type InfinitesimalContinuousNormalizingFlows <: ContinuousNormalizingFlows end
-
-abstract type AbstractICNF{T, AT} <: InfinitesimalContinuousNormalizingFlows where {
+abstract type AbstractICNF{T, AT} <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} where {
     T <: AbstractFloat,
     AT <: AbstractArray,
 } end
-abstract type AbstractCondICNF{T, AT} <: InfinitesimalContinuousNormalizingFlows where {
+abstract type AbstractCondICNF{T, AT} <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} where {
     T <: AbstractFloat,
     AT <: AbstractArray,
 } end

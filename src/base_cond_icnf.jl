@@ -5,7 +5,8 @@ function inference(
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
-    p::AbstractVector{<:Real} = icnf.p,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -13,9 +14,9 @@ function inference(
 )::Tuple{Vararg{Real}} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1))
-    f_aug = augmented_f(icnf, mode, ys; differentiation_backend, rng)
+    f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
     func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, p)
+    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, args...; kwargs...)
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
@@ -29,7 +30,8 @@ function inference(
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractVector{<:Real},
-    p::AbstractVector{<:Real} = icnf.p,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -44,7 +46,8 @@ function inference(
                 mode,
                 x,
                 ys,
-                p,
+                ps,
+                st,
                 args...;
                 differentiation_backend,
                 rng,
@@ -59,7 +62,8 @@ function generate(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,
     ys::AbstractVector{<:Real},
-    p::AbstractVector{<:Real} = icnf.p,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
@@ -68,9 +72,9 @@ function generate(
     n_aug = n_augment(icnf, mode)
     new_xs = convert(AT, rand(rng, icnf.basedist))
     zrs = convert(AT, zeros(T, n_aug + 1))
-    f_aug = augmented_f(icnf, mode, ys; differentiation_backend, rng)
+    f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
     func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), p)
+    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), ps)
     sol = solve(prob, args...; kwargs...)
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
@@ -82,14 +86,15 @@ function generate(
     mode::Mode,
     ys::AbstractVector{<:Real},
     n::Integer,
-    p::AbstractVector{<:Real} = icnf.p,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
     args...;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector{<:AbstractVector{<:Real}} where {T <: AbstractFloat, AT <: AbstractArray}
     Folds.map(
-        x -> generate(icnf, mode, ys, p, args...; differentiation_backend, rng, kwargs...),
+        x -> generate(icnf, mode, ys, ps, st, args...; differentiation_backend, rng, kwargs...),
         1:n,
     )
 end
@@ -98,10 +103,11 @@ function loss(
     icnf::AbstractCondICNF{T, AT},
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
-    p::AbstractVector{<:Real} = icnf.p;
+    ps::AbstractVector{<:Real},
+    st::NamedTuple;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, TrainMode(), xs, ys, p; rng)
+    logp̂x, = inference(icnf, TrainMode(), xs, ys, ps, st; rng)
     -logp̂x
 end
 
@@ -109,10 +115,11 @@ function loss(
     icnf::AbstractCondICNF{T, AT},
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
-    p::AbstractVector{<:Real} = icnf.p;
+    ps::AbstractVector{<:Real},
+    st::NamedTuple;
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.sum(((x, y),) -> loss(icnf, x, y, p; rng), zip(eachcol(xs), eachcol(ys))) /
+    Folds.sum(((x, y),) -> loss(icnf, x, y, ps, st; rng), zip(eachcol(xs), eachcol(ys))) /
     size(xs, 2)
 end
 

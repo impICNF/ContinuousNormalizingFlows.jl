@@ -4,8 +4,7 @@ export CondPlanar
 Implementation of Planar (Conditional Version)
 """
 struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T, AT}
-    re::Optimisers.Restructure
-    p::AbstractVector{T}
+    nn::PlanarNN
 
     nvars::Integer
     basedist::Distribution
@@ -21,33 +20,29 @@ function CondPlanar{T, AT}(
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
-    rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    nn = fmap(x -> adapt(T, x), nn)
-    p, re = destructure(nn)
-    CondPlanar{T, AT}(re, convert(AT{T}, p), nvars, basedist, tspan)
+    CondPlanar{T, AT}(nn, nvars, basedist, tspan)
 end
 
 function augmented_f(
     icnf::CondPlanar{T, AT},
     mode::Mode,
-    ys::AbstractVector{<:Real};
+    ys::AbstractVector{<:Real},
+    st::NamedTuple;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        m_a = icnf.re(p)
-        m = Chain(x -> vcat(x, ys), m_a)
         z = u[1:(end - 1)]
-        mz = m(z)
+        mz, _ = LuxCore.apply(icnf.nn, vcat(z, ys), p, st)
         trace_J =
-            m_a.u ⋅ transpose(
+            p.u ⋅ transpose(
                 only(
                     AbstractDifferentiation.jacobian(
                         differentiation_backend,
-                        x -> pl_h(m_a, vcat(x, ys)),
+                        x -> first(pl_h(icnf.nn, vcat(x, ys), p, st)),
                         z,
                     ),
                 ),
@@ -56,5 +51,3 @@ function augmented_f(
     end
     f_aug
 end
-
-@functor CondPlanar (p,)

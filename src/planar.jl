@@ -1,37 +1,42 @@
 export Planar, PlanarNN
 
-struct PlanarNN
-    u::AbstractVector{<:Real}
-    w::AbstractVector{<:Real}
-    b::AbstractVector{<:Real}
-
+struct PlanarNN <: LuxCore.AbstractExplicitLayer
+    nvars::Integer
     h::Function
+    cond::Bool
 end
 
 function PlanarNN(
     nvars::Integer,
     h::Function = tanh;
-    cond = false,
-    rng::AbstractRNG = Random.default_rng(),
+    cond::Bool = false,
 )
-    u = randn(rng, nvars)
-    w = randn(rng, cond ? nvars * 2 : nvars)
-    b = randn(rng, 1)
-    PlanarNN(u, w, b, h)
+    PlanarNN(nvars, NNlib.fast_act(h), cond)
 end
 
-@functor PlanarNN (u, w, b)
-
-function (m::PlanarNN)(z::AbstractVecOrMat)::AbstractVecOrMat
-    u, w, b = m.u, m.w, only(m.b)
-    h = NNlib.fast_act(m.h, z)
-    u * h.(muladd(transpose(w), z, b))
+function LuxCore.initialparameters(rng::AbstractRNG, layer::PlanarNN)
+    (
+        u = randn(rng, layer.nvars),
+        w = randn(rng, layer.cond ? layer.nvars * 2 : layer.nvars),
+        b = randn(rng, 1),
+    )
 end
 
-function pl_h(m::PlanarNN, z::AbstractVecOrMat)::Union{AbstractVecOrMat, Real}
-    u, w, b = m.u, m.w, only(m.b)
-    h = NNlib.fast_act(m.h, z)
-    h.(muladd(transpose(w), z, b))
+function (m::PlanarNN)(
+    z::AbstractVecOrMat,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
+)::Tuple{<:AbstractVecOrMat, <:NamedTuple}
+    ps.u * m.h.(muladd(transpose(ps.w), z, only(ps.b))), st
+end
+
+function pl_h(
+    m::PlanarNN,
+    z::AbstractVecOrMat,
+    ps::AbstractVector{<:Real},
+    st::NamedTuple,
+)::Tuple{<:Union{AbstractVecOrMat, Real}, <:NamedTuple}
+    m.h.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
 
 """
@@ -40,8 +45,7 @@ Implementation of Planar Flows from
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
 struct Planar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
-    re::Optimisers.Restructure
-    p::AbstractVector{T}
+    nn::PlanarNN
 
     nvars::Integer
     basedist::Distribution
@@ -57,31 +61,28 @@ function Planar{T, AT}(
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
-    rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    nn = fmap(x -> adapt(T, x), nn)
-    p, re = destructure(nn)
-    Planar{T, AT}(re, convert(AT{T}, p), nvars, basedist, tspan)
+    Planar{T, AT}(nn, nvars, basedist, tspan)
 end
 
 function augmented_f(
     icnf::Planar{T, AT},
-    mode::Mode;
+    mode::Mode,
+    st::NamedTuple;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        m = icnf.re(p)
         z = u[1:(end - n_aug)]
-        mz = m(z)
+        mz, _ = LuxCore.apply(icnf.nn, z, p, st)
         trace_J =
-            m.u ⋅ transpose(
+            p.u ⋅ transpose(
                 only(
                     AbstractDifferentiation.jacobian(
                         differentiation_backend,
-                        x -> pl_h(m, x),
+                        x -> first(pl_h(icnf.nn, x, p, st)),
                         z,
                     ),
                 ),
@@ -90,5 +91,3 @@ function augmented_f(
     end
     f_aug
 end
-
-@functor Planar (p,)
