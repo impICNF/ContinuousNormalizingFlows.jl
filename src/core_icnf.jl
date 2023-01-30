@@ -45,6 +45,7 @@ mutable struct ICNFModel <: MLJICNF
 
     batch_size::Integer
 
+    data_type::Type{<:AbstractFloat}
     array_type::Type{<:AbstractArray}
 end
 
@@ -57,7 +58,7 @@ function ICNFModel(
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
 )
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, typeof(m).parameters[2])
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, typeof(m).parameters[1], typeof(m).parameters[2])
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -67,6 +68,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     data = DataLoader((x,); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
     ps, st = LuxCore.setup(rng, model.m)
+    ps = map(model.array_type{model.data_type}, ps)
     initial_loss_value = model.loss(model.m, first(data)..., ps, st)
     _loss = loss_f(model.m, model.loss, st)
     _callback = callback_f(model.m, model.loss, data, st)
