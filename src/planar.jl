@@ -23,20 +23,20 @@ function LuxCore.initialparameters(rng::AbstractRNG, layer::PlanarNN)
 end
 
 function (m::PlanarNN)(
-    z::AbstractVecOrMat,
+    z::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 )::Tuple{<:AbstractVecOrMat, <:NamedTuple}
-    ps.u * m.h.(muladd(transpose(ps.w), z, only(ps.b))), st
+    ps.u * m.h((ps.w ⋅ z) + only(ps.b)), st
 end
 
 function pl_h(
     m::PlanarNN,
-    z::AbstractVecOrMat,
+    z::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 )::Tuple{<:Union{AbstractVecOrMat, Real}, <:NamedTuple}
-    m.h.(muladd(transpose(ps.w), z, only(ps.b))), st
+    m.h((ps.w ⋅ z) + only(ps.b)), st
 end
 
 """
