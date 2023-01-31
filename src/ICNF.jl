@@ -8,6 +8,7 @@ using AbstractDifferentiation,
     DistributionsAD,
     FillArrays,
     IterTools,
+    Lux,
     LuxCore,
     MLJBase,
     MLJModelInterface,
@@ -27,6 +28,9 @@ using AbstractDifferentiation,
 
 include("types.jl")
 include("defaults.jl")
+
+include("planar_layer.jl")
+
 include("base_icnf.jl")
 include("base_cond_icnf.jl")
 include("core_icnf.jl")

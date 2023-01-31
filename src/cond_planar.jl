@@ -4,7 +4,7 @@ export CondPlanar
 Implementation of Planar (Conditional Version)
 """
 struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T, AT}
-    nn::PlanarNN
+    nn::PlanarLayer
 
     nvars::Integer
     basedist::Distribution
@@ -15,7 +15,7 @@ struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T
 end
 
 function CondPlanar{T, AT}(
-    nn::PlanarNN,
+    nn::PlanarLayer,
     nvars::Integer,
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),

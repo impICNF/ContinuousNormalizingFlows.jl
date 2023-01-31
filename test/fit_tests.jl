@@ -34,7 +34,7 @@
 
         @testset "Using $(typeof(go_ad).name.name)" for go_ad in go_ads
             if mt <: Planar
-                nn = PlanarNN(nvars, tanh)
+                nn = PlanarLayer(nvars, tanh)
             else
                 nn = Chain(Dense(nvars => nvars, tanh))
             end
@@ -60,7 +60,7 @@
 
         @testset "Using $(typeof(go_ad).name.name)" for go_ad in go_ads
             if mt <: CondPlanar
-                nn = PlanarNN(nvars, tanh; cond = true)
+                nn = PlanarLayer(nvars, tanh; cond = true)
             else
                 nn = Chain(Dense(2 * nvars => nvars, tanh))
             end

@@ -31,7 +31,7 @@
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
 
         if mt <: Planar
-            nn = PlanarNN(nvars, tanh)
+            nn = PlanarLayer(nvars, tanh)
         else
             nn = Chain(Dense(nvars => nvars, tanh))
         end
@@ -122,7 +122,7 @@
         r2_arr = convert(at{tp}, rand(data_dist, nvars, 2))
 
         if mt <: CondPlanar
-            nn = PlanarNN(nvars, tanh; cond = true)
+            nn = PlanarLayer(nvars, tanh; cond = true)
         else
             nn = Chain(Dense(2 * nvars => nvars, tanh))
         end
