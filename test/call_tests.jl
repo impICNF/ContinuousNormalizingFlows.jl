@@ -27,8 +27,8 @@
         mt in mts
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(Vector{tp}, rand(data_dist, nvars))
-        r_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars))
+        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
 
         if mt <: Planar
             nn = PlanarNN(nvars, tanh)
@@ -116,10 +116,10 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(Vector{tp}, rand(data_dist, nvars))
-        r_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
-        r2 = convert(Vector{tp}, rand(data_dist, nvars))
-        r2_arr = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars))
+        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r2 = convert(at{tp}, rand(data_dist, nvars))
+        r2_arr = convert(at{tp}, rand(data_dist, nvars, 2))
 
         if mt <: CondPlanar
             nn = PlanarNN(nvars, tanh; cond = true)
