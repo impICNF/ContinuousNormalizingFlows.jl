@@ -27,7 +27,7 @@ To use this package, here is an example:
 
 ```julia
 using ICNF
-using Distributions, Flux
+using Distributions, Lux
 using DifferentialEquations, SciMLSensitivity
 
 # Parameters
@@ -39,7 +39,7 @@ data_dist = Beta(2.0, 4.0)
 r = rand(data_dist, nvars, n)
 
 # Model
-nn = f64(Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh)))
+nn = Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh))
 icnf = RNODE{Float64, Array}(nn, nvars; tspan = (0.0, 4.0))
 
 # Training
@@ -48,9 +48,10 @@ df = DataFrame(transpose(r), :auto)
 model = ICNFModel(icnf)
 mach = machine(model, df)
 fit!(mach)
+ps, st = fitted_params(mach)
 
 # Use It
-d = ICNFDist(icnf)
+d = ICNFDist(icnf, ps, st)
 actual_pdf = pdf.(data_dist, vec(r))
 estimated_pdf = pdf(d, r)
 new_data = rand(d, n)
