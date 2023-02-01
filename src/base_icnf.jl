@@ -24,37 +24,6 @@ function inference(
     iszero(n_aug) ? (logp̂x,) : (logp̂x, fsol[(end - n_aug + 1):end]...)
 end
 
-function inference(
-    icnf::AbstractICNF{T, AT},
-    mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ps::Any,
-    st::Any,
-    args...;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::Base.Iterators.Zip{
-    <:Tuple{Vararg{Tuple{Vararg{Real}}}},
-} where {T <: AbstractFloat, AT <: AbstractArray}
-    zip(
-        broadcast(
-            x -> inference(
-                icnf,
-                mode,
-                x,
-                ps,
-                st,
-                args...;
-                differentiation_backend,
-                rng,
-                kwargs...,
-            ),
-            eachcol(xs),
-        )...,
-    )
-end
-
 function generate(
     icnf::AbstractICNF{T, AT},
     mode::Mode,
@@ -75,23 +44,6 @@ function generate(
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
     z
-end
-
-function generate(
-    icnf::AbstractICNF{T, AT},
-    mode::Mode,
-    n::Integer,
-    ps::Any,
-    st::Any,
-    args...;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
-)::AbstractVector{<:AbstractVector{<:Real}} where {T <: AbstractFloat, AT <: AbstractArray}
-    broadcast(
-        x -> generate(icnf, mode, ps, st, args...; differentiation_backend, rng, kwargs...),
-        1:n,
-    )
 end
 
 function loss(
