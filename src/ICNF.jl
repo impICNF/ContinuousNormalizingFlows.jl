@@ -3,6 +3,7 @@ module ICNF
 using AbstractDifferentiation,
     CUDA,
     ComponentArrays,
+    ComputationalResources,
     DataFrames,
     Distributions,
     DistributionsAD,

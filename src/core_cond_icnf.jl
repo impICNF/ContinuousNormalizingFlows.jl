@@ -44,34 +44,38 @@ mutable struct CondICNFModel <: MLJICNF
     adtype::SciMLBase.AbstractADType
 
     batch_size::Integer
-
-    data_type::Type{<:AbstractFloat}
-    array_type::Type{<:AbstractArray}
+    resource::AbstractResource
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF{T, AT},
+    m::AbstractCondICNF{Float32, AT},
     loss::Function = loss,
     ;
     optimizer::Any = default_optimizer,
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
+    resource::AbstractResource=CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    CondICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, T, AT)
+    CondICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     rng = Random.default_rng()
     X, Y = XY
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    x = convert(model.array_type, x)
     y = collect(transpose(MLJModelInterface.matrix(Y)))
-    y = convert(model.array_type, y)
+    ps, st = LuxCore.setup(rng, model.m)
+    ps = ComponentArray(ps)
+    st = ComponentArray(st)
+    if model.resource isa CUDALibs
+        x = gpu(x)
+        y = gpu(y)
+        ps = gpu(ps)
+        st = gpu(st)
+    end
     data = DataLoader((x, y); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
-    ps, st = LuxCore.setup(rng, model.m)
-    ps = ComponentArray(map(model.array_type{model.data_type}, ps))
     initial_loss_value = model.loss(model.m, first(data)..., ps, st)
     _loss = loss_f(model.m, model.loss, st)
     _callback = callback_f(model.m, model.loss, data, st)
@@ -99,9 +103,11 @@ end
 function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     Xnew, Ynew = XYnew
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    xnew = convert(model.array_type, xnew)
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
-    ynew = convert(model.array_type, ynew)
+    if model.resource isa CUDALibs
+        xnew = gpu(xnew)
+        ynew = gpu(ynew)
+    end
     (ps, st) = fitresult
 
     tst = @timed logp̂x = broadcast(
