@@ -40,14 +40,30 @@
         ps = ComponentArray(map(at{tp}, ps))
 
         @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
-            @test !isnothing(inference(icnf, TestMode(), r, ps, st; differentiation_backend=adb))
-            @test !isnothing(inference(icnf, TestMode(), r_arr, ps, st; differentiation_backend=adb))
-            @test !isnothing(inference(icnf, TrainMode(), r, ps, st; differentiation_backend=adb))
-            @test !isnothing(inference(icnf, TrainMode(), r_arr, ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TestMode(), ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TestMode(), 2, ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TrainMode(), ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TrainMode(), 2, ps, st; differentiation_backend=adb))
+            @test !isnothing(
+                inference(icnf, TestMode(), r, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                inference(icnf, TestMode(), r_arr, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                inference(icnf, TrainMode(), r, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                inference(icnf, TrainMode(), r_arr, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TestMode(), ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TestMode(), 2, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TrainMode(), ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TrainMode(), 2, ps, st; differentiation_backend = adb),
+            )
         end
 
         @test !isnothing(loss(icnf, r, ps, st))
@@ -131,14 +147,46 @@
         ps = ComponentArray(map(at{tp}, ps))
 
         @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
-            @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend=adb))
-            @test !isnothing(inference(icnf, TestMode(), r_arr, r2, ps, st; differentiation_backend=adb))
-            @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend=adb))
-            @test !isnothing(inference(icnf, TrainMode(), r_arr, r2, ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TestMode(), r2, ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TestMode(), r2, 2, ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TrainMode(), r2, ps, st; differentiation_backend=adb))
-            @test !isnothing(generate(icnf, TrainMode(), r2, 2, ps, st; differentiation_backend=adb))
+            @test !isnothing(
+                inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                inference(
+                    icnf,
+                    TestMode(),
+                    r_arr,
+                    r2,
+                    ps,
+                    st;
+                    differentiation_backend = adb,
+                ),
+            )
+            @test !isnothing(
+                inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                inference(
+                    icnf,
+                    TrainMode(),
+                    r_arr,
+                    r2,
+                    ps,
+                    st;
+                    differentiation_backend = adb,
+                ),
+            )
+            @test !isnothing(
+                generate(icnf, TestMode(), r2, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TestMode(), r2, 2, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TrainMode(), r2, ps, st; differentiation_backend = adb),
+            )
+            @test !isnothing(
+                generate(icnf, TrainMode(), r2, 2, ps, st; differentiation_backend = adb),
+            )
         end
 
         @test !isnothing(loss(icnf, r, r2, ps, st))

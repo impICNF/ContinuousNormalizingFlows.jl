@@ -37,7 +37,11 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug)]
-        ż, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
+        ż, J = AbstractDifferentiation.value_and_jacobian(
+            differentiation_backend,
+            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
+            z,
+        )
         l̇ = tr(only(J))
         vcat(ż, -l̇)
     end

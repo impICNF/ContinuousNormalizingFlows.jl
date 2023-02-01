@@ -1,13 +1,11 @@
 export TestMode, TrainMode
 
-abstract type AbstractICNF{T, AT} <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} where {
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-} end
-abstract type AbstractCondICNF{T, AT} <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} where {
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-} end
+abstract type AbstractICNF{T, AT} <: LuxCore.AbstractExplicitContainerLayer{(
+    :nn,
+)} where {T <: AbstractFloat, AT <: AbstractArray} end
+abstract type AbstractCondICNF{T, AT} <: LuxCore.AbstractExplicitContainerLayer{(
+    :nn,
+)} where {T <: AbstractFloat, AT <: AbstractArray} end
 
 abstract type Mode end
 struct TestMode <: Mode end
