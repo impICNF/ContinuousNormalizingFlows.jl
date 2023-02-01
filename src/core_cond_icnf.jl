@@ -67,7 +67,6 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     y = collect(transpose(MLJModelInterface.matrix(Y)))
     ps, st = LuxCore.setup(rng, model.m)
     ps = ComponentArray(ps)
-    st = ComponentArray(st)
     if model.resource isa CUDALibs
         x = gpu(x)
         y = gpu(y)
