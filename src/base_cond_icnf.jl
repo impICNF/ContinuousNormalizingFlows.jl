@@ -94,7 +94,17 @@ function generate(
     kwargs...,
 )::AbstractVector{<:AbstractVector{<:Real}} where {T <: AbstractFloat, AT <: AbstractArray}
     broadcast(
-        x -> generate(icnf, mode, ys, ps, st, args...; differentiation_backend, rng, kwargs...),
+        x -> generate(
+            icnf,
+            mode,
+            ys,
+            ps,
+            st,
+            args...;
+            differentiation_backend,
+            rng,
+            kwargs...,
+        ),
         1:n,
     )
 end
