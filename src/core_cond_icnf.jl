@@ -1,37 +1,14 @@
 export loss_f, callback_f, CondICNFModel, CondICNFDist
 
-# -- Flux interface
-
-function (icnf::AbstractCondICNF{T, AT})(
-    xs::AbstractVector{<:Real},
-    ys::AbstractVector{<:Real},
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    first(inference(icnf, TestMode(), xs, ys))
-end
-
-function (icnf::AbstractCondICNF{T, AT})(
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
-)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
-    Folds.map(
-        ((x, y),) -> first(inference(icnf, TestMode(), x, y)),
-        zip(eachcol(xs), eachcol(ys)),
-    )
-end
-
 # -- SciML interface
 
 function loss_f(
     icnf::AbstractCondICNF{T, AT},
     loss::Function,
+    st::Any,
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    function f(
-        p::AbstractVector{<:Real},
-        θ::SciMLBase.NullParameters,
-        xs::AbstractMatrix{<:Real},
-        ys::AbstractMatrix{<:Real},
-    )::Real
-        loss(icnf, xs, ys, p)
+    function f(ps, θ, xs, ys)
+        loss(icnf, xs, ys, ps, st)
     end
     f
 end
@@ -40,6 +17,7 @@ function callback_f(
     icnf::AbstractCondICNF{T, AT},
     loss::Function,
     data::DataLoader{T3},
+    st::Any,
 )::Function where {
     T <: AbstractFloat,
     AT <: AbstractArray,
@@ -47,8 +25,8 @@ function callback_f(
     T3 <: Tuple{T2, T2},
 }
     xs, ys = first(data)
-    function f(p::AbstractVector{<:Real}, l::Real)::Bool
-        vl = loss(icnf, xs, ys, p)
+    function f(ps, l)
+        vl = loss(icnf, xs, ys, ps, st)
         @info "Training" loss = vl
         false
     end
@@ -67,22 +45,24 @@ mutable struct CondICNFModel <: MLJICNF
 
     batch_size::Integer
 
+    data_type::Type{<:AbstractFloat}
     array_type::Type{<:AbstractArray}
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF,
+    m::AbstractCondICNF{T, AT},
     loss::Function = loss,
     ;
     optimizer::Any = default_optimizer,
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
-)
-    CondICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, typeof(m).parameters[2])
+) where {T <: AbstractFloat, AT <: AbstractArray}
+    CondICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, T, AT)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
+    rng = Random.default_rng()
     X, Y = XY
     x = collect(transpose(MLJModelInterface.matrix(X)))
     x = convert(model.array_type, x)
@@ -90,21 +70,23 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     y = convert(model.array_type, y)
     data = DataLoader((x, y); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
-    initial_loss_value = model.loss(model.m, first(data)...)
-    _loss = loss_f(model.m, model.loss)
-    _callback = callback_f(model.m, model.loss, data)
+    ps, st = LuxCore.setup(rng, model.m)
+    ps = ComponentArray(map(model.array_type{model.data_type}, ps))
+    initial_loss_value = model.loss(model.m, first(data)..., ps, st)
+    _loss = loss_f(model.m, model.loss, st)
+    _callback = callback_f(model.m, model.loss, data, st)
     optfunc = OptimizationFunction(_loss, model.adtype)
-    optprob = OptimizationProblem(optfunc, model.m.p)
+    optprob = OptimizationProblem(optfunc, ps)
     tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
-    model.m.p .= res.u
-    final_loss_value = model.loss(model.m, first(data)...)
+    ps .= res.u
+    final_loss_value = model.loss(model.m, first(data)..., ps, st)
     @info(
         "Fitting",
         "elapsed time (seconds)" = tst.time,
         "garbage collection time (seconds)" = tst.gctime,
     )
 
-    fitresult = nothing
+    fitresult = (ps, st)
     cache = nothing
     report = (
         stats = tst,
@@ -120,9 +102,10 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     xnew = convert(model.array_type, xnew)
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     ynew = convert(model.array_type, ynew)
+    (ps, st) = fitresult
 
-    tst = @timed logp̂x = Folds.map(
-        ((x, y),) -> first(inference(model.m, TestMode(), x, y)),
+    tst = @timed logp̂x = broadcast(
+        ((x, y),) -> first(inference(model.m, TestMode(), x, y, ps, st)),
         zip(eachcol(xnew), eachcol(ynew)),
     )
     @info(
@@ -135,7 +118,8 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
 end
 
 function MLJModelInterface.fitted_params(model::CondICNFModel, fitresult)
-    (learned_parameters = model.m.p,)
+    (ps, st) = fitresult
+    (learned_parameters = ps, states = st)
 end
 
 MLJBase.metadata_pkg(
@@ -164,19 +148,21 @@ MLJBase.metadata_model(
 struct CondICNFDist <: ICNFDistribution
     m::AbstractCondICNF
     ys::AbstractVector{<:Real}
+    ps::Any
+    st::Any
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars
 Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
-    first(inference(d.m, TestMode(), x, d.ys))
+    first(inference(d.m, TestMode(), x, d.ys, d.ps, d.st))
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
-    Folds.map(x -> Distributions._logpdf(d, x), eachcol(A))
+    broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
-    x .= generate(d.m, TestMode(), d.ys; rng)
+    x .= generate(d.m, TestMode(), d.ys, d.ps, d.st; rng)
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
-    A .= hcat(Folds.map(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
+    A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
 end

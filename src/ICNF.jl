@@ -1,17 +1,15 @@
 module ICNF
 
 using AbstractDifferentiation,
-    Adapt,
-    Base.Iterators,
     CUDA,
+    ComponentArrays,
     DataFrames,
     Distributions,
     DistributionsAD,
     FillArrays,
-    Flux,
-    Folds,
-    Functors,
     IterTools,
+    Lux,
+    LuxCore,
     MLJBase,
     MLJModelInterface,
     MLUtils,
@@ -25,10 +23,14 @@ using AbstractDifferentiation,
     Zygote,
     LinearAlgebra,
     Random,
-    Statistics
+    Statistics,
+    Base.Iterators
 
 include("types.jl")
 include("defaults.jl")
+
+include("planar_layer.jl")
+
 include("base_icnf.jl")
 include("base_cond_icnf.jl")
 include("core_icnf.jl")

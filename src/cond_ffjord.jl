@@ -4,8 +4,7 @@ export CondFFJORD
 Implementation of FFJORD (Conditional Version)
 """
 struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T, AT}
-    re::Optimisers.Restructure
-    p::AbstractVector{T}
+    nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
     basedist::Distribution
@@ -16,31 +15,28 @@ struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T
 end
 
 function CondFFJORD{T, AT}(
-    nn,
+    nn::LuxCore.AbstractExplicitLayer,
     nvars::Integer,
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
-    rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    nn = fmap(x -> adapt(T, x), nn)
-    p, re = destructure(nn)
-    CondFFJORD{T, AT}(re, convert(AT{T}, p), nvars, basedist, tspan)
+    CondFFJORD{T, AT}(nn, nvars, basedist, tspan)
 end
 
 function augmented_f(
     icnf::CondFFJORD{T, AT},
     mode::TestMode,
-    ys::AbstractVector{<:Real};
+    ys::AbstractVector{<:Real},
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        m = Chain(x -> vcat(x, ys), icnf.re(p))
         z = u[1:(end - n_aug)]
-        mz, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, m, z)
+        mz, J = AbstractDifferentiation.value_and_jacobian(differentiation_backend, x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
         trace_J = tr(only(J))
         vcat(mz, -trace_J)
     end
@@ -50,7 +46,8 @@ end
 function augmented_f(
     icnf::CondFFJORD{T, AT},
     mode::TrainMode,
-    ys::AbstractVector{<:Real};
+    ys::AbstractVector{<:Real},
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
@@ -58,11 +55,10 @@ function augmented_f(
     ϵ = convert(AT, randn(rng, T, icnf.nvars))
 
     function f_aug(u, p, t)
-        m = Chain(x -> vcat(x, ys), icnf.re(p))
         z = u[1:(end - 1)]
         v_pb = AbstractDifferentiation.value_and_pullback_function(
             differentiation_backend,
-            m,
+            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
             z,
         )
         mz, ϵJ = v_pb(ϵ)
@@ -72,5 +68,3 @@ function augmented_f(
     end
     f_aug
 end
-
-@functor CondFFJORD (p,)
