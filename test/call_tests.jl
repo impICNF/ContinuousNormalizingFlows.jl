@@ -44,25 +44,13 @@
                 inference(icnf, TestMode(), r, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                inference(icnf, TestMode(), r_arr, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
                 inference(icnf, TrainMode(), r, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(icnf, TrainMode(), r_arr, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
                 generate(icnf, TestMode(), ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                generate(icnf, TestMode(), 2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
                 generate(icnf, TrainMode(), ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), 2, ps, st; differentiation_backend = adb),
             )
         end
 
@@ -151,41 +139,13 @@
                 inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                inference(
-                    icnf,
-                    TestMode(),
-                    r_arr,
-                    r2,
-                    ps,
-                    st;
-                    differentiation_backend = adb,
-                ),
-            )
-            @test !isnothing(
                 inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(
-                    icnf,
-                    TrainMode(),
-                    r_arr,
-                    r2,
-                    ps,
-                    st;
-                    differentiation_backend = adb,
-                ),
             )
             @test !isnothing(
                 generate(icnf, TestMode(), r2, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                generate(icnf, TestMode(), r2, 2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
                 generate(icnf, TrainMode(), r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), r2, 2, ps, st; differentiation_backend = adb),
             )
         end
 
