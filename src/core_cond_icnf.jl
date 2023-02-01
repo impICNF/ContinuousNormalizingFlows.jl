@@ -48,7 +48,7 @@ mutable struct CondICNFModel <: MLJICNF
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF{Float32, AT},
+    m::AbstractCondICNF{T, AT},
     loss::Function = loss,
     ;
     optimizer::Any = default_optimizer,

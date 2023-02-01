@@ -36,10 +36,10 @@
             if mt <: Planar
                 nn = PlanarLayer(nvars, tanh)
             else
-                nn = Chain(Dense(nvars => nvars, tanh))
+                nn = Dense(nvars => nvars, tanh)
             end
             icnf = mt{tp, at}(nn, nvars)
-            model = ICNFModel(icnf; n_epochs, batch_size, adtype = go_ad)
+            model = ICNFModel(icnf; n_epochs, batch_size, adtype = go_ad, resource=(at == CuArray) ? CUDALibs() : CPU1())
             mach = machine(model, df)
             @test !isnothing(fit!(mach))
             @test !isnothing(MLJBase.transform(mach, df))
@@ -62,10 +62,10 @@
             if mt <: CondPlanar
                 nn = PlanarLayer(nvars, tanh; cond = true)
             else
-                nn = Chain(Dense(2 * nvars => nvars, tanh))
+                nn = Dense(2 * nvars => nvars, tanh)
             end
             icnf = mt{tp, at}(nn, nvars)
-            model = CondICNFModel(icnf; n_epochs, batch_size, adtype = go_ad)
+            model = CondICNFModel(icnf; n_epochs, batch_size, adtype = go_ad, resource=(at == CuArray) ? CUDALibs() : CPU1())
             mach = machine(model, (df, df2))
             @test !isnothing(fit!(mach))
             @test !isnothing(MLJBase.transform(mach, (df, df2)))

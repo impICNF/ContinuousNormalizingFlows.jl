@@ -33,7 +33,7 @@
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
         else
-            nn = Chain(Dense(nvars => nvars, tanh))
+            nn = Dense(nvars => nvars, tanh)
         end
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, icnf)
@@ -128,7 +128,7 @@
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
         else
-            nn = Chain(Dense(2 * nvars => nvars, tanh))
+            nn = Dense(2 * nvars => nvars, tanh)
         end
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, icnf)
