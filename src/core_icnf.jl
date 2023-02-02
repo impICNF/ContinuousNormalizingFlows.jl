@@ -45,6 +45,8 @@ mutable struct ICNFModel <: MLJICNF
 
     batch_size::Integer
     resource::AbstractResource
+    data_type::Type{<:AbstractFloat}
+    array_type::Type{<:AbstractArray}
 end
 
 function ICNFModel(
@@ -57,7 +59,7 @@ function ICNFModel(
     batch_size::Integer = 128,
     resource::AbstractResource=CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource)
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource, T, AT)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -69,6 +71,9 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         x = gpu(x)
         ps = gpu(ps)
         st = gpu(st)
+    else
+        x = model.array_type{model.data_type}(x)
+        ps = ComponentArray{model.data_type}(ps)
     end
     data = DataLoader((x,); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
