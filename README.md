@@ -35,12 +35,12 @@ nvars = 1
 n = 1024
 
 # Data
-data_dist = Beta(2.0, 4.0)
+data_dist = Beta(2f0, 4f0)
 r = rand(data_dist, nvars, n)
 
 # Model
 nn = Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh))
-icnf = RNODE{Float64, Array}(nn, nvars; tspan = (0.0, 4.0))
+icnf = RNODE{Float32, Array}(nn, nvars; tspan = (0f0, 4f0))
 
 # Training
 using DataFrames, MLJBase

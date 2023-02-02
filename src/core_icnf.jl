@@ -44,7 +44,7 @@ mutable struct ICNFModel <: MLJICNF
     adtype::SciMLBase.AbstractADType
 
     batch_size::Integer
-
+    resource::AbstractResource
     data_type::Type{<:AbstractFloat}
     array_type::Type{<:AbstractArray}
 end
@@ -57,18 +57,26 @@ function ICNFModel(
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
+    resource::AbstractResource=CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, T, AT)
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource, T, AT)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     rng = Random.default_rng()
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    x = convert(model.array_type, x)
+    ps, st = LuxCore.setup(rng, model.m)
+    ps = ComponentArray(ps)
+    if model.resource isa CUDALibs
+        x = gpu(x)
+        ps = gpu(ps)
+        st = gpu(st)
+    else
+        x = model.array_type{model.data_type}(x)
+        ps = ComponentArray{model.data_type}(ps)
+    end
     data = DataLoader((x,); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
-    ps, st = LuxCore.setup(rng, model.m)
-    ps = ComponentArray(map(model.array_type{model.data_type}, ps))
     initial_loss_value = model.loss(model.m, first(data)..., ps, st)
     _loss = loss_f(model.m, model.loss, st)
     _callback = callback_f(model.m, model.loss, data, st)
@@ -95,7 +103,9 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    xnew = convert(model.array_type, xnew)
+    if model.resource isa CUDALibs
+        xnew = gpu(xnew)
+    end
     (ps, st) = fitresult
 
     tst = @timed logp̂x =

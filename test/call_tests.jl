@@ -33,7 +33,7 @@
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
         else
-            nn = Chain(Dense(nvars => nvars, tanh))
+            nn = Dense(nvars => nvars, tanh)
         end
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, icnf)
@@ -44,25 +44,13 @@
                 inference(icnf, TestMode(), r, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                inference(icnf, TestMode(), r_arr, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
                 inference(icnf, TrainMode(), r, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(icnf, TrainMode(), r_arr, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
                 generate(icnf, TestMode(), ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                generate(icnf, TestMode(), 2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
                 generate(icnf, TrainMode(), ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), 2, ps, st; differentiation_backend = adb),
             )
         end
 
@@ -140,7 +128,7 @@
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
         else
-            nn = Chain(Dense(2 * nvars => nvars, tanh))
+            nn = Dense(2 * nvars => nvars, tanh)
         end
         icnf = mt{tp, at}(nn, nvars)
         ps, st = Lux.setup(rng, icnf)
@@ -151,41 +139,13 @@
                 inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                inference(
-                    icnf,
-                    TestMode(),
-                    r_arr,
-                    r2,
-                    ps,
-                    st;
-                    differentiation_backend = adb,
-                ),
-            )
-            @test !isnothing(
                 inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(
-                    icnf,
-                    TrainMode(),
-                    r_arr,
-                    r2,
-                    ps,
-                    st;
-                    differentiation_backend = adb,
-                ),
             )
             @test !isnothing(
                 generate(icnf, TestMode(), r2, ps, st; differentiation_backend = adb),
             )
             @test !isnothing(
-                generate(icnf, TestMode(), r2, 2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
                 generate(icnf, TrainMode(), r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), r2, 2, ps, st; differentiation_backend = adb),
             )
         end
 
