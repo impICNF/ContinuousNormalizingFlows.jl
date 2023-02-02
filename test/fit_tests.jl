@@ -39,7 +39,13 @@
                 nn = Dense(nvars => nvars, tanh)
             end
             icnf = mt{tp, at}(nn, nvars)
-            model = ICNFModel(icnf; n_epochs, batch_size, adtype = go_ad, resource=(at == CuArray) ? CUDALibs() : CPU1())
+            model = ICNFModel(
+                icnf;
+                n_epochs,
+                batch_size,
+                adtype = go_ad,
+                resource = (at == CuArray) ? CUDALibs() : CPU1(),
+            )
             mach = machine(model, df)
             @test !isnothing(fit!(mach))
             @test !isnothing(MLJBase.transform(mach, df))
@@ -65,7 +71,13 @@
                 nn = Dense(2 * nvars => nvars, tanh)
             end
             icnf = mt{tp, at}(nn, nvars)
-            model = CondICNFModel(icnf; n_epochs, batch_size, adtype = go_ad, resource=(at == CuArray) ? CUDALibs() : CPU1())
+            model = CondICNFModel(
+                icnf;
+                n_epochs,
+                batch_size,
+                adtype = go_ad,
+                resource = (at == CuArray) ? CUDALibs() : CPU1(),
+            )
             mach = machine(model, (df, df2))
             @test !isnothing(fit!(mach))
             @test !isnothing(MLJBase.transform(mach, (df, df2)))

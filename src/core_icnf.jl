@@ -57,7 +57,7 @@ function ICNFModel(
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
-    resource::AbstractResource=CPU1(),
+    resource::AbstractResource = CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
     ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource, T, AT)
 end
