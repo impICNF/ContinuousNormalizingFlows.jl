@@ -62,9 +62,10 @@ function loss(
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
+    agg::Function = mean,
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    sum(x -> loss(icnf, x, ps, st; rng), eachcol(xs)) / size(xs, 2)
+    agg(x -> loss(icnf, x, ps, st; rng), eachcol(xs))
 end
 
 function n_augment(
