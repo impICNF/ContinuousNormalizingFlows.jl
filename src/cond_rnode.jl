@@ -10,6 +10,8 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T,
     basedist::Distribution
     tspan::Tuple{T, T}
 
+    differentiation_backend::AbstractDifferentiation.AbstractBackend
+
     # trace_test
     # trace_train
 end
@@ -20,8 +22,9 @@ function CondRNODE{T, AT}(
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
     tspan::Tuple{T, T} = convert(Tuple{T, T}, (0, 1)),
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    CondRNODE{T, AT}(nn, nvars, basedist, tspan)
+    CondRNODE{T, AT}(nn, nvars, basedist, tspan, differentiation_backend)
 end
 
 function augmented_f(
@@ -29,7 +32,7 @@ function augmented_f(
     mode::TestMode,
     ys::AbstractVector{<:Real},
     st::Any;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
@@ -52,7 +55,7 @@ function augmented_f(
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
@@ -83,9 +86,11 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(icnf, TrainMode(), xs, ys, ps, st; rng)
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
     -logp̂x + λ₁ * Ė + λ₂ * ṅ
 end
 

@@ -8,7 +8,7 @@ function inference(
     ps::Any,
     st::Any,
     args...;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::Tuple{Vararg{Real}} where {T <: AbstractFloat, AT <: AbstractArray}
@@ -32,7 +32,7 @@ function generate(
     ps::Any,
     st::Any,
     args...;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     kwargs...,
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
@@ -54,9 +54,11 @@ function loss(
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, TrainMode(), xs, ys, ps, st; rng)
+    logp̂x, = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
     -logp̂x
 end
 
