@@ -9,7 +9,9 @@
     if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
-    tps = SMALL ? Type{<:AbstractFloat}[Float32] : Type{<:AbstractFloat}[Float64, Float32, Float16]
+    tps =
+        SMALL ? Type{<:AbstractFloat}[Float32] :
+        Type{<:AbstractFloat}[Float64, Float32, Float16]
     nvars_ = (1:2)
     go_ads = SciMLBase.AbstractADType[
         Optimization.AutoZygote(),
