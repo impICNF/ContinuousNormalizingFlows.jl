@@ -9,7 +9,7 @@
     if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
-    tps = Type{<:AbstractFloat}[Float64, Float32, Float16]
+    tps = SMALL ? Type{<:AbstractFloat}[Float32] : Type{<:AbstractFloat}[Float64, Float32, Float16]
     nvars_ = (1:2)
     go_ads = SciMLBase.AbstractADType[
         Optimization.AutoZygote(),
@@ -18,10 +18,6 @@
         Optimization.AutoTracker(),
         Optimization.AutoFiniteDiff(),
     ]
-    n_epochs = 2
-    batch_size = 2
-    n_batch = 2
-    n = n_batch * batch_size
 
     @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -29,7 +25,7 @@
         mt in mts
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r = convert(Matrix{tp}, rand(data_dist, nvars, 2))
         df = DataFrame(transpose(r), :auto)
 
         @testset "Using $(typeof(go_ad).name.name)" for go_ad in go_ads
@@ -41,8 +37,7 @@
             icnf = mt{tp, at}(nn, nvars)
             model = ICNFModel(
                 icnf;
-                n_epochs,
-                batch_size,
+                n_epochs = 2,
                 adtype = go_ad,
                 resource = (at == CuArray) ? CUDALibs() : CPU1(),
             )
@@ -59,8 +54,8 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, n))
-        r2 = convert(Matrix{tp}, rand(data_dist, nvars, n))
+        r = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r2 = convert(Matrix{tp}, rand(data_dist, nvars, 2))
         df = DataFrame(transpose(r), :auto)
         df2 = DataFrame(transpose(r2), :auto)
 
@@ -73,8 +68,7 @@
             icnf = mt{tp, at}(nn, nvars)
             model = CondICNFModel(
                 icnf;
-                n_epochs,
-                batch_size,
+                n_epochs = 2,
                 adtype = go_ad,
                 resource = (at == CuArray) ? CUDALibs() : CPU1(),
             )

@@ -60,18 +60,6 @@ function loss(
     -logp̂x
 end
 
-function loss(
-    icnf::AbstractCondICNF{T, AT},
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
-    ps::Any,
-    st::Any;
-    agg::Function = mean,
-    rng::AbstractRNG = Random.default_rng(),
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    agg(((x, y),) -> loss(icnf, x, y, ps, st; rng), zip(eachcol(xs), eachcol(ys)))
-end
-
 function n_augment(
     icnf::AbstractCondICNF{T, AT},
     mode::Mode,

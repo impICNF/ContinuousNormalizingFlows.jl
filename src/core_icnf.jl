@@ -13,22 +13,9 @@ function loss_f(
     f
 end
 
-function callback_f(
-    icnf::AbstractICNF{T, AT},
-    loss::Function,
-    data::DataLoader{T3},
-    st::Any,
-)::Function where {
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    T2 <: AbstractMatrix{<:Real},
-    T3 <: Tuple{T2},
-}
-    xs, = first(data)
+function callback_f(icnf::AbstractICNF)::Function
     function f(ps, l)
-        vl = loss(icnf, xs, ps, st)
-        @info "Training" loss = vl
-        @debug "Training (more info)" l
+        @info "Training" loss = l
         false
     end
     f
@@ -44,7 +31,6 @@ mutable struct ICNFModel <: MLJICNF
     n_epochs::Integer
     adtype::SciMLBase.AbstractADType
 
-    batch_size::Integer
     resource::AbstractResource
     data_type::Type{<:AbstractFloat}
     array_type::Type{<:AbstractArray}
@@ -57,10 +43,9 @@ function ICNFModel(
     optimizer::Any = Adam(),
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
-    batch_size::Integer = 128,
     resource::AbstractResource = CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource, T, AT)
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, resource, T, AT)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -76,18 +61,13 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         x = model.array_type{model.data_type}(x)
         ps = ComponentArray{model.data_type}(ps)
     end
-    data = DataLoader((x,); batchsize = model.batch_size, shuffle = true, partial = true)
-    ncdata = ncycle(data, model.n_epochs)
-    initial_loss_value = model.loss(model.m, first(data)..., ps, st)
-    @debug "Fitting (more info)" initial_loss_value
+    ncdata = ncycle(zip(eachcol(x)), model.n_epochs)
     _loss = loss_f(model.m, model.loss, st)
-    _callback = callback_f(model.m, model.loss, data, st)
+    _callback = callback_f(model.m)
     optfunc = OptimizationFunction(_loss, model.adtype)
     optprob = OptimizationProblem(optfunc, ps)
     tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
-    ps = res.u
-    final_loss_value = model.loss(model.m, first(data)..., ps, st)
-    @debug "Fitting (more info)" final_loss_value
+    ps .= res.u
     @info(
         "Fitting",
         "elapsed time (seconds)" = tst.time,
@@ -98,8 +78,6 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     cache = nothing
     report = (
         stats = tst,
-        initial_loss_value = initial_loss_value,
-        final_loss_value = final_loss_value,
     )
     fitresult, cache, report
 end
