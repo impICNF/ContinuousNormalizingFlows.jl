@@ -9,7 +9,9 @@
     if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
-    tps = SMALL ? Type{<:AbstractFloat}[Float32] : Type{<:AbstractFloat}[Float64, Float32, Float16]
+    tps =
+        SMALL ? Type{<:AbstractFloat}[Float32] :
+        Type{<:AbstractFloat}[Float64, Float32, Float16]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -149,9 +151,7 @@
         end
 
         @test !isnothing(loss(icnf, r, r2, ps, st))
-        @test !isnothing(
-            loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r, r2),
-        )
+        @test !isnothing(loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r, r2))
 
         diff_loss(x) = loss(icnf, r, r2, x, st)
 

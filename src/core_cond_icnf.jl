@@ -80,9 +80,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
 
     fitresult = (ps, st)
     cache = nothing
-    report = (
-        stats = tst,
-    )
+    report = (stats = tst,)
     fitresult, cache, report
 end
 

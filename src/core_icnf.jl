@@ -76,9 +76,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
 
     fitresult = (ps, st)
     cache = nothing
-    report = (
-        stats = tst,
-    )
+    report = (stats = tst,)
     fitresult, cache, report
 end
 
