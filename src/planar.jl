@@ -21,7 +21,7 @@ function Planar{T, AT}(
     nvars::Integer,
     ;
     basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
-    tspan::Tuple{T, T} = convert(Tuple{T, T}, default_tspan),
+    tspan::Tuple{T, T} = convert(Tuple{T, T}, (0, 1)),
 ) where {T <: AbstractFloat, AT <: AbstractArray}
     Planar{T, AT}(nn, nvars, basedist, tspan)
 end

@@ -28,7 +28,6 @@ using AbstractDifferentiation,
     Base.Iterators
 
 include("types.jl")
-include("defaults.jl")
 
 include("planar_layer.jl")
 

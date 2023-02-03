@@ -54,7 +54,7 @@ function CondICNFModel(
     m::AbstractCondICNF{T, AT},
     loss::Function = loss,
     ;
-    optimizer::Any = default_optimizer,
+    optimizer::Any = Adam(),
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     batch_size::Integer = 128,
