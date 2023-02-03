@@ -28,6 +28,7 @@ function callback_f(
     function f(ps, l)
         vl = loss(icnf, xs, ps, st)
         @info "Training" loss = vl
+        @debug "Training (more info)" l
         false
     end
     f
@@ -78,6 +79,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     data = DataLoader((x,); batchsize = model.batch_size, shuffle = true, partial = true)
     ncdata = ncycle(data, model.n_epochs)
     initial_loss_value = model.loss(model.m, first(data)..., ps, st)
+    @debug "Fitting (more info)" initial_loss_value
     _loss = loss_f(model.m, model.loss, st)
     _callback = callback_f(model.m, model.loss, data, st)
     optfunc = OptimizationFunction(_loss, model.adtype)
@@ -85,6 +87,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
     ps = res.u
     final_loss_value = model.loss(model.m, first(data)..., ps, st)
+    @debug "Fitting (more info)" final_loss_value
     @info(
         "Fitting",
         "elapsed time (seconds)" = tst.time,
