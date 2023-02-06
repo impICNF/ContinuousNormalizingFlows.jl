@@ -23,8 +23,9 @@
     fd_m = FiniteDifferences.central_fdm(5, 1)
     rng = Random.default_rng()
 
-    @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
+    @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
         tp in tps,
+        adb_u in adb_list,
         nvars in nvars_,
         mt in mts
 
@@ -37,24 +38,14 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = mt{tp, at}(nn, nvars)
+        icnf = mt{tp, at}(nn, nvars; differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
-        @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
-            @test !isnothing(
-                inference(icnf, TestMode(), r, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(icnf, TrainMode(), r, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TestMode(), ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), ps, st; differentiation_backend = adb),
-            )
-        end
+        @test !isnothing(inference(icnf, TestMode(), r, ps, st))
+        @test !isnothing(inference(icnf, TrainMode(), r, ps, st))
+        @test !isnothing(generate(icnf, TestMode(), ps, st))
+        @test !isnothing(generate(icnf, TrainMode(), ps, st))
 
         @test !isnothing(loss(icnf, r, ps, st))
         @test !isnothing(loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r))
@@ -114,8 +105,9 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
-    @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
+    @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
         tp in tps,
+        adb_u in adb_list,
         nvars in nvars_,
         mt in cmts
 
@@ -131,24 +123,14 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = mt{tp, at}(nn, nvars)
+        icnf = mt{tp, at}(nn, nvars; differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
-        @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
-            @test !isnothing(
-                inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TestMode(), r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), r2, ps, st; differentiation_backend = adb),
-            )
-        end
+        @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st))
+        @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st))
+        @test !isnothing(generate(icnf, TestMode(), r2, ps, st))
+        @test !isnothing(generate(icnf, TrainMode(), r2, ps, st))
 
         @test !isnothing(loss(icnf, r, r2, ps, st))
         @test !isnothing(loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r, r2))
