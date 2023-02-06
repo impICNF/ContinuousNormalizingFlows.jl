@@ -1,22 +1,14 @@
-export loss_f, callback_f, ICNFModel, ICNFDist
+export ICNFModel, ICNFDist
 
-# -- SciML interface
+# SciML interface
 
 function loss_f(
-    icnf::AbstractICNF{T, AT},
+    icnf::AbstractICNF,
     loss::Function,
     st::Any,
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+)::Function
     function f(ps, θ, xs)
         loss(icnf, xs, ps, st)
-    end
-    f
-end
-
-function callback_f(icnf::AbstractICNF)::Function
-    function f(ps, l)
-        @info "Training" loss = l
-        false
     end
     f
 end
@@ -96,11 +88,6 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     )
 
     DataFrame(; px = exp.(logp̂x))
-end
-
-function MLJModelInterface.fitted_params(model::ICNFModel, fitresult)
-    (ps, st) = fitresult
-    (learned_parameters = ps, states = st)
 end
 
 MLJBase.metadata_pkg(

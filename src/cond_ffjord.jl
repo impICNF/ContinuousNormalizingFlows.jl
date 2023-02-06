@@ -16,17 +16,6 @@ struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T
     # trace_train
 end
 
-function CondFFJORD{T, AT}(
-    nn::LuxCore.AbstractExplicitLayer,
-    nvars::Integer,
-    ;
-    basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
-    tspan::Tuple{T, T} = convert(Tuple{T, T}, (0, 1)),
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    CondFFJORD{T, AT}(nn, nvars, basedist, tspan, differentiation_backend)
-end
-
 function augmented_f(
     icnf::CondFFJORD{T, AT},
     mode::TestMode,

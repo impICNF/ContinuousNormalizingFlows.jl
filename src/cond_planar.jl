@@ -16,17 +16,6 @@ struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T
     # trace_train
 end
 
-function CondPlanar{T, AT}(
-    nn::PlanarLayer,
-    nvars::Integer,
-    ;
-    basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
-    tspan::Tuple{T, T} = convert(Tuple{T, T}, (0, 1)),
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    CondPlanar{T, AT}(nn, nvars, basedist, tspan, differentiation_backend)
-end
-
 function augmented_f(
     icnf::CondPlanar{T, AT},
     mode::Mode,

@@ -27,7 +27,7 @@
         mt in mts
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars, 2))
         df = DataFrame(transpose(r), :auto)
 
         @testset "Using $(typeof(go_ad).name.name)" for go_ad in go_ads
@@ -36,7 +36,7 @@
             else
                 nn = Dense(nvars => nvars, tanh)
             end
-            icnf = mt{tp, at}(nn, nvars)
+            icnf = construct(mt, nn, nvars; data_type=tp, array_type=at)
             model = ICNFModel(
                 icnf;
                 n_epochs = 2,
@@ -56,8 +56,8 @@
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(Matrix{tp}, rand(data_dist, nvars, 2))
-        r2 = convert(Matrix{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars, 2))
+        r2 = convert(at{tp}, rand(data_dist, nvars, 2))
         df = DataFrame(transpose(r), :auto)
         df2 = DataFrame(transpose(r2), :auto)
 
@@ -67,7 +67,7 @@
             else
                 nn = Dense(2 * nvars => nvars, tanh)
             end
-            icnf = mt{tp, at}(nn, nvars)
+            icnf = construct(mt, nn, nvars; data_type=tp, array_type=at)
             model = CondICNFModel(
                 icnf;
                 n_epochs = 2,

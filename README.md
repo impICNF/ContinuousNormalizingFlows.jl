@@ -40,7 +40,7 @@ r = rand(data_dist, nvars, n)
 
 # Model
 nn = Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh))
-icnf = RNODE{Float32, Array}(nn, nvars; tspan = (0.0f0, 4.0f0))
+icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0))
 
 # Training
 using DataFrames, MLJBase

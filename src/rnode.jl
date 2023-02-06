@@ -18,17 +18,6 @@ struct RNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractICNF{T, AT}
     # trace_train
 end
 
-function RNODE{T, AT}(
-    nn::LuxCore.AbstractExplicitLayer,
-    nvars::Integer,
-    ;
-    basedist::Distribution = MvNormal(Zeros{T}(nvars), one(T) * I),
-    tspan::Tuple{T, T} = convert(Tuple{T, T}, (0, 1)),
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    RNODE{T, AT}(nn, nvars, basedist, tspan, differentiation_backend)
-end
-
 function augmented_f(
     icnf::RNODE{T, AT},
     mode::TestMode,

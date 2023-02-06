@@ -37,7 +37,7 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = mt{tp, at}(nn, nvars)
+        icnf = construct(mt, nn, nvars; data_type=tp, array_type=at)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
@@ -57,7 +57,6 @@
         end
 
         @test !isnothing(loss(icnf, r, ps, st))
-        @test !isnothing(loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r))
 
         diff_loss(x) = loss(icnf, r, x, st)
 
@@ -131,7 +130,7 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = mt{tp, at}(nn, nvars)
+        icnf = construct(mt, nn, nvars; data_type=tp, array_type=at)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
@@ -151,7 +150,6 @@
         end
 
         @test !isnothing(loss(icnf, r, r2, ps, st))
-        @test !isnothing(loss_f(icnf, loss, st)(ps, SciMLBase.NullParameters(), r, r2))
 
         diff_loss(x) = loss(icnf, r, r2, x, st)
 
