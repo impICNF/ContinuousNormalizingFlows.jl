@@ -30,8 +30,11 @@ include("types.jl")
 
 include("planar_layer.jl")
 
+include("base.jl")
 include("base_icnf.jl")
 include("base_cond_icnf.jl")
+
+include("core.jl")
 include("core_icnf.jl")
 include("core_cond_icnf.jl")
 
