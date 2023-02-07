@@ -2,11 +2,7 @@ export CondICNFModel, CondICNFDist
 
 # SciML interface
 
-function loss_f(
-    icnf::AbstractCondICNF,
-    loss::Function,
-    st::Any,
-)::Function
+function loss_f(icnf::AbstractCondICNF, loss::Function, st::Any)::Function
     function f(ps, θ, xs, ys)
         loss(icnf, xs, ys, ps, st)
     end

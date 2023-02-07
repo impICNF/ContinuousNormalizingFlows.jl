@@ -36,7 +36,7 @@
             else
                 nn = Dense(nvars => nvars, tanh)
             end
-            icnf = construct(mt, nn, nvars; data_type=tp, array_type=at)
+            icnf = construct(mt, nn, nvars; data_type = tp, array_type = at)
             model = ICNFModel(
                 icnf;
                 n_epochs = 2,
@@ -67,7 +67,7 @@
             else
                 nn = Dense(2 * nvars => nvars, tanh)
             end
-            icnf = construct(mt, nn, nvars; data_type=tp, array_type=at)
+            icnf = construct(mt, nn, nvars; data_type = tp, array_type = at)
             model = CondICNFModel(
                 icnf;
                 n_epochs = 2,
