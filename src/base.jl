@@ -14,10 +14,7 @@ function construct(
     aicnf{data_type, array_type}(nn, nvars, basedist, tspan, differentiation_backend)
 end
 
-function n_augment(
-    icnf::AbstractFlows,
-    mode::Mode,
-)::Integer
+function n_augment(icnf::AbstractFlows, mode::Mode)::Integer
     0
 end
 
