@@ -43,7 +43,7 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = mt{tp, at}(nn, nvars; differentiation_backend = adb_u)
+        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at, differentiation_backend = adb_u)
         model = ICNFModel(
             icnf;
             n_epochs = 2,
@@ -73,7 +73,7 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = mt{tp, at}(nn, nvars; differentiation_backend = adb_u)
+        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at, differentiation_backend = adb_u)
         model = CondICNFModel(
             icnf;
             n_epochs = 2,

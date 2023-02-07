@@ -61,22 +61,3 @@ function loss(
     logp̂x, = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
     -logp̂x
 end
-
-function n_augment(
-    icnf::AbstractCondICNF{T, AT},
-    mode::Mode,
-)::Integer where {T <: AbstractFloat, AT <: AbstractArray}
-    0
-end
-
-# pretty-printing
-function Base.show(io::IO, icnf::AbstractCondICNF)
-    print(
-        io,
-        typeof(icnf),
-        "\n\tNumber of Variables: ",
-        icnf.nvars,
-        "\n\tTime Span: ",
-        icnf.tspan,
-    )
-end
