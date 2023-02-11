@@ -53,7 +53,14 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         y = model.array_type{model.data_type}(y)
         ps = ComponentArray{model.data_type}(ps)
     end
-    data = DataLoader((x, y); batchsize = -1, partial = true, shuffle = true, parallel = true, buffer = true)
+    data = DataLoader(
+        (x, y);
+        batchsize = -1,
+        partial = true,
+        shuffle = true,
+        parallel = true,
+        buffer = true,
+    )
     ncdata = ncycle(data, model.n_epochs)
     _loss = loss_f(model.m, model.loss, st)
     _callback = callback_f(model.m)
