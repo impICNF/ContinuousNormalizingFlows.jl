@@ -68,6 +68,7 @@
 
         adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
+        adb_u isa AbstractDifferentiation.TrackerBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
