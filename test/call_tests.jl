@@ -42,7 +42,14 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at, differentiation_backend = adb_u)
+        icnf = construct(
+            mt,
+            nn,
+            nvars;
+            data_type = tp,
+            array_type = at,
+            differentiation_backend = adb_u,
+        )
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
@@ -131,7 +138,14 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at, differentiation_backend = adb_u)
+        icnf = construct(
+            mt,
+            nn,
+            nvars;
+            data_type = tp,
+            array_type = at,
+            differentiation_backend = adb_u,
+        )
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
