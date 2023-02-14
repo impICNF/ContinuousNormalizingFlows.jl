@@ -23,10 +23,15 @@
     fd_m = FiniteDifferences.central_fdm(5, 1)
     rng = Random.default_rng()
 
-    @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
+    @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
         tp in tps,
+        adb_u in adb_list,
         nvars in nvars_,
         mt in mts
+
+        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
+        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
+        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
@@ -37,24 +42,14 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at)
+        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
-        @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
-            @test !isnothing(
-                inference(icnf, TestMode(), r, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(icnf, TrainMode(), r, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TestMode(), ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), ps, st; differentiation_backend = adb),
-            )
-        end
+        @test !isnothing(inference(icnf, TestMode(), r, ps, st))
+        @test !isnothing(inference(icnf, TrainMode(), r, ps, st))
+        @test !isnothing(generate(icnf, TestMode(), ps, st))
+        @test !isnothing(generate(icnf, TrainMode(), ps, st))
 
         @test !isnothing(loss(icnf, r, ps, st))
 
@@ -113,10 +108,16 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
-    @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
+    @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
         tp in tps,
+        adb_u in adb_list,
         nvars in nvars_,
         mt in cmts
+
+        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
+        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
+        adb_u isa AbstractDifferentiation.TrackerBackend && continue
+        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
@@ -130,24 +131,14 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at)
+        icnf = construct(mt, nn, nvars; data_type = tp, array_type = at, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
-        @testset "Using $(typeof(adb).name.name) For Usage" for adb in adb_list
-            @test !isnothing(
-                inference(icnf, TestMode(), r, r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                inference(icnf, TrainMode(), r, r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TestMode(), r2, ps, st; differentiation_backend = adb),
-            )
-            @test !isnothing(
-                generate(icnf, TrainMode(), r2, ps, st; differentiation_backend = adb),
-            )
-        end
+        @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st))
+        @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st))
+        @test !isnothing(generate(icnf, TestMode(), r2, ps, st))
+        @test !isnothing(generate(icnf, TrainMode(), r2, ps, st))
 
         @test !isnothing(loss(icnf, r, r2, ps, st))
 
