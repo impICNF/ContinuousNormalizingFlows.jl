@@ -3,7 +3,7 @@ export CondRNODE
 """
 Implementation of RNODE (Conditional Version)
 """
-struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T, AT}
+struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <: AbstractCondICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -17,7 +17,7 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray} <: AbstractCondICNF{T,
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT},
+    icnf::CondRNODE{T, AT, <: ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
     st::Any;
@@ -40,7 +40,27 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT},
+    icnf::CondRNODE{T, AT, <: ZygoteMatrixMode},
+    mode::TestMode,
+    ys::AbstractMatrix{<:Real},
+    st::Any,
+    n_batch::Integer;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    rng::AbstractRNG = Random.default_rng(),
+)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    n_aug = n_augment(icnf, mode) + 1
+
+    function f_aug(u, p, t)
+        z = u[1:(end - n_aug), :]
+        ż, J = jacobian_batched(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, T, AT)
+        l̇ = transpose(tr.(eachslice(J; dims = 3)))
+        vcat(ż, -l̇)
+    end
+    f_aug
+end
+
+function augmented_f(
+    icnf::CondRNODE{T, AT, <: ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
@@ -67,8 +87,32 @@ function augmented_f(
     f_aug
 end
 
+function augmented_f(
+    icnf::CondRNODE{T, AT, <: ZygoteMatrixMode},
+    mode::TrainMode,
+    ys::AbstractVector{<:Real},
+    st::Any,
+    n_batch::Integer;
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    rng::AbstractRNG = Random.default_rng(),
+)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+    n_aug = n_augment(icnf, mode) + 1
+    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+
+    function f_aug(u, p, t)
+        z = u[1:(end - n_aug), :]
+        ż, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
+        ϵJ = only(back(ϵ))
+        l̇ = sum(ϵJ .* ϵ; dims = 1)
+        Ė = transpose(norm.(eachcol(ż)))
+        ṅ = transpose(norm.(eachcol(ϵJ)))
+        vcat(ż, -l̇, Ė, ṅ)
+    end
+    f_aug
+end
+
 function loss(
-    icnf::CondRNODE{T, AT},
+    icnf::CondRNODE{T, AT, <: VectorMode},
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
@@ -81,6 +125,22 @@ function loss(
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
     -logp̂x + λ₁ * Ė + λ₂ * ṅ
+end
+
+function loss(
+    icnf::CondRNODE{T, AT, <: MatrixMode},
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+    ps::Any,
+    st::Any,
+    λ₁::T = convert(T, 1e-2),
+    λ₂::T = convert(T, 1e-2);
+    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    mode::Mode = TrainMode(),
+    rng::AbstractRNG = Random.default_rng(),
+)::Real where {T <: AbstractFloat, AT <: AbstractArray}
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
+    mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
 end
 
 function n_augment(

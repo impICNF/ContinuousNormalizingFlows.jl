@@ -21,6 +21,7 @@ using AbstractDifferentiation,
     OptimizationOptimisers,
     SciMLBase,
     ScientificTypes,
+    SparseDiffTools,
     Zygote,
     LinearAlgebra,
     Random,
@@ -46,5 +47,7 @@ include("planar.jl")
 include("cond_rnode.jl")
 include("cond_ffjord.jl")
 include("cond_planar.jl")
+
+include("utils.jl")
 
 end

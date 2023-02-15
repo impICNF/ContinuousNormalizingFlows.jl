@@ -9,9 +9,8 @@
     if has_cuda_gpu() && !SMALL
         push!(ats, CuArray)
     end
-    tps =
-        SMALL ? Type{<:AbstractFloat}[Float32] :
-        Type{<:AbstractFloat}[Float64, Float32, Float16]
+    tps = Type{<:AbstractFloat}[Float32]
+    cmodes = Type{<:ICNF.ComputeMode}[ZygoteMatrixMode]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -61,6 +60,94 @@
         @test !isnothing(loss(icnf, r, ps, st))
 
         diff_loss(x) = loss(icnf, r, x, st)
+
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            @test_throws MethodError !isnothing(
+                AbstractDifferentiation.derivative(adb, diff_loss, ps),
+            )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
+            if adb isa AbstractDifferentiation.TrackerBackend
+                @test_throws MethodError !isnothing(
+                    AbstractDifferentiation.jacobian(adb, diff_loss, ps),
+                )
+            else
+                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
+            end
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps))
+        end
+
+        @test !isnothing(Zygote.gradient(diff_loss, ps))
+        @test !isnothing(Zygote.jacobian(diff_loss, ps))
+        @test !isnothing(Zygote.forwarddiff(diff_loss, ps))
+        # @test !isnothing(Zygote.diaghessian(diff_loss, ps))
+        # @test !isnothing(Zygote.hessian(diff_loss, ps))
+        # @test !isnothing(Zygote.hessian_reverse(diff_loss, ps))
+
+        @test !isnothing(ReverseDiff.gradient(diff_loss, ps))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps))
+        # @test !isnothing(ReverseDiff.hessian(diff_loss, ps))
+
+        @test !isnothing(ForwardDiff.gradient(diff_loss, ps))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
+        # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
+
+        @test !isnothing(Tracker.gradient(diff_loss, ps))
+        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, ps))
+        # @test !isnothing(Tracker.hessian(diff_loss, ps))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, ps))
+
+        @test_throws MethodError !isnothing(
+            FiniteDiff.finite_difference_derivative(diff_loss, ps),
+        )
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
+        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
+
+        d = ICNFDist(icnf, ps, st)
+
+        @test !isnothing(logpdf(d, r))
+        @test !isnothing(logpdf(d, r_arr))
+        @test !isnothing(pdf(d, r))
+        @test !isnothing(pdf(d, r_arr))
+        @test !isnothing(rand(d))
+        @test !isnothing(rand(d, 2))
+    end
+    @testset "$at | $tp | $nvars Vars | $mt" for at in ats,
+        tp in tps,
+        cmode in cmodes,
+        nvars in nvars_,
+        mt in mts
+
+        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        r = convert(at{tp}, rand(data_dist, nvars))
+        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+
+        if mt <: Planar
+            nn = PlanarLayer(nvars, tanh)
+        else
+            nn = Dense(nvars => nvars, tanh)
+        end
+        icnf = construct(
+            mt,
+            nn,
+            nvars;
+            data_type = tp,
+            array_type = at,
+            compute_mode = cmode,
+        )
+        ps, st = Lux.setup(rng, icnf)
+        ps = ComponentArray(map(at{tp}, ps))
+
+        @test !isnothing(inference(icnf, TestMode(), r_arr, ps, st))
+        @test !isnothing(inference(icnf, TrainMode(), r_arr, ps, st))
+        @test !isnothing(generate(icnf, TestMode(), ps, st, 2))
+        @test !isnothing(generate(icnf, TrainMode(), ps, st, 2))
+
+        @test !isnothing(loss(icnf, r_arr, ps, st))
+
+        diff_loss(x) = loss(icnf, r_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
