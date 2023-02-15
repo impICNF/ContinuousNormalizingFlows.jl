@@ -88,7 +88,7 @@ end
 function augmented_f(
     icnf::CondFFJORD{T, AT, <: ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractVector{<:Real},
+    ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,

@@ -74,10 +74,6 @@
         nvars in nvars_,
         mt in mts
 
-        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
-        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
-
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
         df = DataFrame(transpose(r), :auto)
