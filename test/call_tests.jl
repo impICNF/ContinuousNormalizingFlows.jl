@@ -329,8 +329,8 @@
 
         @test !isnothing(inference(icnf, TestMode(), r_arr, r2_arr, ps, st))
         @test !isnothing(inference(icnf, TrainMode(), r_arr, r2_arr, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), r2_arr, ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), r2_arr, ps, st))
+        @test !isnothing(generate(icnf, TestMode(), r2_arr, ps, st, 2))
+        @test !isnothing(generate(icnf, TrainMode(), r2_arr, ps, st, 2))
 
         @test !isnothing(loss(icnf, r_arr, r2_arr, ps, st))
 
