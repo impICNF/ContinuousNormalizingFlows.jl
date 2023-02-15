@@ -50,6 +50,10 @@ end
     ps.u * m.activation((ps.w ⋅ z) + only(ps.b)), st
 end
 
+@inline function (m::PlanarLayer{true})(z::AbstractMatrix, ps::Any, st::Any)
+    ps.u * m.activation.(muladd(transpose(ps.w), z, only(ps.b))), st
+end
+
 @inline function (m::PlanarLayer{true, cond, typeof(identity)})(
     z::AbstractVector,
     ps::Any,
@@ -58,8 +62,20 @@ end
     ps.u * ((ps.w ⋅ z) + only(ps.b)), st
 end
 
+@inline function (m::PlanarLayer{true, cond, typeof(identity)})(
+    z::AbstractMatrix,
+    ps::Any,
+    st::Any,
+) where {cond}
+    ps.u * muladd(transpose(ps.w), z, only(ps.b)), st
+end
+
 @inline function (m::PlanarLayer{false})(z::AbstractVector, ps::Any, st::Any)
     ps.u * m.activation(ps.w ⋅ z), st
+end
+
+@inline function (m::PlanarLayer{false})(z::AbstractMatrix, ps::Any, st::Any)
+    ps.u * m.activation.(transpose(ps.w) * z), st
 end
 
 @inline function (m::PlanarLayer{false, cond, typeof(identity)})(
@@ -70,8 +86,20 @@ end
     ps.u * (ps.w ⋅ z), st
 end
 
+@inline function (m::PlanarLayer{false, cond, typeof(identity)})(
+    z::AbstractMatrix,
+    ps::Any,
+    st::Any,
+) where {cond}
+    ps.u * (transpose(ps.w) * z), st
+end
+
 @inline function pl_h(m::PlanarLayer{true}, z::AbstractVector, ps::Any, st::Any)
     m.activation((ps.w ⋅ z) + only(ps.b)), st
+end
+
+@inline function pl_h(m::PlanarLayer{true}, z::AbstractMatrix, ps::Any, st::Any)
+    m.activation.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
 
 @inline function pl_h(
@@ -83,8 +111,21 @@ end
     (ps.w ⋅ z) + only(ps.b), st
 end
 
+@inline function pl_h(
+    m::PlanarLayer{true, cond, typeof(identity)},
+    z::AbstractMatrix,
+    ps::Any,
+    st::Any,
+) where {cond}
+    muladd(transpose(ps.w), z, only(ps.b)), st
+end
+
 @inline function pl_h(m::PlanarLayer{false}, z::AbstractVector, ps::Any, st::Any)
     m.activation(ps.w ⋅ z), st
+end
+
+@inline function pl_h(m::PlanarLayer{false}, z::AbstractMatrix, ps::Any, st::Any)
+    m.activation.(transpose(ps.w) * z), st
 end
 
 @inline function pl_h(
@@ -94,4 +135,13 @@ end
     st::Any,
 ) where {cond}
     (ps.w ⋅ z), st
+end
+
+@inline function pl_h(
+    m::PlanarLayer{false, cond, typeof(identity)},
+    z::AbstractMatrix,
+    ps::Any,
+    st::Any,
+) where {cond}
+    (transpose(ps.w) * z), st
 end
