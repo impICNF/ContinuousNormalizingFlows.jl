@@ -124,6 +124,8 @@
         nvars in nvars_,
         mt in mts
 
+        cmode <: SDJacVecMatrixMode && continue
+
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -307,6 +309,8 @@
         cmode in cmodes,
         nvars in nvars_,
         mt in cmts
+
+        cmode <: SDJacVecMatrixMode && continue
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)

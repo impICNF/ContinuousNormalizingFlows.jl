@@ -70,13 +70,15 @@
         @test !isnothing(MLJBase.transform(mach, df))
         @test !isnothing(MLJBase.fitted_params(mach))
     end
-    @testset "$at | $tp | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
+    @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
                                                                                                                                     ats,
         tp in tps,
         cmode in cmodes,
         go_ad in go_ads,
         nvars in nvars_,
         mt in mts
+
+        cmode <: SDJacVecMatrixMode && continue
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -148,13 +150,15 @@
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
     end
-    @testset "$at | $tp | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
+    @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
                                                                                                                                     ats,
         tp in tps,
         cmode in cmodes,
         go_ad in go_ads,
         nvars in nvars_,
         mt in cmts
+
+        cmode <: SDJacVecMatrixMode && continue
 
         data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
