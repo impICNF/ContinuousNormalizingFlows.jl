@@ -108,7 +108,10 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     (ps, st) = fitresult
 
     if model.compute_mode <: VectorMode
-        tst = @timed logp̂x = broadcast(((x, y),) -> first(inference(model.m, TestMode(), x, y, ps, st)), zip(eachcol(xnew), eachcol(ynew)))
+        tst = @timed logp̂x = broadcast(
+            ((x, y),) -> first(inference(model.m, TestMode(), x, y, ps, st)),
+            zip(eachcol(xnew), eachcol(ynew)),
+        )
     elseif model.compute_mode <: MatrixMode
         tst = @timed logp̂x = first(inference(model.m, TestMode(), xnew, ynew, ps, st))
     else
@@ -156,36 +159,36 @@ end
 Base.length(d::CondICNFDist) = d.m.nvars
 Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         first(inference(d.m, TestMode(), x, d.ys, d.ps, d.st))
-    elseif d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
         first(Distributions._logpdf(d, hcat(x)))
     else
         error("Not Implemented")
     end
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
-    elseif d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
         first(inference(d.m, TestMode(), A, d.ys[:, 1:size(A, 2)], d.ps, d.st))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         x .= generate(d.m, TestMode(), d.ys, d.ps, d.st; rng)
-    elseif d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
-    elseif d.m isa AbstractCondICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
         A .= generate(d.m, TestMode(), d.ys[:, 1:size(A, 2)], d.ps, d.st, size(A, 2); rng)
     else
         error("Not Implemented")

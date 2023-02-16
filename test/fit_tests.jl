@@ -10,11 +10,8 @@
         push!(ats, CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
-    cmodes = Type{<:ICNF.ComputeMode}[
-        ZygoteMatrixMode,
-        SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
-    ]
+    cmodes =
+        Type{<:ICNF.ComputeMode}[ZygoteMatrixMode, SDVecJacMatrixMode, SDJacVecMatrixMode]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -71,7 +68,7 @@
         @test !isnothing(MLJBase.fitted_params(mach))
     end
     @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
-                                                                                                                                    ats,
+                                                                                                   ats,
         tp in tps,
         cmode in cmodes,
         go_ad in go_ads,
@@ -88,14 +85,8 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = construct(
-            mt,
-            nn,
-            nvars;
-            data_type = tp,
-            array_type = at,
-            compute_mode = cmode,
-        )
+        icnf =
+            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
         model = ICNFModel(
             icnf;
             n_epochs = 2,
@@ -151,7 +142,7 @@
         @test !isnothing(MLJBase.fitted_params(mach))
     end
     @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
-                                                                                                                                    ats,
+                                                                                                   ats,
         tp in tps,
         cmode in cmodes,
         go_ad in go_ads,
@@ -171,14 +162,8 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = construct(
-            mt,
-            nn,
-            nvars;
-            data_type = tp,
-            array_type = at,
-            compute_mode = cmode,
-        )
+        icnf =
+            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
         model = CondICNFModel(
             icnf;
             n_epochs = 2,

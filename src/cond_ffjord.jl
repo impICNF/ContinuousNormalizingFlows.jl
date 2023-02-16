@@ -3,7 +3,8 @@ export CondFFJORD
 """
 Implementation of FFJORD (Conditional Version)
 """
-struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <: AbstractCondICNF{T, AT, CM}
+struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
+       AbstractCondICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -17,7 +18,7 @@ struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::CondFFJORD{T, AT, <: ADVectorMode},
+    icnf::CondFFJORD{T, AT, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
     st::Any;
@@ -52,7 +53,13 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
-        mz, J = jacobian_batched(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, T, AT, CM)
+        mz, J = jacobian_batched(
+            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
+            z,
+            T,
+            AT,
+            CM,
+        )
         trace_J = transpose(tr.(eachslice(J; dims = 3)))
         vcat(mz, -trace_J)
     end
@@ -60,7 +67,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{T, AT, <: ADVectorMode},
+    icnf::CondFFJORD{T, AT, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
@@ -86,7 +93,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{T, AT, <: ZygoteMatrixMode},
+    icnf::CondFFJORD{T, AT, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
@@ -99,7 +106,8 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
-        mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
+        mz, back =
+            Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
         ϵJ = only(back(ϵ))
         trace_J = sum(ϵJ .* ϵ; dims = 1)
         vcat(mz, -trace_J)
@@ -108,7 +116,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{T, AT, <: SDVecJacMatrixMode},
+    icnf::CondFFJORD{T, AT, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
@@ -122,7 +130,10 @@ function augmented_f(
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
         mz = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-        ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ), size(z))
+        ϵJ = reshape(
+            auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
+            size(z),
+        )
         trace_J = sum(ϵJ .* ϵ; dims = 1)
         vcat(mz, -trace_J)
     end
@@ -130,7 +141,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{T, AT, <: SDJacVecMatrixMode},
+    icnf::CondFFJORD{T, AT, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
@@ -144,7 +155,10 @@ function augmented_f(
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
         mz = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-        Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ), size(z))
+        Jϵ = reshape(
+            auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
+            size(z),
+        )
         trace_J = sum(ϵ .* Jϵ; dims = 1)
         vcat(mz, -trace_J)
     end

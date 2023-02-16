@@ -1,7 +1,7 @@
 export inference, generate, loss
 
 function inference(
-    icnf::AbstractICNF{T, AT, <: VectorMode},
+    icnf::AbstractICNF{T, AT, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
@@ -25,7 +25,7 @@ function inference(
 end
 
 function inference(
-    icnf::AbstractICNF{T, AT, <: MatrixMode},
+    icnf::AbstractICNF{T, AT, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
@@ -49,7 +49,7 @@ function inference(
 end
 
 function generate(
-    icnf::AbstractICNF{T, AT, <: VectorMode},
+    icnf::AbstractICNF{T, AT, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any,
@@ -71,7 +71,7 @@ function generate(
 end
 
 function generate(
-    icnf::AbstractICNF{T, AT, <: MatrixMode},
+    icnf::AbstractICNF{T, AT, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
@@ -94,7 +94,7 @@ function generate(
 end
 
 function loss(
-    icnf::AbstractICNF{T, AT, <: VectorMode},
+    icnf::AbstractICNF{T, AT, <:VectorMode},
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
@@ -107,7 +107,7 @@ function loss(
 end
 
 function loss(
-    icnf::AbstractICNF{T, AT, <: MatrixMode},
+    icnf::AbstractICNF{T, AT, <:MatrixMode},
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
