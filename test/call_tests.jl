@@ -10,7 +10,11 @@
         push!(ats, CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
-    cmodes = Type{<:ICNF.ComputeMode}[ZygoteMatrixMode]
+    cmodes = Type{<:ICNF.ComputeMode}[
+        ZygoteMatrixMode,
+        SDVecJacMatrixMode,
+        SDJacVecMatrixMode,
+    ]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
