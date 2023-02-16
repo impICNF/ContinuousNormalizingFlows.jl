@@ -19,21 +19,25 @@ mutable struct ICNFModel <: MLJICNF
     n_epochs::Integer
     adtype::SciMLBase.AbstractADType
 
+    batch_size::Integer
+
     resource::AbstractResource
     data_type::Type{<:AbstractFloat}
     array_type::Type{<:AbstractArray}
+    compute_mode::Type{<:ComputeMode}
 end
 
 function ICNFModel(
-    m::AbstractICNF{T, AT},
+    m::AbstractICNF{T, AT, CM},
     loss::Function = loss,
     ;
     optimizer::Any = Adam(),
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
+    batch_size::Integer = 128,
     resource::AbstractResource = CPU1(),
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, resource, T, AT)
+) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource, T, AT, CM)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -49,14 +53,27 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         x = model.array_type{model.data_type}(x)
         ps = ComponentArray{model.data_type}(ps)
     end
-    data = DataLoader(
-        (x,);
-        batchsize = -1,
-        partial = true,
-        shuffle = true,
-        parallel = true,
-        buffer = true,
-    )
+    if model.compute_mode <: VectorMode
+        data = DataLoader(
+            (x,);
+            batchsize = -1,
+            partial = true,
+            shuffle = true,
+            parallel = true,
+            buffer = true,
+        )
+    elseif model.compute_mode <: MatrixMode
+        data = DataLoader(
+            (x,);
+            batchsize = model.batch_size,
+            partial = true,
+            shuffle = true,
+            parallel = true,
+            buffer = true,
+        )
+    else
+        error("Not Implemented")
+    end
     ncdata = ncycle(data, model.n_epochs)
     _loss = loss_f(model.m, model.loss, st)
     _callback = callback_f(model.m)
@@ -83,8 +100,14 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     end
     (ps, st) = fitresult
 
-    tst = @timed logp̂x =
-        broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
+    if model.compute_mode <: VectorMode
+        tst = @timed logp̂x = broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
+    elseif model.compute_mode <: MatrixMode
+        tst = @timed logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
+    else
+        error("Not Implemented")
+    end
+
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -123,14 +146,38 @@ end
 Base.length(d::ICNFDist) = d.m.nvars
 Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
-    first(inference(d.m, TestMode(), x, d.ps, d.st))
+    if d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+        first(inference(d.m, TestMode(), x, d.ps, d.st))
+    elseif d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+        first(Distributions._logpdf(d, hcat(x)))
+    else
+        error("Not Implemented")
+    end
 end
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
-    broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
+    if d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+        broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
+    elseif d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+        first(inference(d.m, TestMode(), A, d.ps, d.st))
+    else
+        error("Not Implemented")
+    end
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
-    x .= generate(d.m, TestMode(), d.ps, d.st; rng)
+    if d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+        x .= generate(d.m, TestMode(), d.ps, d.st; rng)
+    elseif d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+        x .= Distributions._rand!(rng, d, hcat(x))
+    else
+        error("Not Implemented")
+    end
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
-    A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
+    if d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: VectorMode}
+        A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
+    elseif d.m isa AbstractICNF{<: AbstractFloat, <: AbstractArray, <: MatrixMode}
+        A .= generate(d.m, TestMode(), d.ps, d.st, size(A, 2); rng)
+    else
+        error("Not Implemented")
+    end
 end
