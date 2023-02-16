@@ -5,7 +5,8 @@ Implementation of RNODE from
 
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
-struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <: AbstractICNF{T, AT, CM}
+struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
+       AbstractICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -19,7 +20,7 @@ struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <: Abst
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, <: ADVectorMode},
+    icnf::RNODE{T, AT, <:ADVectorMode},
     mode::TestMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -60,7 +61,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, <: ADVectorMode},
+    icnf::RNODE{T, AT, <:ADVectorMode},
     mode::TrainMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -87,7 +88,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, <: ZygoteMatrixMode},
+    icnf::RNODE{T, AT, <:ZygoteMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
@@ -110,7 +111,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, <: SDVecJacMatrixMode},
+    icnf::RNODE{T, AT, <:SDVecJacMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
@@ -123,7 +124,10 @@ function augmented_f(
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
         ż = first(LuxCore.apply(icnf.nn, z, p, st))
-        ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+        ϵJ = reshape(
+            auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
+            size(z),
+        )
         l̇ = sum(ϵJ .* ϵ; dims = 1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -133,7 +137,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, <: SDJacVecMatrixMode},
+    icnf::RNODE{T, AT, <:SDJacVecMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
@@ -146,7 +150,10 @@ function augmented_f(
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
         ż = first(LuxCore.apply(icnf.nn, z, p, st))
-        Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+        Jϵ = reshape(
+            auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
+            size(z),
+        )
         l̇ = sum(ϵ .* Jϵ; dims = 1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(Jϵ)))
@@ -156,7 +163,7 @@ function augmented_f(
 end
 
 function loss(
-    icnf::RNODE{T, AT, <: VectorMode},
+    icnf::RNODE{T, AT, <:VectorMode},
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
@@ -171,7 +178,7 @@ function loss(
 end
 
 function loss(
-    icnf::RNODE{T, AT, <: MatrixMode},
+    icnf::RNODE{T, AT, <:MatrixMode},
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,

@@ -10,11 +10,8 @@
         push!(ats, CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
-    cmodes = Type{<:ICNF.ComputeMode}[
-        ZygoteMatrixMode,
-        SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
-    ]
+    cmodes =
+        Type{<:ICNF.ComputeMode}[ZygoteMatrixMode, SDVecJacMatrixMode, SDJacVecMatrixMode]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -135,14 +132,8 @@
         else
             nn = Dense(nvars => nvars, tanh)
         end
-        icnf = construct(
-            mt,
-            nn,
-            nvars;
-            data_type = tp,
-            array_type = at,
-            compute_mode = cmode,
-        )
+        icnf =
+            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 
@@ -324,14 +315,8 @@
         else
             nn = Dense(2 * nvars => nvars, tanh)
         end
-        icnf = construct(
-            mt,
-            nn,
-            nvars;
-            data_type = tp,
-            array_type = at,
-            compute_mode = cmode,
-        )
+        icnf =
+            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArray(map(at{tp}, ps))
 

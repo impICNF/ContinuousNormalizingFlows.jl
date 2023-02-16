@@ -12,7 +12,13 @@ function construct(
     tspan::Tuple = convert(Tuple{data_type, data_type}, (0, 1)),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
 )
-    aicnf{data_type, array_type, compute_mode}(nn, nvars, basedist, tspan, differentiation_backend)
+    aicnf{data_type, array_type, compute_mode}(
+        nn,
+        nvars,
+        basedist,
+        tspan,
+        differentiation_backend,
+    )
 end
 
 function n_augment(icnf::AbstractFlows, mode::Mode)::Integer

@@ -3,7 +3,8 @@ export CondRNODE
 """
 Implementation of RNODE (Conditional Version)
 """
-struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <: AbstractCondICNF{T, AT, CM}
+struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
+       AbstractCondICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -17,7 +18,7 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <: 
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <: ADVectorMode},
+    icnf::CondRNODE{T, AT, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
     st::Any;
@@ -52,7 +53,13 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
-        ż, J = jacobian_batched(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, T, AT, CM)
+        ż, J = jacobian_batched(
+            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
+            z,
+            T,
+            AT,
+            CM,
+        )
         l̇ = transpose(tr.(eachslice(J; dims = 3)))
         vcat(ż, -l̇)
     end
@@ -60,7 +67,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <: ADVectorMode},
+    icnf::CondRNODE{T, AT, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
@@ -88,7 +95,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <: ZygoteMatrixMode},
+    icnf::CondRNODE{T, AT, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
@@ -101,7 +108,8 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
-        ż, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
+        ż, back =
+            Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
         ϵJ = only(back(ϵ))
         l̇ = sum(ϵJ .* ϵ; dims = 1)
         Ė = transpose(norm.(eachcol(ż)))
@@ -112,7 +120,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <: SDVecJacMatrixMode},
+    icnf::CondRNODE{T, AT, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
@@ -126,7 +134,10 @@ function augmented_f(
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
         ż = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-        ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ), size(z))
+        ϵJ = reshape(
+            auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
+            size(z),
+        )
         l̇ = sum(ϵJ .* ϵ; dims = 1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -136,7 +147,7 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <: SDJacVecMatrixMode},
+    icnf::CondRNODE{T, AT, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
@@ -150,7 +161,10 @@ function augmented_f(
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
         ż = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-        Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ), size(z))
+        Jϵ = reshape(
+            auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
+            size(z),
+        )
         l̇ = sum(ϵ .* Jϵ; dims = 1)
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(Jϵ)))
@@ -160,7 +174,7 @@ function augmented_f(
 end
 
 function loss(
-    icnf::CondRNODE{T, AT, <: VectorMode},
+    icnf::CondRNODE{T, AT, <:VectorMode},
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
@@ -176,7 +190,7 @@ function loss(
 end
 
 function loss(
-    icnf::CondRNODE{T, AT, <: MatrixMode},
+    icnf::CondRNODE{T, AT, <:MatrixMode},
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
