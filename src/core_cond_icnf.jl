@@ -35,11 +35,23 @@ function CondICNFModel(
     optimizer::Any = Optimisers.Adam(),
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
-    use_batch::Bool=true,
+    use_batch::Bool = true,
     batch_size::Integer = 128,
     resource::AbstractResource = CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
-    CondICNFModel(m, loss, optimizer, n_epochs, adtype, use_batch, batch_size, resource, T, AT, CM)
+    CondICNFModel(
+        m,
+        loss,
+        optimizer,
+        n_epochs,
+        adtype,
+        use_batch,
+        batch_size,
+        resource,
+        T,
+        AT,
+        CM,
+    )
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
