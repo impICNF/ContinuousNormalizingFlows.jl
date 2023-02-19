@@ -57,8 +57,8 @@ estimated_pdf = pdf(d, r)
 new_data = rand(d, n)
 
 # Evaluation
-using LinearAlgebra, Distances
-n1 = norm(estimated_pdf - actual_pdf, 1) / n
-n2 = norm(estimated_pdf - actual_pdf, 2) / n
+using Distances
+mad_ = meanad(estimated_pdf, actual_pdf)
+msd_ = msd(estimated_pdf, actual_pdf)
 tv_dis = totalvariation(estimated_pdf, actual_pdf) / n
 ```
