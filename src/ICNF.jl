@@ -8,6 +8,7 @@ using AbstractDifferentiation,
     Distributions,
     DistributionsAD,
     FillArrays,
+    Flux,
     IterTools,
     Lux,
     LuxCore,
@@ -31,6 +32,7 @@ using AbstractDifferentiation,
 include("types.jl")
 
 include("planar_layer.jl")
+include("flux_compat.jl")
 
 include("base.jl")
 include("base_icnf.jl")

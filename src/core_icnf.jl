@@ -19,6 +19,7 @@ mutable struct ICNFModel <: MLJICNF
     n_epochs::Integer
     adtype::SciMLBase.AbstractADType
 
+    use_batch::Bool
     batch_size::Integer
 
     resource::AbstractResource
@@ -31,48 +32,59 @@ function ICNFModel(
     m::AbstractICNF{T, AT, CM},
     loss::Function = loss,
     ;
-    optimizer::Any = Adam(),
+    optimizer::Any = Optimisers.Adam(),
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
+    use_batch::Bool=true,
     batch_size::Integer = 128,
     resource::AbstractResource = CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
-    ICNFModel(m, loss, optimizer, n_epochs, adtype, batch_size, resource, T, AT, CM)
+    ICNFModel(m, loss, optimizer, n_epochs, adtype, use_batch, batch_size, resource, T, AT, CM)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     rng = Random.default_rng()
     x = collect(transpose(MLJModelInterface.matrix(X)))
     ps, st = LuxCore.setup(rng, model.m)
-    ps = ComponentArray(ps)
-    if model.resource isa CUDALibs
-        x = gpu(x)
-        ps = gpu(ps)
-        st = gpu(st)
-    else
-        x = model.array_type{model.data_type}(x)
-        ps = ComponentArray{model.data_type}(ps)
+    if !(model.m isa MyFluxLayer)
+        ps = ComponentArray(ps)
     end
-    if model.compute_mode <: VectorMode
-        data = DataLoader(
-            (x,);
-            batchsize = -1,
-            partial = true,
-            shuffle = true,
-            parallel = true,
-            buffer = true,
-        )
-    elseif model.compute_mode <: MatrixMode
-        data = DataLoader(
-            (x,);
-            batchsize = model.batch_size,
-            partial = true,
-            shuffle = true,
-            parallel = true,
-            buffer = true,
-        )
+    if model.resource isa CUDALibs
+        x = Lux.gpu(x)
+        ps = Lux.gpu(ps)
+        st = Lux.gpu(st)
     else
-        error("Not Implemented")
+        x = convert(model.array_type{model.data_type}, x)
+        if model.m isa MyFluxLayer
+            ps = convert(model.array_type{model.data_type}, ps)
+        else
+            ps = ComponentArray{model.data_type}(ps)
+        end
+    end
+    if model.use_batch
+        if model.compute_mode <: VectorMode
+            data = DataLoader(
+                (x,);
+                batchsize = -1,
+                partial = true,
+                shuffle = true,
+                parallel = true,
+                buffer = true,
+            )
+        elseif model.compute_mode <: MatrixMode
+            data = DataLoader(
+                (x,);
+                batchsize = model.batch_size,
+                partial = true,
+                shuffle = true,
+                parallel = true,
+                buffer = true,
+            )
+        else
+            error("Not Implemented")
+        end
+    else
+        data = [(x,)]
     end
     ncdata = ncycle(data, model.n_epochs)
     _loss = loss_f(model.m, model.loss, st)
@@ -96,7 +108,7 @@ end
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     if model.resource isa CUDALibs
-        xnew = gpu(xnew)
+        xnew = Lux.gpu(xnew)
     end
     (ps, st) = fitresult
 

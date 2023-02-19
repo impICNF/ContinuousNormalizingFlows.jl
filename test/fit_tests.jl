@@ -46,7 +46,7 @@
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
         else
-            nn = Dense(nvars => nvars, tanh)
+            nn = Lux.Dense(nvars => nvars, tanh)
         end
         icnf = construct(
             mt,
@@ -83,7 +83,7 @@
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
         else
-            nn = Dense(nvars => nvars, tanh)
+            nn = Lux.Dense(nvars => nvars, tanh)
         end
         icnf =
             construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
@@ -120,7 +120,7 @@
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
         else
-            nn = Dense(2 * nvars => nvars, tanh)
+            nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
         icnf = construct(
             mt,
@@ -160,7 +160,7 @@
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
         else
-            nn = Dense(2 * nvars => nvars, tanh)
+            nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
         icnf =
             construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
