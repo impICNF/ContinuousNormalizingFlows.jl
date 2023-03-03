@@ -13,6 +13,9 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     differentiation_backend::AbstractDifferentiation.AbstractBackend
 
+    sol_args::Tuple
+    sol_kwargs::Dict
+
     # trace_test
     # trace_train
 end
@@ -184,8 +187,10 @@ function loss(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng, sol_args, sol_kwargs)
     -logp̂x + λ₁ * Ė + λ₂ * ṅ
 end
 
@@ -200,8 +205,10 @@ function loss(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng, sol_args, sol_kwargs)
     mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
 end
 

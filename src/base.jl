@@ -11,6 +11,8 @@ function construct(
     basedist::Distribution = MvNormal(Zeros{data_type}(nvars), one(data_type) * I),
     tspan::Tuple = convert(Tuple{data_type, data_type}, (0, 1)),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    sol_args::Tuple = (),
+    sol_kwargs::Dict = Dict(),
 )
     aicnf{data_type, array_type, compute_mode}(
         nn,
@@ -18,6 +20,8 @@ function construct(
         basedist,
         tspan,
         differentiation_backend,
+        sol_args,
+        sol_kwargs,
     )
 end
 

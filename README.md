@@ -28,7 +28,6 @@ To use this package, here is an example:
 ```julia
 using ICNF
 using Distributions, Lux
-using DifferentialEquations, SciMLSensitivity
 
 # Parameters
 nvars = 1
