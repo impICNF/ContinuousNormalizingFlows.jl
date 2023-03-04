@@ -13,6 +13,9 @@ struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     differentiation_backend::AbstractDifferentiation.AbstractBackend
 
+    sol_args::Tuple
+    sol_kwargs::Dict
+
     # trace_test
     # trace_train
 end

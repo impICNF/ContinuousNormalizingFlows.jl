@@ -6,18 +6,18 @@ function inference(
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
-    st::Any,
-    args...;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::Tuple{Vararg{Real}} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1))
     f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, ps)
-    sol = solve(prob, args...; kwargs...)
+    sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
@@ -31,18 +31,18 @@ function inference(
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any,
-    args...;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::Tuple{Vararg{AbstractVector{<:Real}}} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode, ys, st, size(xs, 2); differentiation_backend, rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, ps)
-    sol = solve(prob, args...; kwargs...)
+    sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[1:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
@@ -55,11 +55,11 @@ function generate(
     mode::Mode,
     ys::AbstractVector{<:Real},
     ps::Any,
-    st::Any,
-    args...;
+    st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs = convert(AT, rand(rng, icnf.basedist))
@@ -67,7 +67,7 @@ function generate(
     f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), ps)
-    sol = solve(prob, args...; kwargs...)
+    sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
     z
@@ -79,11 +79,11 @@ function generate(
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-    n::Integer,
-    args...;
+    n::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-    kwargs...,
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::AbstractMatrix{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
@@ -91,7 +91,7 @@ function generate(
     f_aug = augmented_f(icnf, mode, ys, st, size(new_xs, 2); differentiation_backend, rng)
     func = ODEFunction(f_aug)
     prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), ps)
-    sol = solve(prob, args...; kwargs...)
+    sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[1:(end - n_aug - 1), :]
     z
@@ -106,8 +106,10 @@ function loss(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
+    logp̂x, = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng, sol_args, sol_kwargs)
     -logp̂x
 end
 
@@ -120,7 +122,9 @@ function loss(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
+    sol_args::Tuple = icnf.sol_args,
+    sol_kwargs::Dict = icnf.sol_kwargs,
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng)
+    logp̂x, = inference(icnf, mode, xs, ys, ps, st; differentiation_backend, rng, sol_args, sol_kwargs)
     mean(-logp̂x)
 end
