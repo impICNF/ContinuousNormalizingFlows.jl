@@ -104,7 +104,17 @@ function loss(
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, mode, xs, ps, st; differentiation_backend, rng, sol_args, sol_kwargs)
+    logp̂x, = inference(
+        icnf,
+        mode,
+        xs,
+        ps,
+        st;
+        differentiation_backend,
+        rng,
+        sol_args,
+        sol_kwargs,
+    )
     -logp̂x
 end
 
@@ -119,6 +129,16 @@ function loss(
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, = inference(icnf, mode, xs, ps, st; differentiation_backend, rng, sol_args, sol_kwargs)
+    logp̂x, = inference(
+        icnf,
+        mode,
+        xs,
+        ps,
+        st;
+        differentiation_backend,
+        rng,
+        sol_args,
+        sol_kwargs,
+    )
     mean(-logp̂x)
 end
