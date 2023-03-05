@@ -6,8 +6,8 @@
         SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] :
         Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
-    if has_cuda_gpu() && !SMALL
-        push!(ats, CuArray)
+    if CUDA.has_cuda_gpu() && !SMALL
+        push!(ats, CUDA.CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
     cmodes =
@@ -33,7 +33,7 @@
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
 
@@ -51,7 +51,7 @@
             differentiation_backend = adb_u,
         )
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArray(map(at{tp}, ps))
+        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
         @test !isnothing(inference(icnf, TestMode(), r, ps, st))
         @test !isnothing(inference(icnf, TrainMode(), r, ps, st))
@@ -108,10 +108,10 @@
 
         d = ICNFDist(icnf, ps, st)
 
-        @test !isnothing(logpdf(d, r))
-        @test !isnothing(logpdf(d, r_arr))
-        @test !isnothing(pdf(d, r))
-        @test !isnothing(pdf(d, r_arr))
+        @test !isnothing(Distributions.logpdf(d, r))
+        @test !isnothing(Distributions.logpdf(d, r_arr))
+        @test !isnothing(Distributions.pdf(d, r))
+        @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
@@ -123,7 +123,7 @@
 
         cmode <: SDJacVecMatrixMode && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
 
@@ -135,7 +135,7 @@
         icnf =
             construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArray(map(at{tp}, ps))
+        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
         @test !isnothing(inference(icnf, TestMode(), r_arr, ps, st))
         @test !isnothing(inference(icnf, TrainMode(), r_arr, ps, st))
@@ -192,10 +192,10 @@
 
         d = ICNFDist(icnf, ps, st)
 
-        @test !isnothing(logpdf(d, r))
-        @test !isnothing(logpdf(d, r_arr))
-        @test !isnothing(pdf(d, r))
-        @test !isnothing(pdf(d, r_arr))
+        @test !isnothing(Distributions.logpdf(d, r))
+        @test !isnothing(Distributions.logpdf(d, r_arr))
+        @test !isnothing(Distributions.pdf(d, r))
+        @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
@@ -210,8 +210,8 @@
         adb_u isa AbstractDifferentiation.TrackerBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
         r2 = convert(at{tp}, rand(data_dist, nvars))
@@ -231,7 +231,7 @@
             differentiation_backend = adb_u,
         )
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArray(map(at{tp}, ps))
+        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
         @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st))
         @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st))
@@ -288,10 +288,10 @@
 
         d = CondICNFDist(icnf, r2, ps, st)
 
-        @test !isnothing(logpdf(d, r))
-        @test !isnothing(logpdf(d, r_arr))
-        @test !isnothing(pdf(d, r))
-        @test !isnothing(pdf(d, r_arr))
+        @test !isnothing(Distributions.logpdf(d, r))
+        @test !isnothing(Distributions.logpdf(d, r_arr))
+        @test !isnothing(Distributions.pdf(d, r))
+        @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
@@ -303,8 +303,8 @@
 
         cmode <: SDJacVecMatrixMode && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
         r2 = convert(at{tp}, rand(data_dist, nvars))
@@ -318,7 +318,7 @@
         icnf =
             construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArray(map(at{tp}, ps))
+        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
         @test !isnothing(inference(icnf, TestMode(), r_arr, r2_arr, ps, st))
         @test !isnothing(inference(icnf, TrainMode(), r_arr, r2_arr, ps, st))
@@ -375,10 +375,10 @@
 
         d = CondICNFDist(icnf, r2_arr, ps, st)
 
-        @test !isnothing(logpdf(d, r))
-        @test !isnothing(logpdf(d, r_arr))
-        @test !isnothing(pdf(d, r))
-        @test !isnothing(pdf(d, r_arr))
+        @test !isnothing(Distributions.logpdf(d, r))
+        @test !isnothing(Distributions.logpdf(d, r_arr))
+        @test !isnothing(Distributions.pdf(d, r))
+        @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 2))
     end
