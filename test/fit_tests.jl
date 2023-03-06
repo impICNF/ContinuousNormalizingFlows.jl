@@ -60,7 +60,8 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() :
+                       ComputationalResources.CPU1(),
         )
         mach = MLJBase.machine(model, df)
         @test !isnothing(MLJBase.fit!(mach))
@@ -91,7 +92,8 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() :
+                       ComputationalResources.CPU1(),
         )
         mach = MLJBase.machine(model, df)
         @test !isnothing(MLJBase.fit!(mach))
@@ -134,7 +136,8 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() :
+                       ComputationalResources.CPU1(),
         )
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))
@@ -168,7 +171,8 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() :
+                       ComputationalResources.CPU1(),
         )
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))
