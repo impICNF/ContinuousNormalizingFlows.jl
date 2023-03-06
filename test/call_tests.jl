@@ -106,6 +106,9 @@
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
 
+        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
+        # @test !isnothing(Calculus.hessian(diff_loss, ps))
+
         d = ICNFDist(icnf, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
@@ -189,6 +192,9 @@
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
+
+        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
+        # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
         d = ICNFDist(icnf, ps, st)
 
@@ -286,6 +292,9 @@
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
 
+        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
+        # @test !isnothing(Calculus.hessian(diff_loss, ps))
+
         d = CondICNFDist(icnf, r2, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
@@ -372,6 +381,9 @@
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
         @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
+
+        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
+        # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
         d = CondICNFDist(icnf, r2_arr, ps, st)
 

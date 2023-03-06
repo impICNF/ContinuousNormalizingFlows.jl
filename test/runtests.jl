@@ -2,6 +2,7 @@ using ICNF, Test
 import AbstractDifferentiation,
     Aqua,
     CUDA,
+    Calculus,
     ComponentArrays,
     ComputationalResources,
     DataFrames,
