@@ -6,8 +6,8 @@
         SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] :
         Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
-    if has_cuda_gpu() && !SMALL
-        push!(ats, CuArray)
+    if CUDA.has_cuda_gpu() && !SMALL
+        push!(ats, CUDA.CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
     cmodes =
@@ -40,9 +40,9 @@
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
-        df = DataFrame(transpose(r), :auto)
+        df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
         else
@@ -60,10 +60,10 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CuArray) ? CUDALibs() : CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
         )
-        mach = machine(model, df)
-        @test !isnothing(fit!(mach))
+        mach = MLJBase.machine(model, df)
+        @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, df))
         @test !isnothing(MLJBase.fitted_params(mach))
     end
@@ -77,9 +77,9 @@
 
         cmode <: SDJacVecMatrixMode && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
-        df = DataFrame(transpose(r), :auto)
+        df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
         else
@@ -91,10 +91,10 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CuArray) ? CUDALibs() : CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
         )
-        mach = machine(model, df)
-        @test !isnothing(fit!(mach))
+        mach = MLJBase.machine(model, df)
+        @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, df))
         @test !isnothing(MLJBase.fitted_params(mach))
     end
@@ -111,12 +111,12 @@
         adb_u isa AbstractDifferentiation.TrackerBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
         r2 = convert(at{tp}, rand(data_dist, nvars, 2))
-        df = DataFrame(transpose(r), :auto)
-        df2 = DataFrame(transpose(r2), :auto)
+        df = DataFrames.DataFrame(transpose(r), :auto)
+        df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
         else
@@ -134,10 +134,10 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CuArray) ? CUDALibs() : CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
         )
-        mach = machine(model, (df, df2))
-        @test !isnothing(fit!(mach))
+        mach = MLJBase.machine(model, (df, df2))
+        @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
     end
@@ -151,12 +151,12 @@
 
         cmode <: SDJacVecMatrixMode && continue
 
-        data_dist = Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        data_dist2 = Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
+        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
+        data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
         r2 = convert(at{tp}, rand(data_dist, nvars, 2))
-        df = DataFrame(transpose(r), :auto)
-        df2 = DataFrame(transpose(r2), :auto)
+        df = DataFrames.DataFrame(transpose(r), :auto)
+        df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
         else
@@ -168,10 +168,10 @@
             icnf;
             n_epochs = 2,
             adtype = go_ad,
-            resource = (at == CuArray) ? CUDALibs() : CPU1(),
+            resource = (at == CUDA.CuArray) ? ComputationalResources.CUDALibs() : ComputationalResources.CPU1(),
         )
-        mach = machine(model, (df, df2))
-        @test !isnothing(fit!(mach))
+        mach = MLJBase.machine(model, (df, df2))
+        @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
     end

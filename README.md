@@ -28,6 +28,9 @@ To use this package, here is an example:
 ```julia
 using ICNF
 using Distributions, Lux
+# using Flux
+# using ForwardDiff, Optimization
+# using CUDA, ComputationalResources
 
 # Parameters
 nvars = 1
@@ -38,13 +41,19 @@ data_dist = Beta(2.0f0, 4.0f0)
 r = rand(data_dist, nvars, n)
 
 # Model
-nn = Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh))
-icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0))
+nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
+# nn = Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)) |> MyFluxLayer # use Flux
+
+icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0)) # process data one by one
+# icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0), compute_mode = ZygoteMatrixMode) # process data in batches
+# icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0), array_type = CuArray) # process data by GPU
 
 # Training
 using DataFrames, MLJBase
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf)
+model = ICNFModel(icnf) # use Zygote
+# model = ICNFModel(icnf; adtype = Optimization.AutoForwardDiff()) # use ForwardDiff
+# model = ICNFModel(icnf; resource = CUDALibs()) # use GPU
 mach = machine(model, df)
 fit!(mach)
 ps, st = fitted_params(mach)

@@ -1,7 +1,8 @@
-using ICNF,
-    AbstractDifferentiation,
+using ICNF, Test
+import AbstractDifferentiation,
     Aqua,
     CUDA,
+    Calculus,
     ComponentArrays,
     ComputationalResources,
     DataFrames,
@@ -16,12 +17,12 @@ using ICNF,
     Optimization,
     Random,
     ReverseDiff,
-    Test,
+    SciMLBase,
     Tracker,
     Zygote
 
-debuglogger = ConsoleLogger(Logging.Debug)
-global_logger(debuglogger)
+debuglogger = Logging.ConsoleLogger(Logging.Debug)
+Logging.global_logger(debuglogger)
 
 include("core.jl")
 
