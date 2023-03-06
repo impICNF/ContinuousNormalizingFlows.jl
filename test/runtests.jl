@@ -1,25 +1,25 @@
 using ICNF, Test
-import AbstractDifferentiation,
-    Aqua,
-    CUDA,
-    Calculus,
-    ComponentArrays,
-    ComputationalResources,
-    DataFrames,
-    Distributions,
-    FiniteDiff,
-    FiniteDifferences,
-    Flux,
-    ForwardDiff,
-    Logging,
-    Lux,
-    MLJBase,
-    Optimization,
-    Random,
-    ReverseDiff,
-    SciMLBase,
-    Tracker,
-    Zygote
+using AbstractDifferentiation: AbstractDifferentiation
+using Aqua: Aqua
+using CUDA: CUDA
+using Calculus: Calculus
+using ComponentArrays: ComponentArrays
+using ComputationalResources: ComputationalResources
+using DataFrames: DataFrames
+using Distributions: Distributions
+using FiniteDiff: FiniteDiff
+using FiniteDifferences: FiniteDifferences
+using Flux: Flux
+using ForwardDiff: ForwardDiff
+using Logging: Logging
+using Lux: Lux
+using MLJBase: MLJBase
+using Optimization: Optimization
+using Random: Random
+using ReverseDiff: ReverseDiff
+using SciMLBase: SciMLBase
+using Tracker: Tracker
+using Zygote: Zygote
 
 debuglogger = Logging.ConsoleLogger(Logging.Debug)
 Logging.global_logger(debuglogger)
