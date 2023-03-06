@@ -1,4 +1,5 @@
-using ICNF, Test
+using ICNF
+using Test
 using AbstractDifferentiation: AbstractDifferentiation
 using Aqua: Aqua
 using CUDA: CUDA
