@@ -15,12 +15,13 @@ mutable struct CondICNFModel <: MLJICNF
     m::AbstractCondICNF
     loss::Function
 
-    optimizer::Any
+    optimizers::AbstractVector
     n_epochs::Integer
     adtype::SciMLBase.AbstractADType
 
     use_batch::Bool
     batch_size::Integer
+    have_callback::Bool
 
     resource::AbstractResource
     data_type::Type{<:AbstractFloat}
@@ -32,21 +33,23 @@ function CondICNFModel(
     m::AbstractCondICNF{T, AT, CM},
     loss::Function = loss,
     ;
-    optimizer::Any = Optimisers.Adam(),
+    optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 128,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Integer = 128,
+    have_callback::Bool = true,
     resource::AbstractResource = CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
     CondICNFModel(
         m,
         loss,
-        optimizer,
+        optimizers,
         n_epochs,
         adtype,
         use_batch,
         batch_size,
+        have_callback,
         resource,
         T,
         AT,
@@ -107,8 +110,15 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     _callback = callback_f(model.m)
     optfunc = OptimizationFunction(_loss, model.adtype)
     optprob = OptimizationProblem(optfunc, ps)
-    tst = @timed res = solve(optprob, model.optimizer, ncdata; callback = _callback)
-    ps .= res.u
+    tst = @timed for opt in model.optimizers
+        optprob_re = remake(optprob; u0 = ps)
+        if model.have_callback
+            res = solve(optprob_re, opt, ncdata; callback = _callback)
+        else
+            res = solve(optprob_re, opt, ncdata)
+        end
+        ps .= res.u
+    end
     @info(
         "Fitting",
         "elapsed time (seconds)" = tst.time,
