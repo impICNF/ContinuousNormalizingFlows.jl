@@ -1,7 +1,6 @@
 # SciML interface
 
-function callback_f(icnf::AbstractFlows, n::Integer)::Function
-    prgr = Progress(n; dt = eps(), desc = "Training: ", showspeed = true)
+function callback_f(icnf::AbstractFlows, prgr::Progress)::Function
     itr_n = 1
     function f(ps, l)
         ProgressMeter.next!(
