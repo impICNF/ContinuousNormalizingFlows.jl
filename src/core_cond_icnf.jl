@@ -107,12 +107,12 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     end
     ncdata = ncycle(data, model.n_epochs)
     _loss = loss_f(model.m, model.loss, st)
-    _callback = callback_f(model.m)
     optfunc = OptimizationFunction(_loss, model.adtype)
     optprob = OptimizationProblem(optfunc, ps)
     tst = @timed for opt in model.optimizers
         optprob_re = remake(optprob; u0 = ps)
         if model.have_callback
+            _callback = callback_f(model.m, length(ncdata))
             res = solve(optprob_re, opt, ncdata; callback = _callback)
         else
             res = solve(optprob_re, opt, ncdata)
