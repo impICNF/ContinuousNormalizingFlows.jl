@@ -42,7 +42,7 @@ r = rand(data_dist, nvars, n)
 
 # Model
 nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
-# nn = Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)) |> MyFluxLayer # use Flux
+# nn = Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)) |> FluxCompatLayer # use Flux
 
 icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0)) # process data one by one
 # icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0), compute_mode = ZygoteMatrixMode) # process data in batches

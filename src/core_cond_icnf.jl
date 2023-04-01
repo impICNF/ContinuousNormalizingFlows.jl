@@ -63,7 +63,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     x = collect(transpose(MLJModelInterface.matrix(X)))
     y = collect(transpose(MLJModelInterface.matrix(Y)))
     ps, st = LuxCore.setup(rng, model.m)
-    if !(model.m isa MyFluxLayer)
+    if !(model.m isa FluxCompatLayer)
         ps = ComponentArray(ps)
     end
     if model.resource isa CUDALibs
@@ -74,7 +74,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     else
         x = convert(model.array_type{model.data_type}, x)
         y = convert(model.array_type{model.data_type}, y)
-        if model.m isa MyFluxLayer
+        if model.m isa FluxCompatLayer
             ps = convert(model.array_type{model.data_type}, ps)
         else
             ps = ComponentArray{model.data_type}(ps)
