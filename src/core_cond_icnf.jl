@@ -88,7 +88,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                 partial = true,
                 shuffle = true,
                 parallel = true,
-                buffer = true,
+                buffer = false,
             )
         elseif model.compute_mode <: MatrixMode
             data = DataLoader(
@@ -97,7 +97,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                 partial = true,
                 shuffle = true,
                 parallel = true,
-                buffer = true,
+                buffer = false,
             )
         else
             error("Not Implemented")
