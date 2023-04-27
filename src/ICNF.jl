@@ -22,6 +22,7 @@ using AbstractDifferentiation,
     Optimisers,
     Optimization,
     OptimizationOptimisers,
+    PrecompileTools,
     ProgressMeter,
     SciMLBase,
     SciMLSensitivity,
@@ -56,5 +57,9 @@ include("cond_ffjord.jl")
 include("cond_planar.jl")
 
 include("utils.jl")
+
+@static if isdefined(Base, :get_extension)
+    include("precompile.jl")
+end
 
 end
