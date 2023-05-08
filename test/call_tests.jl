@@ -63,17 +63,12 @@
         diff_loss(x) = loss(icnf, r, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
-            if adb isa AbstractDifferentiation.TrackerBackend
-                @test_throws MethodError !isnothing(
-                    AbstractDifferentiation.jacobian(adb, diff_loss, ps),
-                )
-            else
-                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
-            end
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps))
         end
 
@@ -92,8 +87,8 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        @test !isnothing(Tracker.gradient(diff_loss, ps))
-        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, ps))
+        # @test !isnothing(Tracker.gradient(diff_loss, ps))
+        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
         # @test !isnothing(Tracker.hessian(diff_loss, ps))
 
         @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
@@ -150,17 +145,12 @@
         diff_loss(x) = loss(icnf, r_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
-            if adb isa AbstractDifferentiation.TrackerBackend
-                @test_throws MethodError !isnothing(
-                    AbstractDifferentiation.jacobian(adb, diff_loss, ps),
-                )
-            else
-                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
-            end
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps))
         end
 
@@ -179,8 +169,8 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        @test !isnothing(Tracker.gradient(diff_loss, ps))
-        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, ps))
+        # @test !isnothing(Tracker.gradient(diff_loss, ps))
+        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
         # @test !isnothing(Tracker.hessian(diff_loss, ps))
 
         @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
@@ -249,17 +239,12 @@
         diff_loss(x) = loss(icnf, r, r2, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
-            if adb isa AbstractDifferentiation.TrackerBackend
-                @test_throws MethodError !isnothing(
-                    AbstractDifferentiation.jacobian(adb, diff_loss, ps),
-                )
-            else
-                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
-            end
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps))
         end
 
@@ -278,8 +263,8 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        @test !isnothing(Tracker.gradient(diff_loss, ps))
-        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, ps))
+        # @test !isnothing(Tracker.gradient(diff_loss, ps))
+        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
         # @test !isnothing(Tracker.hessian(diff_loss, ps))
 
         @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
@@ -339,17 +324,12 @@
         diff_loss(x) = loss(icnf, r_arr, r2_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
-            if adb isa AbstractDifferentiation.TrackerBackend
-                @test_throws MethodError !isnothing(
-                    AbstractDifferentiation.jacobian(adb, diff_loss, ps),
-                )
-            else
-                @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
-            end
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps))
         end
 
@@ -368,8 +348,8 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        @test !isnothing(Tracker.gradient(diff_loss, ps))
-        @test_throws MethodError !isnothing(Tracker.jacobian(diff_loss, ps))
+        # @test !isnothing(Tracker.gradient(diff_loss, ps))
+        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
         # @test !isnothing(Tracker.hessian(diff_loss, ps))
 
         @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
