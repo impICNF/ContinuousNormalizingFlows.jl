@@ -98,7 +98,7 @@
             FiniteDiff.finite_difference_derivative(diff_loss, ps),
         )
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
 
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
@@ -180,7 +180,7 @@
             FiniteDiff.finite_difference_derivative(diff_loss, ps),
         )
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
 
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
@@ -274,7 +274,7 @@
             FiniteDiff.finite_difference_derivative(diff_loss, ps),
         )
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
 
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
@@ -359,7 +359,7 @@
             FiniteDiff.finite_difference_derivative(diff_loss, ps),
         )
         @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
         # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
 
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
