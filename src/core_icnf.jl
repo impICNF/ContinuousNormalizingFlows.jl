@@ -108,7 +108,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     tst = @timed for opt in model.optimizers
         optprob_re = remake(optprob; u0 = ps)
         if model.have_callback
-            prgr = Progress(length(ncdata); dt = eps(), desc = "Training: ", showspeed = true)
+            prgr = Progress(length(ncdata); desc = "Training: ", showspeed = true)
             _callback = callback_f(model.m, prgr)
             tst_one = @timed res = solve(optprob_re, opt, ncdata; callback = _callback)
             ProgressMeter.finish!(prgr)
