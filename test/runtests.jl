@@ -1,4 +1,4 @@
-using ICNF
+using ContinuousNF
 using Test
 using AbstractDifferentiation: AbstractDifferentiation
 using Aqua: Aqua

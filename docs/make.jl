@@ -1,19 +1,19 @@
-using ICNF
+using ContinuousNF
 using Documenter
 
-DocMeta.setdocmeta!(ICNF, :DocTestSetup, :(using ICNF); recursive = true)
+DocMeta.setdocmeta!(ContinuousNF, :DocTestSetup, :(using ContinuousNF); recursive = true)
 
 makedocs(;
-    modules = [ICNF],
+    modules = [ContinuousNF],
     authors = "Hossein Pourbozorg <prbzrg@gmail.com> and contributors",
-    repo = "https://github.com/impICNF/ICNF.jl/blob/{commit}{path}#{line}",
-    sitename = "ICNF.jl",
+    repo = "https://github.com/impICNF/ContinuousNF.jl/blob/{commit}{path}#{line}",
+    sitename = "ContinuousNF.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://impICNF.github.io/ICNF.jl",
+        canonical = "https://impICNF.github.io/ContinuousNF.jl",
         assets = String[],
     ),
     pages = ["Home" => "index.md"],
 )
 
-deploydocs(; repo = "github.com/impICNF/ICNF.jl", devbranch = "main")
+deploydocs(; repo = "github.com/impICNF/ContinuousNF.jl", devbranch = "main")

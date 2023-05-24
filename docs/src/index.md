@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = ICNF
+CurrentModule = ContinuousNF
 ```
 
-# ICNF
+# ContinuousNF
 
-Documentation for [ICNF](https://github.com/impICNF/ICNF.jl).
+Documentation for [ContinuousNF](https://github.com/impICNF/ContinuousNF.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [ICNF]
+Modules = [ContinuousNF]
 ```

@@ -1,17 +1,20 @@
 @testset "Call Tests" begin
     mts =
-        SMALL ? Type{<:ICNF.AbstractICNF}[RNODE] :
-        Type{<:ICNF.AbstractICNF}[RNODE, FFJORD, Planar]
+        SMALL ? Type{<:ContinuousNF.AbstractICNF}[RNODE] :
+        Type{<:ContinuousNF.AbstractICNF}[RNODE, FFJORD, Planar]
     cmts =
-        SMALL ? Type{<:ICNF.AbstractCondICNF}[CondRNODE] :
-        Type{<:ICNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+        SMALL ? Type{<:ContinuousNF.AbstractCondICNF}[CondRNODE] :
+        Type{<:ContinuousNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
     ats = Type{<:AbstractArray}[Array]
     if CUDA.has_cuda_gpu() && !SMALL
         push!(ats, CUDA.CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
-    cmodes =
-        Type{<:ICNF.ComputeMode}[ZygoteMatrixMode, SDVecJacMatrixMode, SDJacVecMatrixMode]
+    cmodes = Type{<:ContinuousNF.ComputeMode}[
+        ZygoteMatrixMode,
+        SDVecJacMatrixMode,
+        SDJacVecMatrixMode,
+    ]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),

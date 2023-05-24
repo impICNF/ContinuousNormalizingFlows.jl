@@ -25,7 +25,7 @@ jobs:
       - name: Documenter.doctest
         run: |
           julia --color=yes --project=docs -e '
-            using ICNF
+            using ContinuousNF
             using Documenter
-            DocMeta.setdocmeta!(ICNF, :DocTestSetup, :(using ICNF); recursive=true)
-            doctest(ICNF)'
+            DocMeta.setdocmeta!(ContinuousNF, :DocTestSetup, :(using ContinuousNF); recursive=true)
+            doctest(ContinuousNF)'
