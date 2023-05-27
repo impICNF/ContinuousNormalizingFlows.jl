@@ -1,19 +1,24 @@
-using ContinuousNF
+using ContinuousNormalizingFlows
 using Documenter
 
-DocMeta.setdocmeta!(ContinuousNF, :DocTestSetup, :(using ContinuousNF); recursive = true)
+DocMeta.setdocmeta!(
+    ContinuousNormalizingFlows,
+    :DocTestSetup,
+    :(using ContinuousNormalizingFlows);
+    recursive = true,
+)
 
 makedocs(;
-    modules = [ContinuousNF],
+    modules = [ContinuousNormalizingFlows],
     authors = "Hossein Pourbozorg <prbzrg@gmail.com> and contributors",
-    repo = "https://github.com/impICNF/ContinuousNF.jl/blob/{commit}{path}#{line}",
-    sitename = "ContinuousNF.jl",
+    repo = "https://github.com/impICNF/ContinuousNormalizingFlows.jl/blob/{commit}{path}#{line}",
+    sitename = "ContinuousNormalizingFlows.jl",
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
-        canonical = "https://impICNF.github.io/ContinuousNF.jl",
+        canonical = "https://impICNF.github.io/ContinuousNormalizingFlows.jl",
         assets = String[],
     ),
     pages = ["Home" => "index.md"],
 )
 
-deploydocs(; repo = "github.com/impICNF/ContinuousNF.jl", devbranch = "main")
+deploydocs(; repo = "github.com/impICNF/ContinuousNormalizingFlows.jl", devbranch = "main")

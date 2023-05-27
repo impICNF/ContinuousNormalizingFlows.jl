@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = ContinuousNF
+CurrentModule = ContinuousNormalizingFlows
 ```
 
-# ContinuousNF
+# ContinuousNormalizingFlows
 
-Documentation for [ContinuousNF](https://github.com/impICNF/ContinuousNF.jl).
+Documentation for [ContinuousNormalizingFlows](https://github.com/impICNF/ContinuousNormalizingFlows.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [ContinuousNF]
+Modules = [ContinuousNormalizingFlows]
 ```

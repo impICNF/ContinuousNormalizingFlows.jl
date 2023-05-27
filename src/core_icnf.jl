@@ -165,7 +165,7 @@ MLJBase.metadata_pkg(
     ICNFModel;
     package_name = "ICNF",
     package_uuid = "9bd0f7d2-bd29-441d-bcde-0d11364d2762",
-    package_url = "https://github.com/impICNF/ContinuousNF.jl",
+    package_url = "https://github.com/impICNF/ContinuousNormalizingFlows.jl",
     is_pure_julia = true,
     package_license = "MIT",
     is_wrapper = false,

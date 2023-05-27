@@ -1,7 +1,7 @@
-name = "ContinuousNF"
-uuid = "f5df2f0a-0230-4999-9a3d-999967fc86aa"
+name = "ContinuousNormalizingFlows"
+uuid = "00b1973d-5b2e-40bf-8604-5c9c1d8f50ac"
 authors = ["Hossein Pourbozorg <prbzrg@gmail.com> and contributors"]
-version = "0.4.0"
+version = "0.5.0"
 
 [deps]
 AbstractDifferentiation = "c29ec348-61ec-40c8-8164-b8c60e9d9f3d"

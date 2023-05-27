@@ -1,16 +1,20 @@
 @testset "Fit Tests" begin
     mts =
-        SMALL ? Type{<:ContinuousNF.AbstractICNF}[RNODE] :
-        Type{<:ContinuousNF.AbstractICNF}[RNODE, FFJORD, Planar]
+        SMALL ? Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE] :
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE, FFJORD, Planar]
     cmts =
-        SMALL ? Type{<:ContinuousNF.AbstractCondICNF}[CondRNODE] :
-        Type{<:ContinuousNF.AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
+        SMALL ? Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE] :
+        Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[
+            CondRNODE,
+            CondFFJORD,
+            CondPlanar,
+        ]
     ats = Type{<:AbstractArray}[Array]
     if CUDA.has_cuda_gpu() && !SMALL
         push!(ats, CUDA.CuArray)
     end
     tps = Type{<:AbstractFloat}[Float32]
-    cmodes = Type{<:ContinuousNF.ComputeMode}[
+    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ZygoteMatrixMode,
         SDVecJacMatrixMode,
         SDJacVecMatrixMode,
