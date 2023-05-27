@@ -1,10 +1,10 @@
-# ContinuousNF.jl
+# ContinuousNormalizingFlows.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://impICNF.github.io/ContinuousNF.jl/stable)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://impICNF.github.io/ContinuousNF.jl/dev)
-[![Build Status](https://github.com/impICNF/ContinuousNF.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/impICNF/ContinuousNF.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/impICNF/ContinuousNF.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/impICNF/ContinuousNF.jl)
-[![Coverage](https://coveralls.io/repos/github/impICNF/ContinuousNF.jl/badge.svg?branch=main)](https://coveralls.io/github/impICNF/ContinuousNF.jl?branch=main)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://impICNF.github.io/ContinuousNormalizingFlows.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://impICNF.github.io/ContinuousNormalizingFlows.jl/dev)
+[![Build Status](https://github.com/impICNF/ContinuousNormalizingFlows.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/impICNF/ContinuousNormalizingFlows.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/impICNF/ContinuousNormalizingFlows.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/impICNF/ContinuousNormalizingFlows.jl)
+[![Coverage](https://coveralls.io/repos/github/impICNF/ContinuousNormalizingFlows.jl/badge.svg?branch=main)](https://coveralls.io/github/impICNF/ContinuousNormalizingFlows.jl?branch=main)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor%27s%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
@@ -20,13 +20,13 @@ To add this package, we can do it by
 
 ```julia
 using Pkg
-Pkg.add(; url = "https://github.com/impICNF/ContinuousNF.jl")
+Pkg.add(; url = "https://github.com/impICNF/ContinuousNormalizingFlows.jl")
 ```
 
 To use this package, here is an example:
 
 ```julia
-using ContinuousNF
+using ContinuousNormalizingFlows
 using Distributions, Lux
 # using Flux
 # using ForwardDiff, Optimization

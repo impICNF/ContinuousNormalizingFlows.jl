@@ -25,7 +25,7 @@ jobs:
       - name: Documenter.doctest
         run: |
           julia --color=yes --project=docs -e '
-            using ContinuousNF
+            using ContinuousNormalizingFlows
             using Documenter
-            DocMeta.setdocmeta!(ContinuousNF, :DocTestSetup, :(using ContinuousNF); recursive=true)
-            doctest(ContinuousNF)'
+            DocMeta.setdocmeta!(ContinuousNormalizingFlows, :DocTestSetup, :(using ContinuousNormalizingFlows); recursive=true)
+            doctest(ContinuousNormalizingFlows)'

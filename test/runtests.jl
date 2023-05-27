@@ -1,4 +1,4 @@
-using ContinuousNF
+using ContinuousNormalizingFlows
 using Test
 using AbstractDifferentiation: AbstractDifferentiation
 using Aqua: Aqua
