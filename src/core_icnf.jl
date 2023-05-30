@@ -163,8 +163,8 @@ end
 
 MLJBase.metadata_pkg(
     ICNFModel;
-    package_name = "ICNF",
-    package_uuid = "9bd0f7d2-bd29-441d-bcde-0d11364d2762",
+    package_name = "ContinuousNormalizingFlows",
+    package_uuid = "00b1973d-5b2e-40bf-8604-5c9c1d8f50ac",
     package_url = "https://github.com/impICNF/ContinuousNormalizingFlows.jl",
     is_pure_julia = true,
     package_license = "MIT",
@@ -176,7 +176,7 @@ MLJBase.metadata_model(
     target_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
     output_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
     supports_weights = false,
-    load_path = "ICNF.ICNFModel",
+    load_path = "ContinuousNormalizingFlows.ICNFModel",
 )
 
 # Distributions interface
