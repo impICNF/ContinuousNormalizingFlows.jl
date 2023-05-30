@@ -15,8 +15,8 @@ function inference(
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1))
     f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, ps)
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
@@ -40,8 +40,8 @@ function inference(
     n_aug = n_augment(icnf, mode)
     zrs = convert(AT, zeros(T, n_aug + 1, size(xs, 2)))
     f_aug = augmented_f(icnf, mode, ys, st, size(xs, 2); differentiation_backend, rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(xs, zrs), icnf.tspan, ps)
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[1:(end - n_aug - 1), :]
@@ -65,8 +65,13 @@ function generate(
     new_xs = convert(AT, rand(rng, icnf.basedist))
     zrs = convert(AT, zeros(T, n_aug + 1))
     f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), ps)
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        func,
+        vcat(new_xs, zrs),
+        reverse(icnf.tspan),
+        ps,
+    )
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[1:(end - n_aug - 1)]
@@ -89,8 +94,13 @@ function generate(
     new_xs = convert(AT, rand(rng, icnf.basedist, n))
     zrs = convert(AT, zeros(T, n_aug + 1, size(new_xs, 2)))
     f_aug = augmented_f(icnf, mode, ys, st, size(new_xs, 2); differentiation_backend, rng)
-    func = ODEFunction(f_aug)
-    prob = ODEProblem(func, vcat(new_xs, zrs), reverse(icnf.tspan), ps)
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        func,
+        vcat(new_xs, zrs),
+        reverse(icnf.tspan),
+        ps,
+    )
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[1:(end - n_aug - 1), :]
