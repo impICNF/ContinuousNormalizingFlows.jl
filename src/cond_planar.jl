@@ -31,7 +31,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        z = u[1:(end - 1)]
+        z = u[1:(end - n_aug)]
         mz, _ = LuxCore.apply(icnf.nn, vcat(z, ys), p, st)
         trace_J =
             p.u ⋅ transpose(

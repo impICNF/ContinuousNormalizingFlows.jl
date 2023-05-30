@@ -81,7 +81,7 @@ function augmented_f(
     ϵ = convert(AT, randn(rng, T, icnf.nvars))
 
     function f_aug(u, p, t)
-        z = u[1:(end - 1)]
+        z = u[1:(end - n_aug)]
         v_pb = AbstractDifferentiation.value_and_pullback_function(
             differentiation_backend,
             x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),

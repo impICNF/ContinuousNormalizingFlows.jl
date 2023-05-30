@@ -9,7 +9,7 @@ function construct(
     array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     basedist::Distribution = MvNormal(Zeros{data_type}(nvars), one(data_type) * I),
-    tspan::Tuple = convert(Tuple{data_type, data_type}, (0, 1)),
+    tspan::Tuple = (zero(data_type), one(data_type)),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(),
