@@ -37,8 +37,9 @@ nvars = 1
 n = 1024
 
 # Data
-data_dist = Beta(2.0f0, 4.0f0)
+data_dist = Beta{Float32}(2.0f0, 4.0f0)
 r = rand(data_dist, nvars, n)
+r = convert.(Float32, r)
 
 # Model
 nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
