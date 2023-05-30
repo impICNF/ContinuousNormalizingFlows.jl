@@ -20,7 +20,7 @@ To add this package, we can do it by
 
 ```julia
 using Pkg
-Pkg.add(; url = "https://github.com/impICNF/ContinuousNormalizingFlows.jl")
+Pkg.add("ContinuousNormalizingFlows")
 ```
 
 To use this package, here is an example:
