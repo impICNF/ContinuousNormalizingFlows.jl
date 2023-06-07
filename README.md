@@ -1,5 +1,8 @@
 # ContinuousNormalizingFlows.jl
 
+[![deps](https://juliahub.com/docs/ContinuousNormalizingFlows/deps.svg)](https://juliahub.com/ui/Packages/ContinuousNormalizingFlows/iP1wo?t=2)
+[![version](https://juliahub.com/docs/ContinuousNormalizingFlows/version.svg)](https://juliahub.com/ui/Packages/ContinuousNormalizingFlows/iP1wo)
+[![pkgeval](https://juliahub.com/docs/ContinuousNormalizingFlows/pkgeval.svg)](https://juliahub.com/ui/Packages/ContinuousNormalizingFlows/iP1wo)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://impICNF.github.io/ContinuousNormalizingFlows.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://impICNF.github.io/ContinuousNormalizingFlows.jl/dev)
 [![Build Status](https://github.com/impICNF/ContinuousNormalizingFlows.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/impICNF/ContinuousNormalizingFlows.jl/actions/workflows/CI.yml?query=branch%3Amain)
@@ -45,14 +48,14 @@ r = convert.(Float32, r)
 nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
 # nn = Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)) |> FluxCompatLayer # use Flux
 
-icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0)) # process data one by one
-# icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0), compute_mode = ZygoteMatrixMode) # process data in batches
-# icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 4.0f0), array_type = CuArray) # process data by GPU
+icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 32.0f0)) # process data one by one
+# icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode) # process data in batches
+# icnf = construct(RNODE, nn, nvars; array_type = CuArray) # process data by GPU
 
 # Training
 using DataFrames, MLJBase
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf) # use Zygote
+model = ICNFModel(icnf; n_epochs = 128, batch_size = 128) # use Zygote
 # model = ICNFModel(icnf; adtype = Optimization.AutoForwardDiff()) # use ForwardDiff
 # model = ICNFModel(icnf; resource = CUDALibs()) # use GPU
 mach = machine(model, df)
@@ -70,4 +73,10 @@ using Distances
 mad_ = meanad(estimated_pdf, actual_pdf)
 msd_ = msd(estimated_pdf, actual_pdf)
 tv_dis = totalvariation(estimated_pdf, actual_pdf) / n
+
+# Plot It
+using Plots
+p = plot(x -> pdf(data_dist, x), 0, 1; label = "actual")
+p = plot!(p, x -> pdf(d, convert.(Float32, vcat(x))), 0, 1; label = "estimated")
+savefig(p, "plot.png")
 ```
