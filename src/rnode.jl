@@ -71,7 +71,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars))
+    ϵ::AT = randn(rng, T, icnf.nvars)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug)]
@@ -99,7 +99,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
@@ -122,7 +122,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
@@ -148,7 +148,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
@@ -165,58 +165,62 @@ function augmented_f(
     f_aug
 end
 
-function loss(
-    icnf::RNODE{T, AT, <:VectorMode},
-    xs::AbstractVector{<:Real},
-    ps::Any,
-    st::Any,
-    λ₁::T = convert(T, 1e-2),
-    λ₂::T = convert(T, 1e-2);
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    mode::Mode = TrainMode(),
-    rng::AbstractRNG = Random.default_rng(),
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        differentiation_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
-    -logp̂x + λ₁ * Ė + λ₂ * ṅ
-end
+for arr_tp in (:Array, :CuArray, :AbstractArray)
+    @eval begin
+        function loss(
+            icnf::RNODE{T, $arr_tp, <:VectorMode},
+            xs::$arr_tp{T2, 1},
+            ps::Any,
+            st::Any,
+            λ₁::T = convert(T, 1e-2),
+            λ₂::T = convert(T, 1e-2);
+            differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+            mode::Mode = TrainMode(),
+            rng::AbstractRNG = Random.default_rng(),
+            sol_args::Tuple = icnf.sol_args,
+            sol_kwargs::Dict = icnf.sol_kwargs,
+        )::T2 where {T <: AbstractFloat, T2 <: Real}
+            logp̂x, Ė, ṅ = inference(
+                icnf,
+                mode,
+                xs,
+                ps,
+                st;
+                differentiation_backend,
+                rng,
+                sol_args,
+                sol_kwargs,
+            )
+            -logp̂x + λ₁ * Ė + λ₂ * ṅ
+        end
 
-function loss(
-    icnf::RNODE{T, AT, <:MatrixMode},
-    xs::AbstractMatrix{<:Real},
-    ps::Any,
-    st::Any,
-    λ₁::T = convert(T, 1e-2),
-    λ₂::T = convert(T, 1e-2);
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    mode::Mode = TrainMode(),
-    rng::AbstractRNG = Random.default_rng(),
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
-    logp̂x, Ė, ṅ = inference(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        differentiation_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
-    mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
+        function loss(
+            icnf::RNODE{T, $arr_tp, <:MatrixMode},
+            xs::$arr_tp{T2, 2},
+            ps::Any,
+            st::Any,
+            λ₁::T = convert(T, 1e-2),
+            λ₂::T = convert(T, 1e-2);
+            differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+            mode::Mode = TrainMode(),
+            rng::AbstractRNG = Random.default_rng(),
+            sol_args::Tuple = icnf.sol_args,
+            sol_kwargs::Dict = icnf.sol_kwargs,
+        )::T2 where {T <: AbstractFloat, T2 <: Real}
+            logp̂x, Ė, ṅ = inference(
+                icnf,
+                mode,
+                xs,
+                ps,
+                st;
+                differentiation_backend,
+                rng,
+                sol_args,
+                sol_kwargs,
+            )
+            mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
+        end
+    end
 end
 
 function n_augment(
