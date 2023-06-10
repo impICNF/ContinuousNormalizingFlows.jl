@@ -41,7 +41,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::Tuple{Vararg{$arr_tp{<:Real, 1}}} where {T <: AbstractFloat}
+        )::Tuple{Vararg{AbstractArray{<:Real, 1}}} where {T <: AbstractFloat}
             n_aug = n_augment(icnf, mode)
             zrs::$arr_tp = zeros(T, n_aug + 1, size(xs, 2))
             f_aug = augmented_f(icnf, mode, st, size(xs, 2); differentiation_backend, rng)
