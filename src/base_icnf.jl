@@ -5,14 +5,14 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
         function inference(
             icnf::AbstractICNF{T, $arr_tp, <:VectorMode},
             mode::Mode,
-            xs::$arr_tp{T2, 1},
+            xs::$arr_tp{<:Real, 1},
             ps::Any,
             st::Any;
             differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::Tuple{Vararg{T2}} where {T <: AbstractFloat, T2 <: Real}
+        )::Tuple{Vararg{Real}} where {T <: AbstractFloat}
             n_aug = n_augment(icnf, mode)
             zrs::$arr_tp = zeros(T, n_aug + 1)
             f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
@@ -34,14 +34,14 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
         function inference(
             icnf::AbstractICNF{T, $arr_tp, <:MatrixMode},
             mode::Mode,
-            xs::$arr_tp{T2, 2},
+            xs::$arr_tp{<:Real, 2},
             ps::Any,
             st::Any;
             differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::Tuple{Vararg{$arr_tp{T2, 1}}} where {T <: AbstractFloat, T2 <: Real}
+        )::Tuple{Vararg{$arr_tp{<:Real, 1}}} where {T <: AbstractFloat}
             n_aug = n_augment(icnf, mode)
             zrs::$arr_tp = zeros(T, n_aug + 1, size(xs, 2))
             f_aug = augmented_f(icnf, mode, st, size(xs, 2); differentiation_backend, rng)
@@ -118,7 +118,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
 
         function loss(
             icnf::AbstractICNF{T, $arr_tp, <:VectorMode},
-            xs::$arr_tp{T2, 1},
+            xs::$arr_tp{<:Real, 1},
             ps::Any,
             st::Any;
             differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -126,7 +126,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::T2 where {T <: AbstractFloat, T2 <: Real}
+        )::Real where {T <: AbstractFloat}
             logp̂x, = inference(
                 icnf,
                 mode,
@@ -143,7 +143,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
 
         function loss(
             icnf::AbstractICNF{T, $arr_tp, <:MatrixMode},
-            xs::$arr_tp{T2, 2},
+            xs::$arr_tp{<:Real, 2},
             ps::Any,
             st::Any;
             differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -151,7 +151,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::T2 where {T <: AbstractFloat, T2 <: Real}
+        )::Real where {T <: AbstractFloat}
             logp̂x, = inference(
                 icnf,
                 mode,

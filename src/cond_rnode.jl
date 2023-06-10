@@ -180,8 +180,8 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
     @eval begin
         function loss(
             icnf::CondRNODE{T, $arr_tp, <:VectorMode},
-            xs::$arr_tp{T2, 1},
-            ys::$arr_tp{T2, 1},
+            xs::$arr_tp{<:Real, 1},
+            ys::$arr_tp{<:Real, 1},
             ps::Any,
             st::Any,
             λ₁::T = convert(T, 1e-2),
@@ -191,7 +191,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::T2 where {T <: AbstractFloat, T2 <: Real}
+        )::Real where {T <: AbstractFloat}
             logp̂x, Ė, ṅ = inference(
                 icnf,
                 mode,
@@ -209,8 +209,8 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
 
         function loss(
             icnf::CondRNODE{T, $arr_tp, <:MatrixMode},
-            xs::$arr_tp{T2, 2},
-            ys::$arr_tp{T2, 2},
+            xs::$arr_tp{<:Real, 2},
+            ys::$arr_tp{<:Real, 2},
             ps::Any,
             st::Any,
             λ₁::T = convert(T, 1e-2),
@@ -220,7 +220,7 @@ for arr_tp in (:Array, :CuArray, :AbstractArray)
             rng::AbstractRNG = Random.default_rng(),
             sol_args::Tuple = icnf.sol_args,
             sol_kwargs::Dict = icnf.sol_kwargs,
-        )::T2 where {T <: AbstractFloat, T2 <: Real}
+        )::Real where {T <: AbstractFloat}
             logp̂x, Ė, ṅ = inference(
                 icnf,
                 mode,
