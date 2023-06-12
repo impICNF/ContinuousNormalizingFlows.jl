@@ -71,7 +71,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars))
+    ϵ::AT = randn(rng, T, icnf.nvars)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug)]
@@ -97,7 +97,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
@@ -118,7 +118,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
@@ -142,7 +142,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = convert(AT, randn(rng, T, icnf.nvars, n_batch))
+    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = u[1:(end - n_aug), :]
