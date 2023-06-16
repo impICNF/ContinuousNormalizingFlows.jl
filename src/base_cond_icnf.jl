@@ -13,7 +13,7 @@ function inference(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::Tuple{Vararg{Real}} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    zrs = convert(AT, zeros(T, n_aug + 1))
+    zrs::AT = zeros(T, n_aug + 1)
     f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
@@ -38,7 +38,7 @@ function inference(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::Tuple{Vararg{AbstractVector{<:Real}}} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    zrs = convert(AT, zeros(T, n_aug + 1, size(xs, 2)))
+    zrs::AT = zeros(T, n_aug + 1, size(xs, 2))
     f_aug = augmented_f(icnf, mode, ys, st, size(xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
@@ -62,8 +62,8 @@ function generate(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT, rand(rng, icnf.basedist))
-    zrs = convert(AT, zeros(T, n_aug + 1))
+    new_xs::AT = rand(rng, icnf.basedist)
+    zrs::AT = zeros(T, n_aug + 1)
     f_aug = augmented_f(icnf, mode, ys, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
@@ -91,8 +91,8 @@ function generate(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::AbstractMatrix{<:Real} where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT, rand(rng, icnf.basedist, n))
-    zrs = convert(AT, zeros(T, n_aug + 1, size(new_xs, 2)))
+    new_xs::AT = rand(rng, icnf.basedist, n)
+    zrs::AT = zeros(T, n_aug + 1, size(new_xs, 2))
     f_aug = augmented_f(icnf, mode, ys, st, size(new_xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
