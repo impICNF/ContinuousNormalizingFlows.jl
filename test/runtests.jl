@@ -32,7 +32,7 @@ Logging.global_logger(debuglogger)
 include("core.jl")
 
 GROUP = get(ENV, "GROUP", "All")
-SMALL = get(ENV, "SMALL", "0") == "1"
+SMALL = get(ENV, "SMALL", "No") == "Yes"
 
 @testset "Overall" begin
     CUDA.allowscalar() do
