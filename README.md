@@ -32,7 +32,7 @@ To use this package, here is an example:
 using ContinuousNormalizingFlows
 using Distributions, Lux
 # using Flux
-# using ForwardDiff, Optimization
+# using ForwardDiff, ADTypes
 # using CUDA, ComputationalResources
 
 # Parameters
@@ -56,7 +56,7 @@ icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 32.0f0)) # process data one b
 using DataFrames, MLJBase
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(icnf; n_epochs = 300, batch_size = 32) # use Zygote
-# model = ICNFModel(icnf; adtype = Optimization.AutoForwardDiff()) # use ForwardDiff
+# model = ICNFModel(icnf; adtype = AutoForwardDiff()) # use ForwardDiff
 # model = ICNFModel(icnf; resource = CUDALibs()) # use GPU
 mach = machine(model, df)
 fit!(mach)

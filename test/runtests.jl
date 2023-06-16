@@ -1,5 +1,6 @@
 using ContinuousNormalizingFlows
 using Test
+using ADTypes: ADTypes
 using AbstractDifferentiation: AbstractDifferentiation
 using Aqua: Aqua
 using BenchmarkTools: BenchmarkTools
@@ -9,6 +10,7 @@ using ComponentArrays: ComponentArrays
 using ComputationalResources: ComputationalResources
 using DataFrames: DataFrames
 using Distributions: Distributions
+using Enzyme: Enzyme
 using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
@@ -16,6 +18,7 @@ using ForwardDiff: ForwardDiff
 using Logging: Logging
 using Lux: Lux
 using MLJBase: MLJBase
+using ModelingToolkit: ModelingToolkit
 using Optimization: Optimization
 using Random: Random
 using ReverseDiff: ReverseDiff
