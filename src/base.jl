@@ -12,7 +12,10 @@ function construct(
     tspan::Tuple = (zero(data_type), one(data_type)),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     sol_args::Tuple = (),
-    sol_kwargs::Dict = Dict(),
+    sol_kwargs::Dict = Dict(
+        :alg_hints => [:nonstiff, :memorybound],
+        :reltol => 1e-2 + eps(1e-2),
+    ),
 )
     aicnf{data_type, array_type, compute_mode}(
         nn,

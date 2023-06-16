@@ -52,10 +52,10 @@ icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 32.0f0)) # process data one b
 # icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode) # process data in batches
 # icnf = construct(RNODE, nn, nvars; array_type = CuArray) # process data by GPU
 
-# Training
+# Train It
 using DataFrames, MLJBase
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf; n_epochs = 128, batch_size = 128) # use Zygote
+model = ICNFModel(icnf; n_epochs = 300, batch_size = 32) # use Zygote
 # model = ICNFModel(icnf; adtype = Optimization.AutoForwardDiff()) # use ForwardDiff
 # model = ICNFModel(icnf; resource = CUDALibs()) # use GPU
 mach = machine(model, df)
@@ -68,7 +68,7 @@ actual_pdf = pdf.(data_dist, vec(r))
 estimated_pdf = pdf(d, r)
 new_data = rand(d, n)
 
-# Evaluation
+# Evaluate It
 using Distances
 mad_ = meanad(estimated_pdf, actual_pdf)
 msd_ = msd(estimated_pdf, actual_pdf)

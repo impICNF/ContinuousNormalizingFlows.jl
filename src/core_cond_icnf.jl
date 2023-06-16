@@ -34,10 +34,10 @@ function CondICNFModel(
     loss::Function = loss,
     ;
     optimizers::AbstractVector = [Optimisers.Adam()],
-    n_epochs::Integer = 128,
+    n_epochs::Integer = 300,
     adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
     use_batch::Bool = true,
-    batch_size::Integer = 128,
+    batch_size::Integer = 32,
     have_callback::Bool = true,
     resource::AbstractResource = CPU1(),
 ) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
