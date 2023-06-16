@@ -2,6 +2,7 @@ using ContinuousNormalizingFlows
 using Test
 using AbstractDifferentiation: AbstractDifferentiation
 using Aqua: Aqua
+using BenchmarkTools: BenchmarkTools
 using CUDA: CUDA
 using Calculus: Calculus
 using ComponentArrays: ComponentArrays
@@ -34,8 +35,12 @@ SMALL = get(ENV, "SMALL", "0") == "1"
     CUDA.allowscalar() do
         include("smoke_tests.jl")
     end
-end
 
-if GROUP == "All" || GROUP == "Quality"
-    include("quality_tests.jl")
+    if GROUP == "All" || GROUP == "Quality"
+        include("quality_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "Benchmark"
+        include("benchmark_tests.jl")
+    end
 end
