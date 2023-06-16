@@ -1,6 +1,7 @@
 module ContinuousNormalizingFlows
 
-using AbstractDifferentiation,
+using ADTypes,
+    AbstractDifferentiation,
     CUDA,
     ComponentArrays,
     ComputationalResources,

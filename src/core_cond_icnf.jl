@@ -17,7 +17,7 @@ mutable struct CondICNFModel <: MLJICNF
 
     optimizers::AbstractVector
     n_epochs::Integer
-    adtype::SciMLBase.AbstractADType
+    adtype::ADTypes.AbstractADType
 
     use_batch::Bool
     batch_size::Integer
@@ -35,7 +35,7 @@ function CondICNFModel(
     ;
     optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 300,
-    adtype::SciMLBase.AbstractADType = Optimization.AutoZygote(),
+    adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,
     batch_size::Integer = 32,
     have_callback::Bool = true,
