@@ -16,6 +16,7 @@ jobs:
           - Call
           - Fit
           - Quality
+          - Benchmark
         version:
           # - '1.6'
           # - '1.7'
