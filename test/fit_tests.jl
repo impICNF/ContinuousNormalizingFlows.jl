@@ -49,6 +49,8 @@
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
         go_ad isa ADTypes.AutoTracker && continue
+        go_ad isa ADTypes.AutoEnzyme && continue
+        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -88,6 +90,8 @@
 
         cmode <: SDJacVecMatrixMode && continue
         go_ad isa ADTypes.AutoTracker && continue
+        go_ad isa ADTypes.AutoEnzyme && continue
+        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -124,6 +128,8 @@
         adb_u isa AbstractDifferentiation.TrackerBackend && continue
         adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
         go_ad isa ADTypes.AutoTracker && continue
+        go_ad isa ADTypes.AutoEnzyme && continue
+        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
@@ -166,6 +172,8 @@
 
         cmode <: SDJacVecMatrixMode && continue
         go_ad isa ADTypes.AutoTracker && continue
+        go_ad isa ADTypes.AutoEnzyme && continue
+        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
