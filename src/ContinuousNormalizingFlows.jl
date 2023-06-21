@@ -64,4 +64,9 @@ include("utils.jl")
     include("precompile.jl")
 end
 
+"""
+Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Julia
+"""
+ContinuousNormalizingFlows
+
 end
