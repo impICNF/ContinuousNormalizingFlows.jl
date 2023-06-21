@@ -1,13 +1,13 @@
 using ContinuousNormalizingFlows
 using Test
-using ADTypes: ADTypes
 using AbstractDifferentiation: AbstractDifferentiation
+using ADTypes: ADTypes
 using Aqua: Aqua
 using BenchmarkTools: BenchmarkTools
-using CUDA: CUDA
 using Calculus: Calculus
 using ComponentArrays: ComponentArrays
 using ComputationalResources: ComputationalResources
+using CUDA: CUDA
 using DataFrames: DataFrames
 using Distributions: Distributions
 using Enzyme: Enzyme
