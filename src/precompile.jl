@@ -3,7 +3,7 @@
         rng = Random.default_rng()
         mts = Type{<:AbstractICNF}[RNODE, FFJORD, Planar]
         cmts = Type{<:AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar]
-        cmodes = Type{<:ComputeMode}[ADVectorMode, ZygoteMatrixMode]
+        cmodes = Type{<:ComputeMode}[ADVectorMode, ZygoteMatrixMode, SDVecJacMatrixMode]
         nvars = 2
         r = rand(Float32, nvars)
         r_arr = rand(Float32, nvars, 2)
