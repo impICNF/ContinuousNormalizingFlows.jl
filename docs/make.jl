@@ -14,9 +14,7 @@ makedocs(;
     repo = "https://github.com/impICNF/ContinuousNormalizingFlows.jl/blob/{commit}{path}#{line}",
     sitename = "ContinuousNormalizingFlows.jl",
     format = Documenter.HTML(;
-        prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://impICNF.github.io/ContinuousNormalizingFlows.jl",
-        assets = String[],
     ),
     pages = ["Home" => "index.md"],
 )
