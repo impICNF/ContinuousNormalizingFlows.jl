@@ -22,7 +22,7 @@ function inference(
     z = @view fsol[1:(end - n_aug - 1)]
     Δlogp = @view fsol[(end - n_aug)]
     augs = @view fsol[(end - n_aug + 1):end]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) .- Δlogp
     iszero(n_aug) ? (logp̂x,) : (logp̂x, augs...)
 end
 
