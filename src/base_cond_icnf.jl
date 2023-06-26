@@ -18,11 +18,12 @@ function inference(
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = sol[:, end]
-    z = fsol[1:(end - n_aug - 1)]
-    Δlogp = fsol[(end - n_aug)]
+    fsol = @view sol[:, end]
+    z = @view fsol[1:(end - n_aug - 1)]
+    Δlogp = @view fsol[(end - n_aug)]
+    augs = @view fsol[(end - n_aug + 1):end]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    iszero(n_aug) ? (logp̂x,) : (logp̂x, fsol[(end - n_aug + 1):end]...)
+    iszero(n_aug) ? (logp̂x,) : (logp̂x, augs...)
 end
 
 function inference(
@@ -43,11 +44,12 @@ function inference(
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - n_aug - 1), :]
-    Δlogp = fsol[(end - n_aug), :]
+    fsol = @view sol[:, :, end]
+    z = @view fsol[1:(end - n_aug - 1), :]
+    Δlogp = @view fsol[(end - n_aug), :]
+    augs = @view fsol[(end - n_aug + 1):end, :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    iszero(n_aug) ? (logp̂x,) : (logp̂x, eachrow(fsol[(end - n_aug + 1):end, :])...)
+    iszero(n_aug) ? (logp̂x,) : (logp̂x, eachrow(augs)...)
 end
 
 function generate(
@@ -73,8 +75,8 @@ function generate(
         ps,
     )
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = sol[:, end]
-    z = fsol[1:(end - n_aug - 1)]
+    fsol = @view sol[:, end]
+    z = @view fsol[1:(end - n_aug - 1)]
     z
 end
 
@@ -102,8 +104,8 @@ function generate(
         ps,
     )
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[1:(end - n_aug - 1), :]
+    fsol = @view sol[:, :, end]
+    z = @view fsol[1:(end - n_aug - 1), :]
     z
 end
 
