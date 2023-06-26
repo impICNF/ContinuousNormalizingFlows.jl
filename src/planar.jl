@@ -32,7 +32,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug)]
+        z = @view u[begin:(end - n_aug)]
         mz, _ = LuxCore.apply(icnf.nn, z, p, st)
         trace_J =
             p.u ⋅ transpose(
@@ -60,7 +60,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         mz, J = jacobian_batched(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, T, AT, CM)
         trace_J = transpose(tr.(eachslice(J; dims = 3)))
         vcat(mz, -trace_J)
@@ -80,7 +80,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
         ϵJ = only(back(ϵ))
         trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -101,7 +101,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         mz = first(LuxCore.apply(icnf.nn, z, p, st))
         ϵJ = reshape(
             auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
@@ -125,7 +125,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         mz = first(LuxCore.apply(icnf.nn, z, p, st))
         Jϵ = reshape(
             auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),

@@ -18,7 +18,7 @@ function inference(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = @view sol[:, end]
-    z = @view fsol[1:(end - n_aug - 1)]
+    z = @view fsol[begin:(end - n_aug - 1)]
     Δlogp = @view fsol[(end - n_aug)]
     augs = @view fsol[(end - n_aug + 1):end]
     logp̂x = logpdf(icnf.basedist, z) .- Δlogp
@@ -43,7 +43,7 @@ function inference(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), icnf.tspan, ps)
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = @view sol[:, :, end]
-    z = @view fsol[1:(end - n_aug - 1), :]
+    z = @view fsol[begin:(end - n_aug - 1), :]
     Δlogp = @view fsol[(end - n_aug), :]
     augs = @view fsol[(end - n_aug + 1):end, :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
@@ -73,7 +73,7 @@ function generate(
     )
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = @view sol[:, end]
-    z = @view fsol[1:(end - n_aug - 1)]
+    z = @view fsol[begin:(end - n_aug - 1)]
     z
 end
 
@@ -101,7 +101,7 @@ function generate(
     )
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = @view sol[:, :, end]
-    z = @view fsol[1:(end - n_aug - 1), :]
+    z = @view fsol[begin:(end - n_aug - 1), :]
     z
 end
 

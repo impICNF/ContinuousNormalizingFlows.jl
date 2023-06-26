@@ -31,7 +31,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug)]
+        z = @view u[begin:(end - n_aug)]
         ż, J = AbstractDifferentiation.value_and_jacobian(
             differentiation_backend,
             x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
@@ -55,7 +55,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         ż, J = jacobian_batched(
             x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
             z,
@@ -81,7 +81,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug)]
+        z = @view u[begin:(end - n_aug)]
         v_pb = AbstractDifferentiation.value_and_pullback_function(
             differentiation_backend,
             x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
@@ -110,7 +110,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         ż, back =
             Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
         ϵJ = only(back(ϵ))
@@ -135,7 +135,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         ż = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
         ϵJ = reshape(
             auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
@@ -162,7 +162,7 @@ function augmented_f(
     ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
-        z = @view u[1:(end - n_aug), :]
+        z = @view u[begin:(end - n_aug), :]
         ż = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
         Jϵ = reshape(
             auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
