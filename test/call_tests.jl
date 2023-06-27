@@ -19,6 +19,7 @@
         SDVecJacMatrixMode,
         SDJacVecMatrixMode,
     ]
+    omodes = Type{<:ContinuousNormalizingFlows.Mode}[TrainMode(), TestMode()]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -34,6 +35,7 @@
         tp in tps,
         adb_u in adb_list,
         nvars in nvars_,
+        omode in omodes,
         mt in mts
 
         adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
@@ -60,14 +62,12 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
-        @test !isnothing(inference(icnf, TestMode(), r, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), ps, st))
+        @test !isnothing(inference(icnf, omode, r, ps, st))
+        @test !isnothing(generate(icnf, omode, ps, st))
 
-        @test !isnothing(loss(icnf, r, ps, st))
+        @test !isnothing(loss(icnf, r, ps, st; mode = omode))
 
-        diff_loss(x) = loss(icnf, r, x, st)
+        diff_loss(x) = loss(icnf, r, x, st; mode = omode)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -111,7 +111,9 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = ICNFDist(icnf, ps, st)
+        d = ICNFDist(icnf, ps, st; mode = omode)
+        d2 = ICNFDist(mach; mode = omode)
+        @test d == d2
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
@@ -124,6 +126,7 @@
         tp in tps,
         cmode in cmodes,
         nvars in nvars_,
+        omode in omodes,
         mt in mts
 
         cmode <: SDJacVecMatrixMode && continue
@@ -142,14 +145,12 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
-        @test !isnothing(inference(icnf, TestMode(), r_arr, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r_arr, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), ps, st, 2))
-        @test !isnothing(generate(icnf, TrainMode(), ps, st, 2))
+        @test !isnothing(inference(icnf, omode, r_arr, ps, st))
+        @test !isnothing(generate(icnf, omode, ps, st, 2))
 
-        @test !isnothing(loss(icnf, r_arr, ps, st))
+        @test !isnothing(loss(icnf, r_arr, ps, st; mode = omode))
 
-        diff_loss(x) = loss(icnf, r_arr, x, st)
+        diff_loss(x) = loss(icnf, r_arr, x, st; mode = omode)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -193,7 +194,9 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = ICNFDist(icnf, ps, st)
+        d = ICNFDist(icnf, ps, st; mode = omode)
+        d2 = ICNFDist(mach; mode = omode)
+        @test d == d2
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
@@ -206,6 +209,7 @@
         tp in tps,
         adb_u in adb_list,
         nvars in nvars_,
+        omode in omodes,
         mt in cmts
 
         adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
@@ -236,14 +240,12 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
-        @test !isnothing(inference(icnf, TestMode(), r, r2, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r, r2, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), r2, ps, st))
-        @test !isnothing(generate(icnf, TrainMode(), r2, ps, st))
+        @test !isnothing(inference(icnf, omode, r, r2, ps, st))
+        @test !isnothing(generate(icnf, omode, r2, ps, st))
 
-        @test !isnothing(loss(icnf, r, r2, ps, st))
+        @test !isnothing(loss(icnf, r, r2, ps, st; mode = omode))
 
-        diff_loss(x) = loss(icnf, r, r2, x, st)
+        diff_loss(x) = loss(icnf, r, r2, x, st; mode = omode)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -287,7 +289,9 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = CondICNFDist(icnf, r2, ps, st)
+        d = CondICNFDist(icnf, r2, ps, st; mode = omode)
+        d2 = CondICNFDist(mach, r2; mode = omode)
+        @test d == d2
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
@@ -300,6 +304,7 @@
         tp in tps,
         cmode in cmodes,
         nvars in nvars_,
+        omode in omodes,
         mt in cmts
 
         cmode <: SDJacVecMatrixMode && continue
@@ -321,14 +326,12 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
-        @test !isnothing(inference(icnf, TestMode(), r_arr, r2_arr, ps, st))
-        @test !isnothing(inference(icnf, TrainMode(), r_arr, r2_arr, ps, st))
-        @test !isnothing(generate(icnf, TestMode(), r2_arr, ps, st, 2))
-        @test !isnothing(generate(icnf, TrainMode(), r2_arr, ps, st, 2))
+        @test !isnothing(inference(icnf, omode, r_arr, r2_arr, ps, st))
+        @test !isnothing(generate(icnf, omode, r2_arr, ps, st, 2))
 
-        @test !isnothing(loss(icnf, r_arr, r2_arr, ps, st))
+        @test !isnothing(loss(icnf, r_arr, r2_arr, ps, st; mode = omode))
 
-        diff_loss(x) = loss(icnf, r_arr, r2_arr, x, st)
+        diff_loss(x) = loss(icnf, r_arr, r2_arr, x, st; mode = omode)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -372,7 +375,9 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = CondICNFDist(icnf, r2_arr, ps, st)
+        d = CondICNFDist(icnf, r2_arr, ps, st; mode = omode)
+        d2 = CondICNFDist(mach, r2_arr; mode = omode)
+        @test d == d2
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
