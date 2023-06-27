@@ -168,8 +168,8 @@
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
 
-        @test !isnothing(CondICNFDist(mach, TrainMode()))
-        @test !isnothing(CondICNFDist(mach, TestMode()))
+        @test !isnothing(CondICNFDist(mach, TrainMode(), r2))
+        @test !isnothing(CondICNFDist(mach, TestMode(), r2))
     end
     @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
                                                                                                    ats,
@@ -209,7 +209,7 @@
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
 
-        @test !isnothing(CondICNFDist(mach, TrainMode()))
-        @test !isnothing(CondICNFDist(mach, TestMode()))
+        @test !isnothing(CondICNFDist(mach, TrainMode(), r2))
+        @test !isnothing(CondICNFDist(mach, TestMode(), r2))
     end
 end
