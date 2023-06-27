@@ -4,7 +4,7 @@ export CondICNFModel, CondICNFDist
 
 function loss_f(icnf::AbstractCondICNF, loss::Function, st::Any)::Function
     function f(ps, θ, xs, ys)
-        loss(icnf, xs, ys, ps, st)
+        loss(icnf, TrainMode(), xs, ys, ps, st)
     end
     f
 end
@@ -191,29 +191,19 @@ MLJBase.metadata_model(
 
 struct CondICNFDist <: ICNFDistribution
     m::AbstractCondICNF
+    mode::Mode
     ys::AbstractVecOrMat{<:Real}
     ps::Any
     st::Any
-    mode::Mode
-end
-
-function CondICNFDist(
-    m::AbstractCondICNF,
-    ys::AbstractVecOrMat{<:Real},
-    ps::Any,
-    st::Any;
-    mode::Mode = TestMode(),
-)
-    CondICNFDist(m, ys, ps, st, mode)
 end
 
 function CondICNFDist(
     mach::Machine{<:CondICNFModel},
-    ys::AbstractVecOrMat{<:Real};
-    mode::Mode = TestMode(),
+    mode::Mode,
+    ys::AbstractVecOrMat{<:Real},
 )
-    (ps, st) = MLJBase.fitted_params(mach)
-    CondICNFDist(mach.model.m, ys, ps, st, mode)
+    (ps, st) = fitted_params(mach)
+    CondICNFDist(mach.model.m, mode, ys, ps, st)
 end
 
 Base.length(d::CondICNFDist) = d.m.nvars

@@ -4,7 +4,7 @@ export ICNFModel, ICNFDist
 
 function loss_f(icnf::AbstractICNF, loss::Function, st::Any)::Function
     function f(ps, θ, xs)
-        loss(icnf, xs, ps, st)
+        loss(icnf, TrainMode(), xs, ps, st)
     end
     f
 end
@@ -182,18 +182,14 @@ MLJBase.metadata_model(
 
 struct ICNFDist <: ICNFDistribution
     m::AbstractICNF
+    mode::Mode
     ps::Any
     st::Any
-    mode::Mode
 end
 
-function ICNFDist(m::AbstractICNF, ps::Any, st::Any; mode::Mode = TestMode())
-    ICNFDist(m, ps, st, mode)
-end
-
-function ICNFDist(mach::Machine{<:ICNFModel}; mode::Mode = TestMode())
-    (ps, st) = MLJBase.fitted_params(mach)
-    ICNFDist(mach.model.m, ps, st, mode)
+function ICNFDist(mach::Machine{<:ICNFModel}, mode::Mode)
+    (ps, st) = fitted_params(mach)
+    ICNFDist(mach.model.m, mode, ps, st)
 end
 
 Base.length(d::ICNFDist) = d.m.nvars

@@ -79,6 +79,9 @@
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, df))
         @test !isnothing(MLJBase.fitted_params(mach))
+
+        @test !isnothing(ICNFDist(mach, TrainMode()))
+        @test !isnothing(ICNFDist(mach, TestMode()))
     end
     @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
                                                                                                    ats,
@@ -114,6 +117,9 @@
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, df))
         @test !isnothing(MLJBase.fitted_params(mach))
+
+        @test !isnothing(ICNFDist(mach, TrainMode()))
+        @test !isnothing(ICNFDist(mach, TestMode()))
     end
     @testset "$at | $tp | $(typeof(adb_u).name.name) for internal | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
                                                                                                                                     ats,
@@ -161,6 +167,9 @@
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
+
+        @test !isnothing(CondICNFDist(mach, TrainMode()))
+        @test !isnothing(CondICNFDist(mach, TestMode()))
     end
     @testset "$at | $tp | $cmode | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
                                                                                                    ats,
@@ -199,5 +208,8 @@
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
         @test !isnothing(MLJBase.fitted_params(mach))
+
+        @test !isnothing(CondICNFDist(mach, TrainMode()))
+        @test !isnothing(CondICNFDist(mach, TestMode()))
     end
 end

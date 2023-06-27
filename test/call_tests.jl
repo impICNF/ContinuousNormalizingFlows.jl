@@ -19,7 +19,7 @@
         SDVecJacMatrixMode,
         SDJacVecMatrixMode,
     ]
-    omodes = Type{<:ContinuousNormalizingFlows.Mode}[TrainMode(), TestMode()]
+    omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -65,9 +65,9 @@
         @test !isnothing(inference(icnf, omode, r, ps, st))
         @test !isnothing(generate(icnf, omode, ps, st))
 
-        @test !isnothing(loss(icnf, r, ps, st; mode = omode))
+        @test !isnothing(loss(icnf, omode, r, ps, st))
 
-        diff_loss(x) = loss(icnf, r, x, st; mode = omode)
+        diff_loss(x) = loss(icnf, omode, r, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -111,9 +111,7 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = ICNFDist(icnf, ps, st; mode = omode)
-        d2 = ICNFDist(mach; mode = omode)
-        @test d == d2
+        d = ICNFDist(icnf, omode, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
@@ -148,9 +146,9 @@
         @test !isnothing(inference(icnf, omode, r_arr, ps, st))
         @test !isnothing(generate(icnf, omode, ps, st, 2))
 
-        @test !isnothing(loss(icnf, r_arr, ps, st; mode = omode))
+        @test !isnothing(loss(icnf, omode, r_arr, ps, st))
 
-        diff_loss(x) = loss(icnf, r_arr, x, st; mode = omode)
+        diff_loss(x) = loss(icnf, omode, r_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -194,9 +192,7 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = ICNFDist(icnf, ps, st; mode = omode)
-        d2 = ICNFDist(mach; mode = omode)
-        @test d == d2
+        d = ICNFDist(icnf, omode, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
@@ -243,9 +239,9 @@
         @test !isnothing(inference(icnf, omode, r, r2, ps, st))
         @test !isnothing(generate(icnf, omode, r2, ps, st))
 
-        @test !isnothing(loss(icnf, r, r2, ps, st; mode = omode))
+        @test !isnothing(loss(icnf, omode, r, r2, ps, st))
 
-        diff_loss(x) = loss(icnf, r, r2, x, st; mode = omode)
+        diff_loss(x) = loss(icnf, omode, r, r2, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -289,9 +285,7 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = CondICNFDist(icnf, r2, ps, st; mode = omode)
-        d2 = CondICNFDist(mach, r2; mode = omode)
-        @test d == d2
+        d = CondICNFDist(icnf, omode, r2, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
@@ -329,9 +323,9 @@
         @test !isnothing(inference(icnf, omode, r_arr, r2_arr, ps, st))
         @test !isnothing(generate(icnf, omode, r2_arr, ps, st, 2))
 
-        @test !isnothing(loss(icnf, r_arr, r2_arr, ps, st; mode = omode))
+        @test !isnothing(loss(icnf, omode, r_arr, r2_arr, ps, st))
 
-        diff_loss(x) = loss(icnf, r_arr, r2_arr, x, st; mode = omode)
+        diff_loss(x) = loss(icnf, omode, r_arr, r2_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             adb isa AbstractDifferentiation.TrackerBackend && continue
@@ -375,9 +369,7 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
-        d = CondICNFDist(icnf, r2_arr, ps, st; mode = omode)
-        d2 = CondICNFDist(mach, r2_arr; mode = omode)
-        @test d == d2
+        d = CondICNFDist(icnf, omode, r2_arr, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.logpdf(d, r_arr))
