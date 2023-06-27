@@ -8,12 +8,12 @@
     icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode)
 
     ps, st = Lux.setup(rng, icnf)
-    diff_loss_train(x) = loss(icnf, r, x, st; mode = TrainMode())
-    diff_loss_test(x) = loss(icnf, r, x, st; mode = TestMode())
+    diff_loss_train(x) = loss(icnf, TrainMode(), r, x, st)
+    diff_loss_test(x) = loss(icnf, TestMode(), r, x, st)
     grad_diff_loss_train() = Zygote.gradient(diff_loss_train, ps)
     grad_diff_loss_test() = Zygote.gradient(diff_loss_test, ps)
-    t_loss_train() = loss(icnf, r, ps, st; mode = TrainMode())
-    t_loss_test() = loss(icnf, r, ps, st; mode = TestMode())
+    t_loss_train() = loss(icnf, TrainMode(), r, ps, st)
+    t_loss_test() = loss(icnf, TestMode(), r, ps, st)
 
     ben_loss_train = BenchmarkTools.@benchmark $t_loss_train()
     ben_loss_test = BenchmarkTools.@benchmark $t_loss_test()
