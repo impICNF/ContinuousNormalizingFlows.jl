@@ -3,6 +3,7 @@ module ContinuousNormalizingFlows
 using AbstractDifferentiation,
     ADTypes,
     Base.Iterators,
+    ChainRulesCore,
     ComponentArrays,
     ComputationalResources,
     CUDA,

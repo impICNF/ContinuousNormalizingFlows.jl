@@ -4,7 +4,7 @@ export ICNFModel, ICNFDist
 
 function loss_f(icnf::AbstractICNF, loss::Function, st::Any)::Function
     function f(ps, θ, xs)
-        loss(icnf, xs, ps, st)
+        loss(icnf, TrainMode(), xs, ps, st)
     end
     f
 end
@@ -31,8 +31,7 @@ end
 
 function ICNFModel(
     m::AbstractICNF{T, AT, CM},
-    loss::Function = loss,
-    ;
+    loss::Function = loss;
     optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 300,
     adtype::ADTypes.AbstractADType = AutoZygote(),
@@ -183,15 +182,21 @@ MLJBase.metadata_model(
 
 struct ICNFDist <: ICNFDistribution
     m::AbstractICNF
+    mode::Mode
     ps::Any
     st::Any
+end
+
+function ICNFDist(mach::Machine{<:ICNFModel}, mode::Mode)
+    (ps, st) = fitted_params(mach)
+    ICNFDist(mach.model.m, mode, ps, st)
 end
 
 Base.length(d::ICNFDist) = d.m.nvars
 Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
-        first(inference(d.m, TestMode(), x, d.ps, d.st))
+        first(inference(d.m, d.mode, x, d.ps, d.st))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
         first(Distributions._logpdf(d, hcat(x)))
     else
@@ -202,14 +207,14 @@ function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
-        first(inference(d.m, TestMode(), A, d.ps, d.st))
+        first(inference(d.m, d.mode, A, d.ps, d.st))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
-        x .= generate(d.m, TestMode(), d.ps, d.st; rng)
+        x .= generate(d.m, d.mode, d.ps, d.st; rng)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
@@ -220,7 +225,7 @@ function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<
     if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
-        A .= generate(d.m, TestMode(), d.ps, d.st, size(A, 2); rng)
+        A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2); rng)
     else
         error("Not Implemented")
     end

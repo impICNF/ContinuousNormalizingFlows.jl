@@ -111,12 +111,12 @@ end
 
 function loss(
     icnf::AbstractCondICNF{T, AT, <:VectorMode},
+    mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -138,12 +138,12 @@ end
 
 function loss(
     icnf::AbstractCondICNF{T, AT, <:MatrixMode},
+    mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,

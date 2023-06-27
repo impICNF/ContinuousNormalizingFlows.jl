@@ -3,8 +3,7 @@ export construct
 function construct(
     aicnf::Type{<:AbstractFlows},
     nn,
-    nvars::Integer,
-    ;
+    nvars::Integer;
     data_type::Type{<:AbstractFloat} = Float32,
     array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,

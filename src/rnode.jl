@@ -167,13 +167,13 @@ end
 
 function loss(
     icnf::RNODE{T, AT, <:VectorMode},
+    mode::TrainMode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -194,13 +194,13 @@ end
 
 function loss(
     icnf::RNODE{T, AT, <:MatrixMode},
+    mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    mode::Mode = TrainMode(),
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
