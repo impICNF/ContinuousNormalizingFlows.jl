@@ -113,7 +113,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
             if model.have_callback
                 prgr = Progress(
                     length(data);
-                    desc = "Training (epoch: $ep): ",
+                    desc = "Fitting (epoch: $ep of $(model.n_epochs)): ",
                     showspeed = true,
                 )
                 _callback = callback_f(model.m, prgr)
@@ -126,7 +126,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
             end
             ps .= res.u
             @info(
-                "Fitting (epoch: $ep) - $(typeof(opt).name.name)",
+                "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
                 "elapsed time (seconds)" = tst_one.time,
                 "garbage collection time (seconds)" = tst_one.gctime,
             )
