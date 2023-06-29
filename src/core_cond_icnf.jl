@@ -81,23 +81,9 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     end
     if model.use_batch
         if model.compute_mode <: VectorMode
-            data = DataLoader(
-                (x, y);
-                batchsize = -1,
-                partial = true,
-                shuffle = true,
-                parallel = true,
-                buffer = false,
-            )
+            data = DataLoader((x, y); batchsize = -1)
         elseif model.compute_mode <: MatrixMode
-            data = DataLoader(
-                (x, y);
-                batchsize = model.batch_size,
-                partial = true,
-                shuffle = true,
-                parallel = true,
-                buffer = false,
-            )
+            data = DataLoader((x, y); batchsize = model.batch_size)
         else
             error("Not Implemented")
         end
