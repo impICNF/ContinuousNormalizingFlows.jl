@@ -1,5 +1,5 @@
 name: Documentation
-on: [push, pull_request, release]
+on: [push, pull_request, release, create]
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
