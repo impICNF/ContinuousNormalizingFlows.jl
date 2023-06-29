@@ -13,7 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         group:
-          - Call
+          - CallRNODE
+          - CallFFJORD
+          - CallPlanar
           - Fit
           - Quality
           - Benchmark
