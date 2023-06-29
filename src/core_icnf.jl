@@ -75,47 +75,73 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
             ps = ComponentArray{model.data_type}(ps)
         end
     end
-    if model.use_batch
-        if model.compute_mode <: VectorMode
-            data = DataLoader((x,); batchsize = -1)
-        elseif model.compute_mode <: MatrixMode
-            data = DataLoader((x,); batchsize = model.batch_size)
-        else
-            error("Not Implemented")
-        end
-    else
-        data = [(x,)]
-    end
-    ncdata = ncycle(data, model.n_epochs)
     _loss = loss_f(model.m, model.loss, st)
     optfunc = OptimizationFunction(_loss, model.adtype)
     optprob = OptimizationProblem(optfunc, ps)
-    tst = @timed for opt in model.optimizers
-        optprob_re = remake(optprob; u0 = ps)
-        if model.have_callback
-            prgr = Progress(length(ncdata); desc = "Training: ", showspeed = true)
-            _callback = callback_f(model.m, prgr)
-            tst_one = @timed res = solve(optprob_re, opt, ncdata; callback = _callback)
-            ProgressMeter.finish!(prgr)
+
+    tst_overall = @timed for opt in model.optimizers
+        tst_epochs = @timed for ep in 1:(model.n_epochs)
+            if model.use_batch
+                if model.compute_mode <: VectorMode
+                    data = DataLoader(
+                        (x,);
+                        batchsize = -1,
+                        shuffle = true,
+                        partial = true,
+                        parallel = false,
+                        buffer = false,
+                    )
+                elseif model.compute_mode <: MatrixMode
+                    data = DataLoader(
+                        (x,);
+                        batchsize = model.batch_size,
+                        shuffle = true,
+                        partial = true,
+                        parallel = false,
+                        buffer = false,
+                    )
+                else
+                    error("Not Implemented")
+                end
+            else
+                data = [(x,)]
+            end
+            optprob_re = remake(optprob; u0 = ps)
+            if model.have_callback
+                prgr = Progress(
+                    length(data);
+                    desc = "Training (epoch: $ep): ",
+                    showspeed = true,
+                )
+                _callback = callback_f(model.m, prgr)
+                tst_one =
+                    @timed res = solve(optprob_re, opt, data; callback = _callback)
+                ProgressMeter.finish!(prgr)
+            else
+                tst_one = @timed res = solve(optprob_re, opt, data)
+            end
+            ps .= res.u
             @info(
-                "Fitting - $(typeof(opt).name.name)",
+                "Fitting (epoch: $ep) - $(typeof(opt).name.name)",
                 "elapsed time (seconds)" = tst_one.time,
                 "garbage collection time (seconds)" = tst_one.gctime,
             )
-        else
-            res = solve(optprob_re, opt, ncdata)
         end
-        ps .= res.u
+        @info(
+            "Fitting (all epochs) - $(typeof(opt).name.name)",
+            "elapsed time (seconds)" = tst_epochs.time,
+            "garbage collection time (seconds)" = tst_epochs.gctime,
+        )
     end
     @info(
         "Fitting - Overall",
-        "elapsed time (seconds)" = tst.time,
-        "garbage collection time (seconds)" = tst.gctime,
+        "elapsed time (seconds)" = tst_overall.time,
+        "garbage collection time (seconds)" = tst_overall.gctime,
     )
 
     fitresult = (ps, st)
     cache = nothing
-    report = (stats = tst,)
+    report = (stats = tst_overall,)
     fitresult, cache, report
 end
 
