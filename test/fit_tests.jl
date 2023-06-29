@@ -1,14 +1,21 @@
 @testset "Fit Tests" begin
-    mts =
-        SMALL ? Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE] :
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE, FFJORD, Planar]
-    cmts =
-        SMALL ? Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE] :
-        Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[
+    if SMALL || GROUP == "RNODE"
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE]
+    elseif GROUP == "FFJORD"
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[FFJORD]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondFFJORD]
+    elseif GROUP == "Planar"
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[Planar]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondPlanar]
+    else
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE, FFJORD, Planar]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[
             CondRNODE,
             CondFFJORD,
             CondPlanar,
         ]
+    end
     ats = Type{<:AbstractArray}[Array]
     if CUDA.has_cuda_gpu() && !SMALL
         push!(ats, CUDA.CuArray)

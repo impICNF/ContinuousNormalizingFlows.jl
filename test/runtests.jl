@@ -35,8 +35,10 @@ GROUP = get(ENV, "GROUP", "All")
 SMALL = get(ENV, "SMALL", "No") == "Yes"
 
 @testset "Overall" begin
-    CUDA.allowscalar() do
-        include("smoke_tests.jl")
+    if GROUP == "All" || GROUP in ["RNODE", "FFJORD", "Planar"]
+        CUDA.allowscalar() do
+            include("smoke_tests.jl")
+        end
     end
 
     if GROUP == "All" || GROUP == "Quality"

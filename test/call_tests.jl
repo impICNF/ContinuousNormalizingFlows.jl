@@ -1,11 +1,11 @@
 @testset "Call Tests" begin
-    if SMALL || GROUP == "CallRNODE"
+    if SMALL || GROUP == "RNODE"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE]
         cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE]
-    elseif GROUP == "CallFFJORD"
+    elseif GROUP == "FFJORD"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[FFJORD]
         cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondFFJORD]
-    elseif GROUP == "CallPlanar"
+    elseif GROUP == "Planar"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[Planar]
         cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondPlanar]
     else
