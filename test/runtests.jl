@@ -24,10 +24,15 @@ using Random: Random
 using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase
 using Tracker: Tracker
+using TruncatedStacktraces: TruncatedStacktraces
 using Zygote: Zygote
+
+GC.enable_logging(true)
 
 debuglogger = Logging.ConsoleLogger(Logging.Debug)
 Logging.global_logger(debuglogger)
+
+TruncatedStacktraces.VERBOSE[] = true
 
 include("core.jl")
 
