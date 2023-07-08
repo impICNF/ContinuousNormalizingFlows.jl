@@ -22,55 +22,6 @@ end
 
 function augmented_f(
     icnf::CondRNODE{T, AT, <:ADVectorMode},
-    mode::TestMode,
-    ys::AbstractVector{<:Real},
-    st::Any;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug)]
-        ż, J = AbstractDifferentiation.value_and_jacobian(
-            differentiation_backend,
-            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-            z,
-        )
-        l̇ = tr(only(J))
-        vcat(ż, -l̇)
-    end
-    f_aug
-end
-
-function augmented_f(
-    icnf::CondRNODE{T, AT, CM},
-    mode::TestMode,
-    ys::AbstractMatrix{<:Real},
-    st::Any,
-    n_batch::Integer;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        ż, J = jacobian_batched(
-            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-            z,
-            T,
-            AT,
-            CM,
-        )
-        l̇ = transpose(tr.(eachslice(J; dims = 3)))
-        vcat(ż, -l̇)
-    end
-    f_aug
-end
-
-function augmented_f(
-    icnf::CondRNODE{T, AT, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
