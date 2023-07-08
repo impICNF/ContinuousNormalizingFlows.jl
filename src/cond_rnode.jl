@@ -185,6 +185,8 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
+    tspan::Tuple{T, T} = icnf.tspan,
+    basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
@@ -197,6 +199,8 @@ function loss(
         ys,
         ps,
         st;
+        tspan,
+        basedist,
         differentiation_backend,
         rng,
         sol_args,
@@ -214,6 +218,8 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
+    tspan::Tuple{T, T} = icnf.tspan,
+    basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
@@ -226,6 +232,8 @@ function loss(
         ys,
         ps,
         st;
+        tspan,
+        basedist,
         differentiation_backend,
         rng,
         sol_args,
