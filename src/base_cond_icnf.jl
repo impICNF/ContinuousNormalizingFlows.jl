@@ -7,7 +7,7 @@ function inference(
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any;
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -35,7 +35,7 @@ function inference(
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -62,7 +62,7 @@ function generate(
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any;
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -93,7 +93,7 @@ function generate(
     ps::Any,
     st::Any,
     n::Integer;
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -124,7 +124,7 @@ function loss(
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any;
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -155,7 +155,7 @@ function loss(
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),

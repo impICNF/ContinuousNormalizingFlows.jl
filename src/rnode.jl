@@ -11,7 +11,7 @@ struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     nvars::Integer
     basedist::Distribution
-    tspan::Tuple{T, T}
+    tspan::NTuple{2, T}
 
     differentiation_backend::AbstractDifferentiation.AbstractBackend
 
@@ -173,7 +173,7 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -204,7 +204,7 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    tspan::Tuple{T, T} = icnf.tspan,
+    tspan::NTuple{2, T} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),

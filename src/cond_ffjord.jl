@@ -9,7 +9,7 @@ struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     nvars::Integer
     basedist::Distribution
-    tspan::Tuple{T, T}
+    tspan::NTuple{2, T}
 
     differentiation_backend::AbstractDifferentiation.AbstractBackend
 
