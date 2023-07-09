@@ -9,7 +9,7 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     nvars::Integer
     basedist::Distribution
-    tspan::Tuple{T, T}
+    tspan::NTuple{2, T}
 
     differentiation_backend::AbstractDifferentiation.AbstractBackend
 
@@ -18,55 +18,6 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     # trace_test
     # trace_train
-end
-
-function augmented_f(
-    icnf::CondRNODE{T, AT, <:ADVectorMode},
-    mode::TestMode,
-    ys::AbstractVector{<:Real},
-    st::Any;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug)]
-        ż, J = AbstractDifferentiation.value_and_jacobian(
-            differentiation_backend,
-            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-            z,
-        )
-        l̇ = tr(only(J))
-        vcat(ż, -l̇)
-    end
-    f_aug
-end
-
-function augmented_f(
-    icnf::CondRNODE{T, AT, CM},
-    mode::TestMode,
-    ys::AbstractMatrix{<:Real},
-    st::Any,
-    n_batch::Integer;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        ż, J = jacobian_batched(
-            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-            z,
-            T,
-            AT,
-            CM,
-        )
-        l̇ = transpose(tr.(eachslice(J; dims = 3)))
-        vcat(ż, -l̇)
-    end
-    f_aug
 end
 
 function augmented_f(
@@ -185,6 +136,8 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
+    tspan::NTuple{2, T} = icnf.tspan,
+    basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
@@ -197,6 +150,8 @@ function loss(
         ys,
         ps,
         st;
+        tspan,
+        basedist,
         differentiation_backend,
         rng,
         sol_args,
@@ -214,6 +169,8 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
+    tspan::NTuple{2, T} = icnf.tspan,
+    basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
@@ -226,6 +183,8 @@ function loss(
         ys,
         ps,
         st;
+        tspan,
+        basedist,
         differentiation_backend,
         rng,
         sol_args,

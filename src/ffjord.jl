@@ -11,7 +11,7 @@ struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     nvars::Integer
     basedist::Distribution
-    tspan::Tuple{T, T}
+    tspan::NTuple{2, T}
 
     differentiation_backend::AbstractDifferentiation.AbstractBackend
 
@@ -20,47 +20,6 @@ struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 
     # trace_test
     # trace_train
-end
-
-function augmented_f(
-    icnf::FFJORD{T, AT, <:ADVectorMode},
-    mode::TestMode,
-    st::Any;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug)]
-        mz, J = AbstractDifferentiation.value_and_jacobian(
-            differentiation_backend,
-            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
-            z,
-        )
-        trace_J = tr(only(J))
-        vcat(mz, -trace_J)
-    end
-    f_aug
-end
-
-function augmented_f(
-    icnf::FFJORD{T, AT, CM},
-    mode::TestMode,
-    st::Any,
-    n_batch::Integer;
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        mz, J = jacobian_batched(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, T, AT, CM)
-        trace_J = transpose(tr.(eachslice(J; dims = 3)))
-        vcat(mz, -trace_J)
-    end
-    f_aug
 end
 
 function augmented_f(
