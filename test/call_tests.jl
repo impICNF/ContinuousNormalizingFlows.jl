@@ -69,7 +69,9 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
+        @test !isnothing(ContinuousNormalizingFlows.inference_prob(icnf, omode, r, ps, st))
         @test !isnothing(inference(icnf, omode, r, ps, st))
+        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st))
         @test !isnothing(generate(icnf, omode, ps, st))
 
         @test !isnothing(loss(icnf, omode, r, ps, st))
@@ -150,7 +152,11 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
+        @test !isnothing(
+            ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, ps, st),
+        )
         @test !isnothing(inference(icnf, omode, r_arr, ps, st))
+        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st, 2))
         @test !isnothing(generate(icnf, omode, ps, st, 2))
 
         @test !isnothing(loss(icnf, omode, r_arr, ps, st))
@@ -243,7 +249,11 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
+        @test !isnothing(
+            ContinuousNormalizingFlows.inference_prob(icnf, omode, r, r2, ps, st),
+        )
         @test !isnothing(inference(icnf, omode, r, r2, ps, st))
+        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, r2, ps, st))
         @test !isnothing(generate(icnf, omode, r2, ps, st))
 
         @test !isnothing(loss(icnf, omode, r, r2, ps, st))
@@ -327,7 +337,13 @@
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
+        @test !isnothing(
+            ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, r2_arr, ps, st),
+        )
         @test !isnothing(inference(icnf, omode, r_arr, r2_arr, ps, st))
+        @test !isnothing(
+            ContinuousNormalizingFlows.generate_prob(icnf, omode, r2_arr, ps, st, 2),
+        )
         @test !isnothing(generate(icnf, omode, r2_arr, ps, st, 2))
 
         @test !isnothing(loss(icnf, omode, r_arr, r2_arr, ps, st))
