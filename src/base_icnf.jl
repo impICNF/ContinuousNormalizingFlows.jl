@@ -214,7 +214,8 @@ function generate(
         icnf,
         mode,
         ps,
-        st;
+        st,
+        n;
         tspan,
         basedist,
         differentiation_backend,

@@ -227,7 +227,8 @@ function generate(
         mode,
         ys,
         ps,
-        st;
+        st,
+        n;
         tspan,
         basedist,
         differentiation_backend,
