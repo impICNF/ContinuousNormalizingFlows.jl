@@ -8,6 +8,7 @@ using Calculus: Calculus
 using ComponentArrays: ComponentArrays
 using ComputationalResources: ComputationalResources
 using CUDA: CUDA
+using cuDNN: cuDNN
 using DataFrames: DataFrames
 using Distributions: Distributions
 using Enzyme: Enzyme
