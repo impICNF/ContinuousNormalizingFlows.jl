@@ -66,10 +66,11 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         ps = ComponentArray(ps)
     end
     if model.resource isa CUDALibs
-        x = Lux.gpu(x)
-        y = Lux.gpu(y)
-        ps = Lux.gpu(ps)
-        st = Lux.gpu(st)
+        gdev = gpu_device()
+        x = gdev(x)
+        y = gdev(y)
+        ps = gdev(ps)
+        st = gdev(st)
     else
         x = convert(model.array_type{model.data_type}, x)
         y = convert(model.array_type{model.data_type}, y)
@@ -154,8 +155,9 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     if model.resource isa CUDALibs
-        xnew = Lux.gpu(xnew)
-        ynew = Lux.gpu(ynew)
+        gdev = gpu_device()
+        xnew = gdev(xnew)
+        ynew = gdev(ynew)
     end
     (ps, st) = fitresult
 

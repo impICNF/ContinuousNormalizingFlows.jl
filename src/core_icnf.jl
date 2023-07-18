@@ -64,9 +64,10 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         ps = ComponentArray(ps)
     end
     if model.resource isa CUDALibs
-        x = Lux.gpu(x)
-        ps = Lux.gpu(ps)
-        st = Lux.gpu(st)
+        gdev = gpu_device()
+        x = gdev(x)
+        ps = gdev(ps)
+        st = gdev(st)
     else
         x = convert(model.array_type{model.data_type}, x)
         if model.m isa FluxCompatLayer
@@ -148,7 +149,8 @@ end
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     if model.resource isa CUDALibs
-        xnew = Lux.gpu(xnew)
+        gdev = gpu_device()
+        xnew = gdev(xnew)
     end
     (ps, st) = fitresult
 
