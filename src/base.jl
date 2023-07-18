@@ -8,7 +8,7 @@ function construct(
     array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     basedist::Distribution = MvNormal(Zeros{data_type}(nvars), one(data_type) * I),
-    tspan::Tuple = (zero(data_type), one(data_type)),
+    tspan::NTuple{2} = (zero(data_type), one(data_type)),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
@@ -27,7 +27,7 @@ function construct(
     )
 end
 
-function n_augment(icnf::AbstractFlows, mode::Mode)::Integer
+@inline function n_augment(::AbstractFlows, ::Mode)::Integer
     0
 end
 
@@ -42,4 +42,36 @@ function Base.show(io::IO, icnf::AbstractFlows)
         "\n\tTime Span: ",
         icnf.tspan,
     )
+end
+
+@inline function zeros_T_AT(::AbstractFlows{T, AT, CM}, dims...) where {T, AT, CM}
+    if AT <: CuArray
+        CUDA.zeros(T, dims...)
+    else
+        zeros(T, dims...)
+    end
+end
+
+@inline function rand_T_AT(
+    ::AbstractFlows{T, AT, CM},
+    rng::AbstractRNG = Random.default_rng(),
+    dims...,
+) where {T, AT, CM}
+    if AT <: CuArray
+        CUDA.rand(rng, T, dims...)
+    else
+        rand(rng, T, dims...)
+    end
+end
+
+@inline function randn_T_AT(
+    ::AbstractFlows{T, AT, CM},
+    rng::AbstractRNG = Random.default_rng(),
+    dims...,
+) where {T, AT, CM}
+    if AT <: CuArray
+        CUDA.randn(rng, T, dims...)
+    else
+        randn(rng, T, dims...)
+    end
 end

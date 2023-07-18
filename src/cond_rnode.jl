@@ -29,7 +29,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ::AT = randn(rng, T, icnf.nvars)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug)]
@@ -58,7 +58,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -83,7 +83,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -110,7 +110,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )::Function where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode) + 1
-    ϵ::AT = randn(rng, T, icnf.nvars, n_batch)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -193,9 +193,6 @@ function loss(
     mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
 end
 
-function n_augment(
-    icnf::CondRNODE{T, AT},
-    mode::TrainMode,
-)::Integer where {T <: AbstractFloat, AT <: AbstractArray}
+@inline function n_augment(::CondRNODE, ::TrainMode)::Integer
     2
 end

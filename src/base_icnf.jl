@@ -14,7 +14,7 @@ function inference_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    zrs::AT = zeros(T, n_aug + 1)
+    zrs = zeros_T_AT(icnf, n_aug + 1)
     f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), tspan, ps)
@@ -71,7 +71,7 @@ function inference_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    zrs::AT = zeros(T, n_aug + 1, size(xs, 2))
+    zrs = zeros_T_AT(icnf, n_aug + 1, size(xs, 2))
     f_aug = augmented_f(icnf, mode, st, size(xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), tspan, ps)
@@ -128,7 +128,7 @@ function generate_prob(
 )::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs::AT = rand(rng, basedist)
-    zrs::AT = zeros(T, n_aug + 1)
+    zrs = zeros_T_AT(icnf, n_aug + 1)
     f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
@@ -185,7 +185,7 @@ function generate_prob(
 )::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs::AT = rand(rng, basedist, n)
-    zrs::AT = zeros(T, n_aug + 1, size(new_xs, 2))
+    zrs = zeros_T_AT(icnf, n_aug + 1, size(new_xs, 2))
     f_aug = augmented_f(icnf, mode, st, size(new_xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
@@ -322,7 +322,7 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
-        mz, J = jacobian_batched(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, T, AT, CM)
+        mz, J = jacobian_batched(icnf, x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
         trace_J = transpose(tr.(eachslice(J; dims = 3)))
         vcat(mz, -trace_J)
     end
