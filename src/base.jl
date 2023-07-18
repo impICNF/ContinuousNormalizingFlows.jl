@@ -58,7 +58,7 @@ end
     dims...,
 ) where {T, AT, CM}
     if AT <: CuArray
-        CUDA.rand(rng, T, dims...)
+        CUDA.rand(T, dims...)
     else
         rand(rng, T, dims...)
     end
@@ -70,8 +70,12 @@ end
     dims...,
 ) where {T, AT, CM}
     if AT <: CuArray
-        CUDA.randn(rng, T, dims...)
+        CUDA.randn(T, dims...)
     else
         randn(rng, T, dims...)
     end
 end
+
+@non_differentiable CUDA.zeros(::Any...)
+@non_differentiable CUDA.rand(::Any...)
+@non_differentiable CUDA.randn(::Any...)
