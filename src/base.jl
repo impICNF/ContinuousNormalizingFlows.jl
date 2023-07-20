@@ -44,7 +44,10 @@ function Base.show(io::IO, icnf::AbstractFlows)
     )
 end
 
-@inline function zeros_T_AT(::AbstractFlows{T, AT, CM}, dims...) where {T, AT, CM}
+@inline function zeros_T_AT(
+    ::AbstractFlows{T, AT, CM},
+    dims...,
+) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
     if AT <: CuArray
         CUDA.zeros(T, dims...)
     else
@@ -56,7 +59,7 @@ end
     ::AbstractFlows{T, AT, CM},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
-) where {T, AT, CM}
+) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
     if AT <: CuArray
         CUDA.rand(T, dims...)
     else
@@ -68,7 +71,7 @@ end
     ::AbstractFlows{T, AT, CM},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
-) where {T, AT, CM}
+) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
     if AT <: CuArray
         CUDA.randn(T, dims...)
     else

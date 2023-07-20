@@ -21,13 +21,13 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <:ADVectorMode},
+    icnf::CondRNODE{T, AT, CM},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars)
 
@@ -49,14 +49,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <:ZygoteMatrixMode},
+    icnf::CondRNODE{T, AT, CM},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -74,14 +74,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <:SDVecJacMatrixMode},
+    icnf::CondRNODE{T, AT, CM},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -101,14 +101,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, <:SDJacVecMatrixMode},
+    icnf::CondRNODE{T, AT, CM},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray}
+)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -128,7 +128,7 @@ function augmented_f(
 end
 
 function loss(
-    icnf::CondRNODE{T, AT, <:VectorMode},
+    icnf::CondRNODE{T, AT, CM},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
@@ -142,7 +142,7 @@ function loss(
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
+)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
     logp̂x, Ė, ṅ = inference(
         icnf,
         mode,
@@ -161,7 +161,7 @@ function loss(
 end
 
 function loss(
-    icnf::CondRNODE{T, AT, <:MatrixMode},
+    icnf::CondRNODE{T, AT, CM},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
@@ -175,7 +175,7 @@ function loss(
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray}
+)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
     logp̂x, Ė, ṅ = inference(
         icnf,
         mode,
