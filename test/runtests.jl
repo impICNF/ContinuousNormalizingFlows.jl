@@ -18,6 +18,7 @@ using Flux: Flux
 using ForwardDiff: ForwardDiff
 using Logging: Logging
 using Lux: Lux
+using LuxCUDA: LuxCUDA
 using MLJBase: MLJBase
 using ModelingToolkit: ModelingToolkit
 using Optimization: Optimization
