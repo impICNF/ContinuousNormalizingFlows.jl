@@ -1,4 +1,13 @@
 @testset "Benchmark" begin
+    BenchmarkTools.DEFAULT_PARAMETERS.samples = 2^13
+    BenchmarkTools.DEFAULT_PARAMETERS.seconds = convert(Float64, 2 * 60)
+    BenchmarkTools.DEFAULT_PARAMETERS.evals = 1
+    BenchmarkTools.DEFAULT_PARAMETERS.overhead = 0.0
+    BenchmarkTools.DEFAULT_PARAMETERS.gctrial = true
+    BenchmarkTools.DEFAULT_PARAMETERS.gcsample = true
+    BenchmarkTools.DEFAULT_PARAMETERS.time_tolerance = convert(Float64, eps(Float16))
+    BenchmarkTools.DEFAULT_PARAMETERS.memory_tolerance = convert(Float64, eps(Float16))
+
     nvars = 8
     n = 128
     rng = Random.default_rng()
