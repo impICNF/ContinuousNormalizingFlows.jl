@@ -30,7 +30,7 @@ mutable struct ICNFModel <: MLJICNF
 end
 
 function ICNFModel(
-    m::AbstractICNF{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode},
+    m::AbstractICNF{T, AT, CM},
     loss::Function = loss;
     optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 300,
@@ -39,7 +39,7 @@ function ICNFModel(
     batch_size::Integer = 32,
     have_callback::Bool = true,
     resource::AbstractResource = CPU1(),
-) where {T, AT, CM}
+) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
     ICNFModel(
         m,
         loss,

@@ -6,7 +6,7 @@ Implementation of FFJORD from
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
 struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
+       AbstractICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
 

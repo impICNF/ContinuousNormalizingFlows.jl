@@ -115,7 +115,7 @@ function inference(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{<:AbstractFloat, AT <: AbstractArray, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, AT, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any;
@@ -125,7 +125,7 @@ function generate_prob(
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-) where {AT}
+) where {AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs = convert(AT, rand(rng, basedist))
     zrs = zeros_T_AT(icnf, n_aug + 1)
@@ -171,7 +171,7 @@ function generate(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{<:AbstractFloat, AT <: AbstractArray, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, AT, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
@@ -182,7 +182,7 @@ function generate_prob(
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-) where {AT}
+) where {AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
     new_xs = convert(AT, rand(rng, basedist, n))
     zrs = zeros_T_AT(icnf, n_aug + 1, size(new_xs, 2))

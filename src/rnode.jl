@@ -6,7 +6,7 @@ Implementation of RNODE from
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
 struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
+       AbstractICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
 

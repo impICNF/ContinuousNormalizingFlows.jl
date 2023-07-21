@@ -4,7 +4,7 @@ export CondPlanar
 Implementation of Planar (Conditional Version)
 """
 struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
+       AbstractCondICNF{T, AT, CM}
     nn::PlanarLayer
     nvars::Integer
 

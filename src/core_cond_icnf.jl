@@ -30,7 +30,7 @@ mutable struct CondICNFModel <: MLJICNF
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode},
+    m::AbstractCondICNF{T, AT, CM},
     loss::Function = loss;
     optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 300,
@@ -39,7 +39,7 @@ function CondICNFModel(
     batch_size::Integer = 32,
     have_callback::Bool = true,
     resource::AbstractResource = CPU1(),
-) where {T, AT, CM}
+) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
     CondICNFModel(
         m,
         loss,

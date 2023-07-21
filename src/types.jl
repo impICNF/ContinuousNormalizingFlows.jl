@@ -18,12 +18,12 @@ abstract type AbstractFlows{T <: AbstractFloat, AT <: AbstractArray, CM <: Compu
               LuxCore.AbstractExplicitContainerLayer{(:nn,)} end
 
 abstract type AbstractICNF{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-              AbstractFlows{<:AbstractFloat, <:AbstractArray, <:ComputeMode} end
+              AbstractFlows{T, AT, CM} end
 abstract type AbstractCondICNF{
     T <: AbstractFloat,
     AT <: AbstractArray,
     CM <: ComputeMode,
-} <: AbstractFlows{<:AbstractFloat, <:AbstractArray, <:ComputeMode} end
+} <: AbstractFlows{T, AT, CM} end
 
 # MLJ interface
 

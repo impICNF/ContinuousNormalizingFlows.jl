@@ -4,7 +4,7 @@ export CondRNODE
 Implementation of RNODE (Conditional Version)
 """
 struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
+       AbstractCondICNF{T, AT, CM}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
 
