@@ -6,7 +6,7 @@ Implementation of Planar Flows from
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
 struct Planar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{T, AT, CM}
+       AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::PlanarLayer
 
     nvars::Integer
@@ -23,12 +23,12 @@ struct Planar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::Planar{T, AT, CM},
+    icnf::Planar{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TestMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
@@ -50,12 +50,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::Planar{T, AT, CM},
+    icnf::Planar{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TrainMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
@@ -77,13 +77,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::Planar{T, AT, CM},
+    icnf::Planar{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -98,13 +98,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::Planar{T, AT, CM},
+    icnf::Planar{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -122,13 +122,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::Planar{T, AT, CM},
+    icnf::Planar{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 

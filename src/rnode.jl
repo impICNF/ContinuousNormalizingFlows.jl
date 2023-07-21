@@ -6,7 +6,7 @@ Implementation of RNODE from
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
 struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{T, AT, CM}
+       AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -23,12 +23,12 @@ struct RNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, CM},
+    icnf::RNODE{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TrainMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars)
 
@@ -50,13 +50,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, CM},
+    icnf::RNODE{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -73,13 +73,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, CM},
+    icnf::RNODE{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -99,13 +99,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::RNODE{T, AT, CM},
+    icnf::RNODE{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -125,20 +125,20 @@ function augmented_f(
 end
 
 function loss(
-    icnf::RNODE{T, AT, CM},
+    icnf::RNODE{T <: AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+) where {T}
     logp̂x, Ė, ṅ = inference(
         icnf,
         mode,
@@ -156,20 +156,20 @@ function loss(
 end
 
 function loss(
-    icnf::RNODE{T, AT, CM},
+    icnf::RNODE{T <: AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+) where {T}
     logp̂x, Ė, ṅ = inference(
         icnf,
         mode,
@@ -186,6 +186,6 @@ function loss(
     mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
 end
 
-@inline function n_augment(::RNODE, ::TrainMode)::Integer
+@inline function n_augment(::RNODE, ::TrainMode)
     2
 end

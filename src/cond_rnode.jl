@@ -4,7 +4,7 @@ export CondRNODE
 Implementation of RNODE (Conditional Version)
 """
 struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractCondICNF{T, AT, CM}
+       AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -21,13 +21,13 @@ struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, CM},
+    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars)
 
@@ -49,14 +49,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, CM},
+    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -74,14 +74,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, CM},
+    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -101,14 +101,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{T, AT, CM},
+    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -128,7 +128,7 @@ function augmented_f(
 end
 
 function loss(
-    icnf::CondRNODE{T, AT, CM},
+    icnf::CondRNODE{T <: AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
@@ -136,13 +136,13 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+) where {T}
     logp̂x, Ė, ṅ = inference(
         icnf,
         mode,
@@ -161,7 +161,7 @@ function loss(
 end
 
 function loss(
-    icnf::CondRNODE{T, AT, CM},
+    icnf::CondRNODE{T <: AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
@@ -169,13 +169,13 @@ function loss(
     st::Any,
     λ₁::T = convert(T, 1e-2),
     λ₂::T = convert(T, 1e-2);
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+) where {T}
     logp̂x, Ė, ṅ = inference(
         icnf,
         mode,
@@ -193,6 +193,6 @@ function loss(
     mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
 end
 
-@inline function n_augment(::CondRNODE, ::TrainMode)::Integer
+@inline function n_augment(::CondRNODE, ::TrainMode)
     2
 end

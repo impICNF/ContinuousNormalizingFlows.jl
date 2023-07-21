@@ -4,7 +4,7 @@ export CondPlanar
 Implementation of Planar (Conditional Version)
 """
 struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractCondICNF{T, AT, CM}
+       AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::PlanarLayer
 
     nvars::Integer
@@ -21,13 +21,13 @@ struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::CondPlanar{T, AT, CM},
+    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
@@ -49,13 +49,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{T, AT, CM},
+    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
@@ -77,14 +77,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{T, AT, CM},
+    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -100,14 +100,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{T, AT, CM},
+    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -125,14 +125,14 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{T, AT, CM},
+    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 

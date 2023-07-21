@@ -2,7 +2,7 @@ export CondICNFModel, CondICNFDist
 
 # SciML interface
 
-function loss_f(icnf::AbstractCondICNF, loss::Function, st::Any)::Function
+function loss_f(icnf::AbstractCondICNF, loss::Function, st::Any)
     function f(ps, θ, xs, ys)
         loss(icnf, TrainMode(), xs, ys, ps, st)
     end
@@ -30,7 +30,7 @@ mutable struct CondICNFModel <: MLJICNF
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF{T, AT, CM},
+    m::AbstractCondICNF{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode},
     loss::Function = loss;
     optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 300,
@@ -39,7 +39,7 @@ function CondICNFModel(
     batch_size::Integer = 32,
     have_callback::Bool = true,
     resource::AbstractResource = CPU1(),
-) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
+) where {T, AT, CM}
     CondICNFModel(
         m,
         loss,

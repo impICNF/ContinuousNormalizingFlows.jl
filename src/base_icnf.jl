@@ -1,18 +1,18 @@
 export inference, generate, loss
 
 function inference_prob(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+)
     n_aug = n_augment(icnf, mode)
     zrs = zeros_T_AT(icnf, n_aug + 1)
     f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
@@ -22,18 +22,18 @@ function inference_prob(
 end
 
 function inference(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Tuple{Vararg{Real}} where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+)
     prob = inference_prob(
         icnf,
         mode,
@@ -58,18 +58,18 @@ function inference(
 end
 
 function inference_prob(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+)
     n_aug = n_augment(icnf, mode)
     zrs = zeros_T_AT(icnf, n_aug + 1, size(xs, 2))
     f_aug = augmented_f(icnf, mode, st, size(xs, 2); differentiation_backend, rng)
@@ -79,20 +79,18 @@ function inference_prob(
 end
 
 function inference(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Tuple{
-    Vararg{AbstractVector{<:Real}},
-} where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+)
     prob = inference_prob(
         icnf,
         mode,
@@ -117,19 +115,19 @@ function inference(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, AT <: AbstractArray, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+) where {AT}
     n_aug = n_augment(icnf, mode)
-    new_xs::AT = rand(rng, basedist)
+    new_xs = convert(AT, rand(rng, basedist))
     zrs = zeros_T_AT(icnf, n_aug + 1)
     f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
@@ -142,17 +140,17 @@ function generate_prob(
     prob
 end
 function generate(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::AbstractVector{<:Real} where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+)
     prob = generate_prob(
         icnf,
         mode,
@@ -173,20 +171,20 @@ function generate(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, AT <: AbstractArray, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Integer;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::ODEProblem where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+) where {AT}
     n_aug = n_augment(icnf, mode)
-    new_xs::AT = rand(rng, basedist, n)
+    new_xs = convert(AT, rand(rng, basedist, n))
     zrs = zeros_T_AT(icnf, n_aug + 1, size(new_xs, 2))
     f_aug = augmented_f(icnf, mode, st, size(new_xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
@@ -200,18 +198,18 @@ function generate_prob(
 end
 
 function generate(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Integer;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::AbstractMatrix{<:Real} where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+)
     prob = generate_prob(
         icnf,
         mode,
@@ -233,18 +231,18 @@ function generate(
 end
 
 function loss(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: VectorMode}
+)
     logp̂x, = inference(
         icnf,
         mode,
@@ -262,18 +260,18 @@ function loss(
 end
 
 function loss(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
-    tspan::NTuple{2, T} = icnf.tspan,
+    tspan::NTuple{2} = icnf.tspan,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-)::Real where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+)
     logp̂x, = inference(
         icnf,
         mode,
@@ -291,12 +289,12 @@ function loss(
 end
 
 function augmented_f(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TestMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)
@@ -313,13 +311,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::AbstractICNF{T, AT, CM},
+    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::TestMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: MatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
 
     function f_aug(u, p, t)

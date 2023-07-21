@@ -2,7 +2,7 @@ export ICNFModel, ICNFDist
 
 # SciML interface
 
-function loss_f(icnf::AbstractICNF, loss::Function, st::Any)::Function
+function loss_f(icnf::AbstractICNF, loss::Function, st::Any)
     function f(ps, θ, xs)
         loss(icnf, TrainMode(), xs, ps, st)
     end
@@ -30,7 +30,7 @@ mutable struct ICNFModel <: MLJICNF
 end
 
 function ICNFModel(
-    m::AbstractICNF{T, AT, CM},
+    m::AbstractICNF{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode},
     loss::Function = loss;
     optimizers::AbstractVector = [Optimisers.Adam()],
     n_epochs::Integer = 300,
@@ -39,7 +39,7 @@ function ICNFModel(
     batch_size::Integer = 32,
     have_callback::Bool = true,
     resource::AbstractResource = CPU1(),
-) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
+) where {T, AT, CM}
     ICNFModel(
         m,
         loss,

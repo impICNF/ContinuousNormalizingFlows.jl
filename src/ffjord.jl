@@ -6,7 +6,7 @@ Implementation of FFJORD from
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
 struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{T, AT, CM}
+       AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::LuxCore.AbstractExplicitLayer
 
     nvars::Integer
@@ -23,12 +23,12 @@ struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
 end
 
 function augmented_f(
-    icnf::FFJORD{T, AT, CM},
+    icnf::FFJORD{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
     mode::TrainMode,
     st::Any;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ADVectorMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars)
 
@@ -48,13 +48,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::FFJORD{T, AT, CM},
+    icnf::FFJORD{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -69,13 +69,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::FFJORD{T, AT, CM},
+    icnf::FFJORD{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
@@ -93,13 +93,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::FFJORD{T, AT, CM},
+    icnf::FFJORD{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
     mode::TrainMode,
     st::Any,
     n_batch::Integer;
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
-)::Function where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
+)
     n_aug = n_augment(icnf, mode) + 1
     ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
 
