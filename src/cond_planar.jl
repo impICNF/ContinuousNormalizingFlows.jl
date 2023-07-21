@@ -6,18 +6,13 @@ Implementation of Planar (Conditional Version)
 struct CondPlanar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
        AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::PlanarLayer
-
     nvars::Integer
+
     basedist::Distribution
     tspan::NTuple{2, T}
-
     differentiation_backend::AbstractDifferentiation.AbstractBackend
-
     sol_args::Tuple
     sol_kwargs::Dict
-
-    # trace_test
-    # trace_train
 end
 
 function augmented_f(

@@ -8,18 +8,13 @@ Implementation of FFJORD from
 struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
        AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ComputeMode}
     nn::LuxCore.AbstractExplicitLayer
-
     nvars::Integer
+
     basedist::Distribution
     tspan::NTuple{2, T}
-
     differentiation_backend::AbstractDifferentiation.AbstractBackend
-
     sol_args::Tuple
     sol_kwargs::Dict
-
-    # trace_test
-    # trace_train
 end
 
 function augmented_f(
