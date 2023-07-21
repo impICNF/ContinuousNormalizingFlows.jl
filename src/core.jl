@@ -1,6 +1,6 @@
 # SciML interface
 
-function callback_f(icnf::AbstractFlows, prgr::Progress)::Function
+function callback_f(icnf::AbstractFlows, prgr::Progress)
     itr_n = 1
     function f(ps, l)
         ProgressMeter.next!(

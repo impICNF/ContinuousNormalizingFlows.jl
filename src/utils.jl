@@ -1,8 +1,8 @@
 function jacobian_batched(
-    icnf::AbstractFlows{T, AT, CM},
+    icnf::AbstractFlows{T, <:AbstractArray, <:ZygoteMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
-)::Tuple where {T <: AbstractFloat, AT <: AbstractArray, CM <: ZygoteMatrixMode}
+) where {T <: AbstractFloat}
     y, back = Zygote.pullback(f, xs)
     z = zeros_T_AT(icnf, size(xs))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
@@ -15,10 +15,10 @@ function jacobian_batched(
 end
 
 function jacobian_batched(
-    icnf::AbstractFlows{T, AT, CM},
+    icnf::AbstractFlows{T, <:AbstractArray, <:SDVecJacMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
-)::Tuple where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDVecJacMatrixMode}
+) where {T <: AbstractFloat}
     y = f(xs)
     z = zeros_T_AT(icnf, size(xs))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
@@ -31,10 +31,10 @@ function jacobian_batched(
 end
 
 function jacobian_batched(
-    icnf::AbstractFlows{T, AT, CM},
+    icnf::AbstractFlows{T, <:AbstractArray, <:SDJacVecMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
-)::Tuple where {T <: AbstractFloat, AT <: AbstractArray, CM <: SDJacVecMatrixMode}
+) where {T <: AbstractFloat}
     y = f(xs)
     z = zeros_T_AT(icnf, size(xs))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
