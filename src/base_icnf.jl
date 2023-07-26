@@ -230,7 +230,7 @@ function generate(
     z
 end
 
-function loss(
+@inline function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -243,23 +243,24 @@ function loss(
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
 )
-    logp̂x, = inference(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        tspan,
-        basedist,
-        differentiation_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
+    -first(
+        inference(
+            icnf,
+            mode,
+            xs,
+            ps,
+            st;
+            tspan,
+            basedist,
+            differentiation_backend,
+            rng,
+            sol_args,
+            sol_kwargs,
+        ),
     )
-    -logp̂x
 end
 
-function loss(
+@inline function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -272,20 +273,23 @@ function loss(
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
 )
-    logp̂x, = inference(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        tspan,
-        basedist,
-        differentiation_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
+    -mean(
+        first(
+            inference(
+                icnf,
+                mode,
+                xs,
+                ps,
+                st;
+                tspan,
+                basedist,
+                differentiation_backend,
+                rng,
+                sol_args,
+                sol_kwargs,
+            ),
+        ),
     )
-    mean(-logp̂x)
 end
 
 function augmented_f(
@@ -327,4 +331,8 @@ function augmented_f(
         vcat(mz, -trace_J)
     end
     f_aug
+end
+
+@inline function (icnf::AbstractICNF)(xs::Any, ps::Any, st::Any)
+    first(inference(icnf, TrainMode(), xs, ps, st))
 end

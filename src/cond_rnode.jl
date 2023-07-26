@@ -155,7 +155,7 @@ function augmented_f(
     f_aug
 end
 
-function loss(
+@inline function loss(
     icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
@@ -188,7 +188,7 @@ function loss(
     -logp̂x + λ₁ * Ė + λ₂ * ṅ
 end
 
-function loss(
+@inline function loss(
     icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},

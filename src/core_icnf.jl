@@ -3,7 +3,7 @@ export ICNFModel, ICNFDist
 # SciML interface
 
 function loss_f(icnf::AbstractICNF, loss::Function, st::Any)
-    function f(ps, θ, xs)
+    @inline function f(ps, θ, xs)
         loss(icnf, TrainMode(), xs, ps, st)
     end
     f
