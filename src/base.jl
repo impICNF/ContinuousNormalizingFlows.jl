@@ -45,38 +45,46 @@ function Base.show(io::IO, icnf::AbstractFlows)
 end
 
 @inline function zeros_T_AT(
-    ::AbstractFlows{T, AT},
+    ::AbstractFlows{T, <:CuArray},
     dims...,
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    if AT <: CuArray
-        CUDA.zeros(T, dims...)
-    else
-        zeros(T, dims...)
-    end
+) where {T <: AbstractFloat}
+    CUDA.zeros(T, dims...)
+end
+
+@inline function zeros_T_AT(::AbstractFlows{T}, dims...) where {T <: AbstractFloat}
+    zeros(T, dims...)
 end
 
 @inline function rand_T_AT(
-    ::AbstractFlows{T, AT},
+    ::AbstractFlows{T, <:CuArray},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    if AT <: CuArray
-        CUDA.rand(T, dims...)
-    else
-        rand(rng, T, dims...)
-    end
+) where {T <: AbstractFloat}
+    CUDA.rand(T, dims...)
+end
+
+@inline function rand_T_AT(
+    ::AbstractFlows{T},
+    rng::AbstractRNG = Random.default_rng(),
+    dims...,
+) where {T <: AbstractFloat}
+    rand(rng, T, dims...)
 end
 
 @inline function randn_T_AT(
-    ::AbstractFlows{T, AT},
+    ::AbstractFlows{T, <:CuArray},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
-) where {T <: AbstractFloat, AT <: AbstractArray}
-    if AT <: CuArray
-        CUDA.randn(T, dims...)
-    else
-        randn(rng, T, dims...)
-    end
+) where {T <: AbstractFloat}
+    CUDA.randn(T, dims...)
+end
+
+@inline function randn_T_AT(
+    ::AbstractFlows{T},
+    rng::AbstractRNG = Random.default_rng(),
+    dims...,
+) where {T <: AbstractFloat}
+    randn(rng, T, dims...)
 end
 
 @non_differentiable CUDA.zeros(::Any...)
