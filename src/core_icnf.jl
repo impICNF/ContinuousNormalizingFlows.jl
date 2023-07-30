@@ -206,8 +206,12 @@ function ICNFDist(mach::Machine{<:ICNFModel}, mode::Mode)
     ICNFDist(mach.model.m, mode, ps, st)
 end
 
-Base.length(d::ICNFDist) = d.m.nvars
-Base.eltype(d::ICNFDist) = typeof(d.m).parameters[1]
+function Base.length(d::ICNFDist)
+    d.m.nvars
+end
+function Base.eltype(d::ICNFDist)
+    typeof(d.m).parameters[1]
+end
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ps, d.st))

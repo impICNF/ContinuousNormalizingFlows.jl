@@ -220,8 +220,12 @@ function CondICNFDist(
     CondICNFDist(mach.model.m, mode, ys, ps, st)
 end
 
-Base.length(d::CondICNFDist) = d.m.nvars
-Base.eltype(d::CondICNFDist) = typeof(d.m).parameters[1]
+function Base.length(d::CondICNFDist)
+    d.m.nvars
+end
+function Base.eltype(d::CondICNFDist)
+    typeof(d.m).parameters[1]
+end
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ys, d.ps, d.st))

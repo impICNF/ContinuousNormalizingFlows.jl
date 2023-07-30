@@ -12,8 +12,14 @@ function FluxCompatLayer(l)
     return FluxCompatLayer(l, re, () -> p_)
 end
 
-Lux.initialparameters(::AbstractRNG, l::FluxCompatLayer) = l.init_parameters()
+function Lux.initialparameters(::AbstractRNG, l::FluxCompatLayer)
+    l.init_parameters()
+end
 
-(l::FluxCompatLayer)(x, ps, st) = l.re(ps)(x), st
+function (l::FluxCompatLayer)(x, ps, st)
+    l.re(ps)(x), st
+end
 
-Base.show(io::IO, l::FluxCompatLayer) = print(io, "FluxCompatLayer($(l.layer))")
+function Base.show(io::IO, l::FluxCompatLayer)
+    print(io, "FluxCompatLayer($(l.layer))")
+end
