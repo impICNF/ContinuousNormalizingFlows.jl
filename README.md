@@ -36,7 +36,9 @@ n = 1024
 # Model
 using ContinuousNormalizingFlows, Flux
 # using Lux, CUDA
-nn = FluxCompatLayer(Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh))) # use Flux
+nn = FluxCompatLayer(
+    Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)),
+) # use Flux
 # nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
 icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode) # process data in batches
 # icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 10.0f0)) # have bigger time span
