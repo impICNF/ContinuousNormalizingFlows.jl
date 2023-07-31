@@ -7,7 +7,7 @@ function construct(
     data_type::Type{<:AbstractFloat} = Float32,
     array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
-    basedist::Distribution = MvNormal(Zeros{data_type}(nvars), one(data_type) * I),
+    basedist::Distribution = MvNormal(Zeros{data_type}(nvars), Eye{data_type}(nvars)),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     sol_args::Tuple = (),
