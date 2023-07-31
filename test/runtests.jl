@@ -16,6 +16,7 @@ using FiniteDiff: FiniteDiff
 using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
+using JET: JET
 using Logging: Logging
 using Lux: Lux
 using LuxCUDA: LuxCUDA
@@ -48,11 +49,15 @@ SMALL = get(ENV, "SMALL", "No") == "Yes"
         end
     end
 
+    if GROUP == "All" || GROUP == "Benchmark"
+        include("benchmark_tests.jl")
+    end
+
     if GROUP == "All" || GROUP == "Quality"
         include("quality_tests.jl")
     end
 
-    if GROUP == "All" || GROUP == "Benchmark"
-        include("benchmark_tests.jl")
+    if GROUP == "All" || GROUP == "Instability"
+        include("instability _tests.jl")
     end
 end

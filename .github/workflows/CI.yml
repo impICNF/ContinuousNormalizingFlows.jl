@@ -18,6 +18,7 @@ jobs:
           - Planar
           - Benchmark
           - Quality
+          - Instability
         version:
           # - '1.6'
           # - '1.7'
