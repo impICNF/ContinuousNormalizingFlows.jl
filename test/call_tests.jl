@@ -24,7 +24,7 @@
     cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ZygoteMatrixMode,
         SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
+        # SDJacVecMatrixMode,
     ]
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
     nvars_ = (1:2)

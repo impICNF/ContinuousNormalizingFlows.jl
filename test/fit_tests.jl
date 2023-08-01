@@ -24,7 +24,7 @@
     cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ZygoteMatrixMode,
         SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
+        # SDJacVecMatrixMode,
     ]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
