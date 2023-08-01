@@ -84,7 +84,7 @@ end
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = icnf.steer_rate,
     rng::AbstractRNG = Random.default_rng(),
-) where {T <: AbstractFloat, AUGMENTED}
+)
     tspan
 end
 
