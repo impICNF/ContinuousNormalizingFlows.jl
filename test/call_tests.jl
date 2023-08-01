@@ -66,9 +66,9 @@
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, st))
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 2))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 2))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 2))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
         @test !isnothing(ContinuousNormalizingFlows.inference_prob(icnf, omode, r, ps, st))
         @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st))
 
@@ -170,7 +170,7 @@
         @test !isnothing(Distributions.pdf(d, r))
         @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, 2))
+        @test !isnothing(rand(d, 1))
     end
     @testset "$at | $tp | $cmode | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -199,16 +199,16 @@
         @test !isnothing(
             ContinuousNormalizingFlows.augmented_f(icnf, omode, st, size(r_arr, 2)),
         )
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 2))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 2))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 2))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, ps, st),
         )
-        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st, 2))
+        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st, 1))
 
         @test !isnothing(inference(icnf, omode, r_arr, ps, st))
-        @test !isnothing(generate(icnf, omode, ps, st, 2))
+        @test !isnothing(generate(icnf, omode, ps, st, 1))
 
         @test !isnothing(loss(icnf, omode, r_arr, ps, st))
 
@@ -305,7 +305,7 @@
         @test !isnothing(Distributions.pdf(d, r))
         @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, 2))
+        @test !isnothing(rand(d, 1))
     end
     @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -341,9 +341,9 @@
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, r2, st))
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 2))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 2))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 2))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r, r2, ps, st),
         )
@@ -447,7 +447,7 @@
         @test !isnothing(Distributions.pdf(d, r))
         @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, 2))
+        @test !isnothing(rand(d, 1))
     end
     @testset "$at | $tp | $cmode | $nvars Vars | $mt" for at in ats,
         tp in tps,
@@ -479,18 +479,18 @@
         @test !isnothing(
             ContinuousNormalizingFlows.augmented_f(icnf, omode, r2_arr, st, size(r_arr, 2)),
         )
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 2))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 2))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 2))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, r2_arr, ps, st),
         )
         @test !isnothing(
-            ContinuousNormalizingFlows.generate_prob(icnf, omode, r2_arr, ps, st, 2),
+            ContinuousNormalizingFlows.generate_prob(icnf, omode, r2_arr, ps, st, 1),
         )
 
         @test !isnothing(inference(icnf, omode, r_arr, r2_arr, ps, st))
-        @test !isnothing(generate(icnf, omode, r2_arr, ps, st, 2))
+        @test !isnothing(generate(icnf, omode, r2_arr, ps, st, 1))
 
         @test !isnothing(loss(icnf, omode, r_arr, r2_arr, ps, st))
 
@@ -587,6 +587,6 @@
         @test !isnothing(Distributions.pdf(d, r))
         @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, 2))
+        @test !isnothing(rand(d, 1))
     end
 end

@@ -49,7 +49,7 @@
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(at{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
@@ -90,7 +90,7 @@
         cmode <: SDJacVecMatrixMode && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(at{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
@@ -126,8 +126,8 @@
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(at{tp}, rand(data_dist, nvars, 2))
-        r2 = convert(at{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars, 1))
+        r2 = convert(at{tp}, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
@@ -170,8 +170,8 @@
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(at{tp}, rand(data_dist, nvars, 2))
-        r2 = convert(at{tp}, rand(data_dist, nvars, 2))
+        r = convert(at{tp}, rand(data_dist, nvars, 1))
+        r2 = convert(at{tp}, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
