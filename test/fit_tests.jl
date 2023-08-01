@@ -46,8 +46,6 @@
         nvars in nvars_,
         mt in mts
 
-        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
         df = DataFrames.DataFrame(transpose(r), :auto)
@@ -87,8 +85,6 @@
         nvars in nvars_,
         mt in mts
 
-        cmode <: SDJacVecMatrixMode && continue
-
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
         df = DataFrames.DataFrame(transpose(r), :auto)
@@ -121,8 +117,6 @@
         go_ad in go_ads,
         nvars in nvars_,
         mt in cmts
-
-        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
@@ -165,8 +159,6 @@
         go_ad in go_ads,
         nvars in nvars_,
         mt in cmts
-
-        cmode <: SDJacVecMatrixMode && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
