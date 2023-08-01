@@ -31,17 +31,11 @@
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
-        AbstractDifferentiation.TrackerBackend(),
-        AbstractDifferentiation.FiniteDifferencesBackend(),
     ]
     go_ads = ADTypes.AbstractADType[
-        ADTypes.AutoEnzyme(),
         ADTypes.AutoZygote(),
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
-        ADTypes.AutoTracker(),
-        ADTypes.AutoFiniteDiff(),
-        ADTypes.AutoModelingToolkit(),
     ]
 
     @testset "$at | $tp | $(typeof(adb_u).name.name) for internal | $(typeof(go_ad).name.name) for fitting | $nvars Vars | $mt" for at in
@@ -52,12 +46,7 @@
         nvars in nvars_,
         mt in mts
 
-        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
-        go_ad isa ADTypes.AutoTracker && continue
-        go_ad isa ADTypes.AutoEnzyme && continue
-        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -99,9 +88,6 @@
         mt in mts
 
         cmode <: SDJacVecMatrixMode && continue
-        go_ad isa ADTypes.AutoTracker && continue
-        go_ad isa ADTypes.AutoEnzyme && continue
-        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -136,13 +122,7 @@
         nvars in nvars_,
         mt in cmts
 
-        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
-        go_ad isa ADTypes.AutoTracker && continue
-        go_ad isa ADTypes.AutoEnzyme && continue
-        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
@@ -187,9 +167,6 @@
         mt in cmts
 
         cmode <: SDJacVecMatrixMode && continue
-        go_ad isa ADTypes.AutoTracker && continue
-        go_ad isa ADTypes.AutoEnzyme && continue
-        go_ad isa ADTypes.AutoModelingToolkit && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)

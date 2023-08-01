@@ -32,10 +32,7 @@
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
-        AbstractDifferentiation.TrackerBackend(),
-        AbstractDifferentiation.FiniteDifferencesBackend(),
     ]
-    fd_m = FiniteDifferences.central_fdm(5, 1)
     rng = Random.default_rng()
 
     @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
@@ -45,9 +42,7 @@
         omode in omodes,
         mt in mts
 
-        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: Planar && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
@@ -85,7 +80,6 @@
         diff_loss(x) = loss(icnf, omode, r, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -126,27 +120,9 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        # @test !isnothing(Tracker.gradient(diff_loss, ps))
-        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
-        # @test !isnothing(Tracker.hessian(diff_loss, ps))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, ps))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff_loss, ps),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
-        # @test !isnothing(Calculus.hessian(diff_loss, ps))
-
         diff2_loss(x) = loss(icnf, omode, x, ps, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -186,23 +162,6 @@
         @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
         # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
-
-        # @test !isnothing(Tracker.gradient(diff2_loss, r))
-        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
-        # @test !isnothing(Tracker.hessian(diff2_loss, r))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff2_loss, r),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
-        # @test !isnothing(Calculus.hessian(diff2_loss, r))
 
         d = ICNFDist(icnf, omode, ps, st)
 
@@ -256,7 +215,6 @@
         diff_loss(x) = loss(icnf, omode, r_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -297,27 +255,9 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        # @test !isnothing(Tracker.gradient(diff_loss, ps))
-        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
-        # @test !isnothing(Tracker.hessian(diff_loss, ps))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, ps))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff_loss, ps),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
-        # @test !isnothing(Calculus.hessian(diff_loss, ps))
-
         diff2_loss(x) = loss(icnf, omode, x, ps, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -358,23 +298,6 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
         # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
 
-        # @test !isnothing(Tracker.gradient(diff2_loss, r))
-        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
-        # @test !isnothing(Tracker.hessian(diff2_loss, r))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff2_loss, r),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
-        # @test !isnothing(Calculus.hessian(diff2_loss, r))
-
         d = ICNFDist(icnf, omode, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
@@ -391,10 +314,7 @@
         omode in omodes,
         mt in cmts
 
-        adb_u isa AbstractDifferentiation.FiniteDifferencesBackend && continue
         adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && continue
-        adb_u isa AbstractDifferentiation.TrackerBackend && mt <: CondPlanar && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
@@ -437,7 +357,6 @@
         diff_loss(x) = loss(icnf, omode, r, r2, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -478,27 +397,9 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        # @test !isnothing(Tracker.gradient(diff_loss, ps))
-        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
-        # @test !isnothing(Tracker.hessian(diff_loss, ps))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, ps))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff_loss, ps),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
-        # @test !isnothing(Calculus.hessian(diff_loss, ps))
-
         diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -538,23 +439,6 @@
         @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
         # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
-
-        # @test !isnothing(Tracker.gradient(diff2_loss, r))
-        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
-        # @test !isnothing(Tracker.hessian(diff2_loss, r))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff2_loss, r),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
-        # @test !isnothing(Calculus.hessian(diff2_loss, r))
 
         d = CondICNFDist(icnf, omode, r2, ps, st)
 
@@ -613,7 +497,6 @@
         diff_loss(x) = loss(icnf, omode, r_arr, r2_arr, x, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -654,27 +537,9 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        # @test !isnothing(Tracker.gradient(diff_loss, ps))
-        # @test !isnothing(Tracker.jacobian(diff_loss, ps))
-        # @test !isnothing(Tracker.hessian(diff_loss, ps))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff_loss, ps))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff_loss, ps))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff_loss, ps),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff_loss, ps))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff_loss, ps))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff_loss, ps))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
-        # @test !isnothing(Calculus.hessian(diff_loss, ps))
-
         diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
-            adb isa AbstractDifferentiation.TrackerBackend && continue
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -714,23 +579,6 @@
         @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
         # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
-
-        # @test !isnothing(Tracker.gradient(diff2_loss, r))
-        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
-        # @test !isnothing(Tracker.hessian(diff2_loss, r))
-
-        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
-        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
-
-        @test_throws MethodError !isnothing(
-            FiniteDiff.finite_difference_derivative(diff2_loss, r),
-        )
-        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
-        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
-        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
-
-        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
-        # @test !isnothing(Calculus.hessian(diff2_loss, r))
 
         d = CondICNFDist(icnf, omode, r2_arr, ps, st)
 

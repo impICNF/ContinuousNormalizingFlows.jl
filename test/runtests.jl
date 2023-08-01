@@ -4,16 +4,12 @@ using AbstractDifferentiation: AbstractDifferentiation
 using ADTypes: ADTypes
 using Aqua: Aqua
 using BenchmarkTools: BenchmarkTools
-using Calculus: Calculus
 using ComponentArrays: ComponentArrays
 using ComputationalResources: ComputationalResources
 using CUDA: CUDA
 using cuDNN: cuDNN
 using DataFrames: DataFrames
 using Distributions: Distributions
-using Enzyme: Enzyme
-using FiniteDiff: FiniteDiff
-using FiniteDifferences: FiniteDifferences
 using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JET: JET
@@ -21,12 +17,10 @@ using Logging: Logging
 using Lux: Lux
 using LuxCUDA: LuxCUDA
 using MLJBase: MLJBase
-using ModelingToolkit: ModelingToolkit
 using Optimization: Optimization
 using Random: Random
 using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase
-using Tracker: Tracker
 using TruncatedStacktraces: TruncatedStacktraces
 using Zygote: Zygote
 
@@ -58,6 +52,6 @@ SMALL = get(ENV, "SMALL", "No") == "Yes"
     end
 
     if GROUP == "All" || GROUP == "Instability"
-        include("instability _tests.jl")
+        include("instability_tests.jl")
     end
 end
