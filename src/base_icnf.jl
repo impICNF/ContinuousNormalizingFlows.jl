@@ -7,6 +7,7 @@ function inference_prob(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -14,10 +15,18 @@ function inference_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )
     n_aug = n_augment(icnf, mode)
-    zrs = zeros_T_AT(icnf, n_aug + 1)
+    n_aug_input = n_augment_input(icnf)
+    zrs = zeros_T_AT(icnf, n_aug_input + n_aug + 1)
     f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), tspan, ps)
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        func,
+        vcat(xs, zrs),
+        steer_tspan(icnf, tspan, steer_rate, rng),
+        ps,
+        sol_args...;
+        sol_kwargs...,
+    )
     prob
 end
 
@@ -28,6 +37,7 @@ function inference(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -41,6 +51,7 @@ function inference(
         ps,
         st;
         tspan,
+        steer_rate,
         basedist,
         differentiation_backend,
         rng,
@@ -64,6 +75,7 @@ function inference_prob(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -71,10 +83,18 @@ function inference_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 )
     n_aug = n_augment(icnf, mode)
-    zrs = zeros_T_AT(icnf, n_aug + 1, size(xs, 2))
+    n_aug_input = n_augment_input(icnf)
+    zrs = zeros_T_AT(icnf, n_aug_input + n_aug + 1, size(xs, 2))
     f_aug = augmented_f(icnf, mode, st, size(xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(func, vcat(xs, zrs), tspan, ps)
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        func,
+        vcat(xs, zrs),
+        steer_tspan(icnf, tspan, steer_rate, rng),
+        ps,
+        sol_args...;
+        sol_kwargs...,
+    )
     prob
 end
 
@@ -85,6 +105,7 @@ function inference(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -98,6 +119,7 @@ function inference(
         ps,
         st;
         tspan,
+        steer_rate,
         basedist,
         differentiation_backend,
         rng,
@@ -115,27 +137,30 @@ function inference(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{<:AbstractFloat, AT, <:VectorMode},
+    icnf::AbstractICNF{T, AT, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-) where {AT <: AbstractArray}
+) where {T <: AbstractFloat, AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT, rand(rng, basedist))
+    new_xs = convert(AT{T}, rand(rng, basedist))
     zrs = zeros_T_AT(icnf, n_aug + 1)
     f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
-        reverse(tspan),
+        reverse(steer_tspan(icnf, tspan, steer_rate, rng)),
         ps,
+        sol_args...;
+        sol_kwargs...,
     )
     prob
 end
@@ -145,6 +170,7 @@ function generate(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -157,6 +183,7 @@ function generate(
         ps,
         st;
         tspan,
+        steer_rate,
         basedist,
         differentiation_backend,
         rng,
@@ -164,9 +191,10 @@ function generate(
         sol_kwargs,
     )
     n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = @view sol[:, end]
-    z = @view fsol[begin:(end - n_aug - 1)]
+    z = @view fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
 end
 
@@ -177,6 +205,7 @@ function generate_prob(
     st::Any,
     n::Integer;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -184,15 +213,17 @@ function generate_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 ) where {AT <: AbstractArray}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT, rand(rng, basedist, n))
+    new_xs = convert(AT{T}, rand(rng, basedist, n))
     zrs = zeros_T_AT(icnf, n_aug + 1, size(new_xs, 2))
     f_aug = augmented_f(icnf, mode, st, size(new_xs, 2); differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
-        reverse(tspan),
+        reverse(steer_tspan(icnf, tspan, steer_rate, rng)),
         ps,
+        sol_args...;
+        sol_kwargs...,
     )
     prob
 end
@@ -204,6 +235,7 @@ function generate(
     st::Any,
     n::Integer;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -217,6 +249,7 @@ function generate(
         st,
         n;
         tspan,
+        steer_rate,
         basedist,
         differentiation_backend,
         rng,
@@ -224,9 +257,10 @@ function generate(
         sol_kwargs,
     )
     n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
     sol = solve(prob, sol_args...; sol_kwargs...)
     fsol = @view sol[:, :, end]
-    z = @view fsol[begin:(end - n_aug - 1), :]
+    z = @view fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
 end
 
@@ -237,6 +271,7 @@ end
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -267,6 +302,7 @@ end
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),

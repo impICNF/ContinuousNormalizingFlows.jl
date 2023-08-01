@@ -3,12 +3,19 @@ export construct
 function construct(
     aicnf::Type{<:AbstractFlows},
     nn,
-    nvars::Integer;
+    nvars::Integer,
+    naugmented::Integer = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
-    basedist::Distribution = MvNormal(Zeros{data_type}(nvars), Eye{data_type}(nvars)),
+    augmented::Bool = false,
+    steer::Bool = false,
+    basedist::Distribution = MvNormal(
+        Zeros{data_type}(nvars + naugmented),
+        Eye{data_type}(nvars + naugmented),
+    ),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
+    steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
@@ -16,11 +23,16 @@ function construct(
         :reltol => 1e-2 + eps(1e-2),
     ),
 )
-    aicnf{data_type, array_type, compute_mode}(
+    !augmented && !iszero(naugmented) && error("'naugmented' > 0: 'augmented' must be true")
+    !steer && !iszero(steer_rate) && error("'steer_rate' > 0: 'steer' must be true")
+
+    aicnf{data_type, array_type, compute_mode, augmented, steer}(
         nn,
         nvars,
+        naugmented,
         basedist,
         tspan,
+        steer_rate,
         differentiation_backend,
         sol_args,
         sol_kwargs,
@@ -42,6 +54,38 @@ function Base.show(io::IO, icnf::AbstractFlows)
         "\n\tTime Span: ",
         icnf.tspan,
     )
+end
+
+@inline function n_augment_input(
+    icnf::AbstractFlows{<:AbstractFloat, <:AbstractArray, <:ComputeMode, true},
+)
+    icnf.naugmented
+end
+
+@inline function n_augment_input(icnf::AbstractFlows)
+    0
+end
+
+@inline function steer_tspan(
+    icnf::AbstractFlows{T, <:AbstractArray, <:ComputeMode, AUGMENTED, true},
+    tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
+    rng::AbstractRNG = Random.default_rng(),
+) where {T <: AbstractFloat, AUGMENTED}
+    t₀, t₁ = tspan
+    steer_b = steer_rate * t₁
+    d_s = Uniform{T}(t₁ - steer_b, t₁ + steer_b)
+    t₁_new = convert(T, rand(rng, d_s))
+    (t₀, t₁_new)
+end
+
+@inline function steer_tspan(
+    icnf::AbstractFlows,
+    tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
+    rng::AbstractRNG = Random.default_rng(),
+) where {T <: AbstractFloat, AUGMENTED}
+    tspan
 end
 
 @inline function zeros_T_AT(

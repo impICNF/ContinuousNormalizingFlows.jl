@@ -3,13 +3,20 @@ export CondRNODE
 """
 Implementation of RNODE (Conditional Version)
 """
-struct CondRNODE{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractCondICNF{T, AT, CM}
+struct CondRNODE{
+    T <: AbstractFloat,
+    AT <: AbstractArray,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+} <: AbstractCondICNF{T, AT, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
+    naugmented::Integer
 
     basedist::Distribution
     tspan::NTuple{2, T}
+    steer_rate::T
     differentiation_backend::AbstractDifferentiation.AbstractBackend
     sol_args::Tuple
     sol_kwargs::Dict
@@ -20,12 +27,19 @@ end
 function construct(
     aicnf::Type{<:CondRNODE},
     nn,
-    nvars::Integer;
+    nvars::Integer,
+    naugmented::Integer = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
-    basedist::Distribution = MvNormal(Zeros{data_type}(nvars), one(data_type) * I),
+    augmented::Bool = false,
+    steer::Bool = false,
+    basedist::Distribution = MvNormal(
+        Zeros{data_type}(nvars + naugmented),
+        Eye{data_type}(nvars + naugmented),
+    ),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
+    steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
@@ -35,11 +49,16 @@ function construct(
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
-    aicnf{data_type, array_type, compute_mode}(
+    !augmented && !iszero(naugmented) && error("'naugmented' > 0: 'augmented' must be true")
+    !steer && !iszero(steer_rate) && error("'steer_rate' > 0: 'steer' must be true")
+
+    aicnf{data_type, array_type, compute_mode, augmented, steer}(
         nn,
         nvars,
+        naugmented,
         basedist,
         tspan,
+        steer_rate,
         differentiation_backend,
         sol_args,
         sol_kwargs,
@@ -163,6 +182,7 @@ end
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -179,6 +199,7 @@ end
         ps,
         st;
         tspan,
+        steer_rate,
         basedist,
         differentiation_backend,
         rng,
@@ -196,6 +217,7 @@ end
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
+    steer_rate::AbstractFloat = icnf.steer_rate,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -212,6 +234,7 @@ end
         ps,
         st;
         tspan,
+        steer_rate,
         basedist,
         differentiation_backend,
         rng,

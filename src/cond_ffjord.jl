@@ -3,13 +3,20 @@ export CondFFJORD
 """
 Implementation of FFJORD (Conditional Version)
 """
-struct CondFFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractCondICNF{T, AT, CM}
+struct CondFFJORD{
+    T <: AbstractFloat,
+    AT <: AbstractArray,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+} <: AbstractCondICNF{T, AT, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
+    naugmented::Integer
 
     basedist::Distribution
     tspan::NTuple{2, T}
+    steer_rate::T
     differentiation_backend::AbstractDifferentiation.AbstractBackend
     sol_args::Tuple
     sol_kwargs::Dict
