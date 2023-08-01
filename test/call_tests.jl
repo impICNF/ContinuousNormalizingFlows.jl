@@ -143,6 +143,67 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
+        diff2_loss(x) = loss(icnf, omode, x, ps, st)
+
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
+            @test_throws MethodError !isnothing(
+                AbstractDifferentiation.derivative(adb, diff2_loss, r),
+            )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
+        end
+
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
+        @test !isnothing(Zygote.gradient(diff2_loss, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        @test !isnothing(Zygote.gradient(diff2_loss2, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss2, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        @test !isnothing(Zygote.gradient(diff2_loss3, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss3, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        @test !isnothing(Zygote.gradient(diff2_loss4, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss4, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r))
+
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r))
+
+        @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
+
+        # @test !isnothing(Tracker.gradient(diff2_loss, r))
+        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
+        # @test !isnothing(Tracker.hessian(diff2_loss, r))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
+
+        @test_throws MethodError !isnothing(
+            FiniteDiff.finite_difference_derivative(diff2_loss, r),
+        )
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
+
+        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
+        # @test !isnothing(Calculus.hessian(diff2_loss, r))
+
         d = ICNFDist(icnf, omode, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
@@ -252,6 +313,67 @@
 
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
+
+        diff2_loss(x) = loss(icnf, omode, x, ps, st)
+
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
+            @test_throws MethodError !isnothing(
+                AbstractDifferentiation.derivative(adb, diff2_loss, r),
+            )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
+        end
+
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
+        @test !isnothing(Zygote.gradient(diff2_loss, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        @test !isnothing(Zygote.gradient(diff2_loss2, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss2, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        @test !isnothing(Zygote.gradient(diff2_loss3, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss3, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        @test !isnothing(Zygote.gradient(diff2_loss4, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss4, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r))
+
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r))
+
+        @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
+
+        # @test !isnothing(Tracker.gradient(diff2_loss, r))
+        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
+        # @test !isnothing(Tracker.hessian(diff2_loss, r))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
+
+        @test_throws MethodError !isnothing(
+            FiniteDiff.finite_difference_derivative(diff2_loss, r),
+        )
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
+
+        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
+        # @test !isnothing(Calculus.hessian(diff2_loss, r))
 
         d = ICNFDist(icnf, omode, ps, st)
 
@@ -373,6 +495,67 @@
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
 
+        diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
+
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
+            @test_throws MethodError !isnothing(
+                AbstractDifferentiation.derivative(adb, diff2_loss, r),
+            )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
+        end
+
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
+        @test !isnothing(Zygote.gradient(diff2_loss, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        @test !isnothing(Zygote.gradient(diff2_loss2, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss2, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        @test !isnothing(Zygote.gradient(diff2_loss3, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss3, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        @test !isnothing(Zygote.gradient(diff2_loss4, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss4, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r))
+
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r))
+
+        @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
+
+        # @test !isnothing(Tracker.gradient(diff2_loss, r))
+        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
+        # @test !isnothing(Tracker.hessian(diff2_loss, r))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
+
+        @test_throws MethodError !isnothing(
+            FiniteDiff.finite_difference_derivative(diff2_loss, r),
+        )
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
+
+        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
+        # @test !isnothing(Calculus.hessian(diff2_loss, r))
+
         d = CondICNFDist(icnf, omode, r2, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
@@ -487,6 +670,67 @@
 
         @test_throws MethodError !isnothing(Calculus.gradient(diff_loss, ps))
         # @test !isnothing(Calculus.hessian(diff_loss, ps))
+
+        diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
+
+        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+            adb isa AbstractDifferentiation.TrackerBackend && continue
+            @test_throws MethodError !isnothing(
+                AbstractDifferentiation.derivative(adb, diff2_loss, r),
+            )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
+            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
+        end
+
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
+        @test !isnothing(Zygote.gradient(diff2_loss, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        @test !isnothing(Zygote.gradient(diff2_loss2, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss2, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss2, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        @test !isnothing(Zygote.gradient(diff2_loss3, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss3, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss3, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        @test !isnothing(Zygote.gradient(diff2_loss4, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss4, r))
+        # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian(diff2_loss4, r))
+        # @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r))
+
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r))
+
+        @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
+        @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
+        # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
+
+        # @test !isnothing(Tracker.gradient(diff2_loss, r))
+        # @test !isnothing(Tracker.jacobian(diff2_loss, r))
+        # @test !isnothing(Tracker.hessian(diff2_loss, r))
+
+        @test !isnothing(FiniteDifferences.grad(fd_m, diff2_loss, r))
+        @test !isnothing(FiniteDifferences.jacobian(fd_m, diff2_loss, r))
+
+        @test_throws MethodError !isnothing(
+            FiniteDiff.finite_difference_derivative(diff2_loss, r),
+        )
+        @test !isnothing(FiniteDiff.finite_difference_gradient(diff2_loss, r))
+        @test_broken !isnothing(FiniteDiff.finite_difference_jacobian(diff2_loss, r))
+        # @test !isnothing(FiniteDiff.finite_difference_hessian(diff2_loss, r))
+
+        @test_throws MethodError !isnothing(Calculus.gradient(diff2_loss, r))
+        # @test !isnothing(Calculus.hessian(diff2_loss, r))
 
         d = CondICNFDist(icnf, omode, r2_arr, ps, st)
 
