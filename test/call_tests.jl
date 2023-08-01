@@ -42,8 +42,6 @@
         omode in omodes,
         mt in mts
 
-        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
-
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -179,8 +177,6 @@
         omode in omodes,
         mt in mts
 
-        cmode <: SDJacVecMatrixMode && continue
-
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
         r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
@@ -313,8 +309,6 @@
         nvars in nvars_,
         omode in omodes,
         mt in cmts
-
-        adb_u isa AbstractDifferentiation.ReverseDiffBackend && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
@@ -455,8 +449,6 @@
         nvars in nvars_,
         omode in omodes,
         mt in cmts
-
-        cmode <: SDJacVecMatrixMode && continue
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
