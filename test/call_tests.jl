@@ -46,7 +46,7 @@
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r_arr = convert(at{tp}, hcat(r))
 
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
@@ -131,24 +131,24 @@
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
         end
 
-        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
-        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
-        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss, r))
         @test !isnothing(Zygote.jacobian(diff2_loss, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss2, r))
         @test !isnothing(Zygote.jacobian(diff2_loss2, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss3, r))
         @test !isnothing(Zygote.jacobian(diff2_loss3, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss4, r))
         @test !isnothing(Zygote.jacobian(diff2_loss4, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
@@ -183,7 +183,7 @@
 
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r_arr = convert(at{tp}, hcat(r))
 
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
@@ -255,7 +255,7 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        diff2_loss(x) = loss(icnf, omode, x, ps, st)
+        diff2_loss(x) = loss(icnf, omode, hcat(x), ps, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
@@ -266,24 +266,24 @@
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
         end
 
-        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
-        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
-        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss, r))
         @test !isnothing(Zygote.jacobian(diff2_loss, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss2, r))
         @test !isnothing(Zygote.jacobian(diff2_loss2, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss3, r))
         @test !isnothing(Zygote.jacobian(diff2_loss3, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss4, r))
         @test !isnothing(Zygote.jacobian(diff2_loss4, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
@@ -319,9 +319,9 @@
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r_arr = convert(at{tp}, hcat(r))
         r2 = convert(at{tp}, rand(data_dist, nvars))
-        r2_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r2_arr = convert(at{tp}, hcat(r2))
 
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
@@ -408,24 +408,24 @@
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
         end
 
-        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
-        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
-        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss, r))
         @test !isnothing(Zygote.jacobian(diff2_loss, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss2, r))
         @test !isnothing(Zygote.jacobian(diff2_loss2, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss3, r))
         @test !isnothing(Zygote.jacobian(diff2_loss3, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss4, r))
         @test !isnothing(Zygote.jacobian(diff2_loss4, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
@@ -461,9 +461,9 @@
         data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
         data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
         r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r_arr = convert(at{tp}, hcat(r))
         r2 = convert(at{tp}, rand(data_dist, nvars))
-        r2_arr = convert(at{tp}, rand(data_dist, nvars, 2))
+        r2_arr = convert(at{tp}, hcat(r2))
 
         if mt <: CondPlanar
             nn = PlanarLayer(nvars, tanh; cond = true)
@@ -537,7 +537,7 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
 
-        diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
+        diff2_loss(x) = loss(icnf, omode, hcat(x), r2_arr, ps, st)
 
         @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
@@ -548,24 +548,24 @@
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
         end
 
-        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
-        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
-        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss, r))
         @test !isnothing(Zygote.jacobian(diff2_loss, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian(diff2_loss, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        diff2_loss2(x) = Zygote.checkpointed(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss2, r))
         @test !isnothing(Zygote.jacobian(diff2_loss2, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian(diff2_loss2, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        diff2_loss3(x) = Zygote.forwarddiff(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss3, r))
         @test !isnothing(Zygote.jacobian(diff2_loss3, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian(diff2_loss3, r))
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        diff2_loss4(x) = Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss4, r))
         @test !isnothing(Zygote.jacobian(diff2_loss4, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))

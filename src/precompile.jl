@@ -7,9 +7,9 @@
         omodes = Mode[TrainMode(), TestMode()]
         nvars = 2
         r = rand(Float32, nvars)
-        r_arr = rand(Float32, nvars, 2)
+        r_arr = hcat(r)
         r2 = rand(Float32, nvars)
-        r2_arr = rand(Float32, nvars, 2)
+        r2_arr = hcat(r)
 
         for cmode in cmodes, omode in omodes, mt in mts
             if mt <: Planar
