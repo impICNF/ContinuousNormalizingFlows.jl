@@ -51,6 +51,8 @@ function Base.show(io::IO, icnf::AbstractFlows)
         typeof(icnf),
         "\n\tNumber of Variables: ",
         icnf.nvars,
+        "\n\tNumber of Augmentations: ",
+        n_augment_input(icnf),
         "\n\tTime Span: ",
         icnf.tspan,
     )
@@ -62,14 +64,24 @@ end
     icnf.naugmented
 end
 
-@inline function n_augment_input(icnf::AbstractFlows)
+@inline function n_augment_input(::AbstractFlows)
     0
+end
+
+@inline function steer_rate_value(
+    icnf::AbstractFlows{<:AbstractFloat, <:AbstractArray, <:ComputeMode, AUGMENTED, true},
+) where {AUGMENTED}
+    icnf.steer_rate
+end
+
+@inline function steer_rate_value(::AbstractFlows{T}) where {T <: AbstractFloat}
+    zero(T)
 end
 
 @inline function steer_tspan(
     icnf::AbstractFlows{T, <:AbstractArray, <:ComputeMode, AUGMENTED, true},
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AUGMENTED}
     t₀, t₁ = tspan
@@ -82,7 +94,7 @@ end
 @inline function steer_tspan(
     icnf::AbstractFlows,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     rng::AbstractRNG = Random.default_rng(),
 )
     tspan

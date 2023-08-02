@@ -8,7 +8,7 @@ function inference_prob(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -39,7 +39,7 @@ function inference(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -79,7 +79,7 @@ function inference_prob(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -110,7 +110,7 @@ function inference(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -149,7 +149,7 @@ function generate_prob(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -179,7 +179,7 @@ function generate(
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -216,7 +216,7 @@ function generate_prob(
     st::Any,
     n::Integer;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -247,7 +247,7 @@ function generate(
     st::Any,
     n::Integer;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -285,7 +285,7 @@ end
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -318,7 +318,7 @@ end
     ps::Any,
     st::Any;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = icnf.steer_rate,
+    steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
