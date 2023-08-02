@@ -17,7 +17,6 @@ using Logging: Logging
 using Lux: Lux
 using LuxCUDA: LuxCUDA
 using MLJBase: MLJBase
-using Optimization: Optimization
 using Random: Random
 using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase

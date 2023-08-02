@@ -69,7 +69,7 @@ jldsave("fitted.jld2"; ps, st) # save
 
 # Use It
 d = ICNFDist(icnf, TestMode(), ps, st) # direct way
-# d = ICNFDist(icnf, mach, TestMode()) # alternative way
+# d = ICNFDist(mach, TestMode()) # alternative way
 actual_pdf = pdf.(data_dist, vec(r))
 estimated_pdf = pdf(d, r)
 new_data = rand(d, n)

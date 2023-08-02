@@ -32,7 +32,7 @@ end
 function ICNFModel(
     m::AbstractICNF{T, AT, CM},
     loss::Function = loss;
-    optimizers::AbstractVector = [Optimisers.Adam()],
+    optimizers::AbstractVector = Any[Optimisers.Lion(),],
     n_epochs::Integer = 300,
     adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,
