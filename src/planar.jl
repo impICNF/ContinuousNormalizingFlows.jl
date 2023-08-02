@@ -5,13 +5,20 @@ Implementation of Planar Flows from
 
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
-struct Planar{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{T, AT, CM}
+struct Planar{
+    T <: AbstractFloat,
+    AT <: AbstractArray,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+} <: AbstractICNF{T, AT, CM, AUGMENTED, STEER}
     nn::PlanarLayer
     nvars::Integer
+    naugmented::Integer
 
     basedist::Distribution
     tspan::NTuple{2, T}
+    steer_rate::T
     differentiation_backend::AbstractDifferentiation.AbstractBackend
     sol_args::Tuple
     sol_kwargs::Dict
@@ -80,7 +87,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -101,7 +109,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -125,7 +134,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]

@@ -47,16 +47,20 @@
         r_arr = convert(at{tp}, hcat(r))
 
         if mt <: Planar
-            nn = PlanarLayer(nvars, tanh)
+            nn = PlanarLayer(nvars * 2, tanh)
         else
-            nn = Lux.Dense(nvars => nvars, tanh)
+            nn = Lux.Dense(nvars * 2 => nvars * 2, tanh)
         end
         icnf = construct(
             mt,
             nn,
+            nvars,
             nvars;
             data_type = tp,
             array_type = at,
+            augmented = true,
+            steer = true,
+            steer_rate = convert(tp, 0.1),
             differentiation_backend = adb_u,
         )
         ps, st = Lux.setup(rng, icnf)
@@ -182,12 +186,22 @@
         r_arr = convert(at{tp}, hcat(r))
 
         if mt <: Planar
-            nn = PlanarLayer(nvars, tanh)
+            nn = PlanarLayer(nvars * 2, tanh)
         else
-            nn = Lux.Dense(nvars => nvars, tanh)
+            nn = Lux.Dense(nvars * 2 => nvars * 2, tanh)
         end
-        icnf =
-            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
+        icnf = construct(
+            mt,
+            nn,
+            nvars,
+            nvars;
+            data_type = tp,
+            array_type = at,
+            compute_mode = cmode,
+            augmented = true,
+            steer = true,
+            steer_rate = convert(tp, 0.1),
+        )
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 
@@ -318,16 +332,20 @@
         r2_arr = convert(at{tp}, hcat(r2))
 
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+            nn = PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars, tanh)
+            nn = Lux.Dense(nvars * 2 + nvars => nvars * 2, tanh)
         end
         icnf = construct(
             mt,
             nn,
+            nvars,
             nvars;
             data_type = tp,
             array_type = at,
+            augmented = true,
+            steer = true,
+            steer_rate = convert(tp, 0.1),
             differentiation_backend = adb_u,
         )
         ps, st = Lux.setup(rng, icnf)
@@ -458,12 +476,22 @@
         r2_arr = convert(at{tp}, hcat(r2))
 
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+            nn = PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars, tanh)
+            nn = Lux.Dense(nvars * 2 + nvars => nvars * 2, tanh)
         end
-        icnf =
-            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
+        icnf = construct(
+            mt,
+            nn,
+            nvars,
+            nvars;
+            data_type = tp,
+            array_type = at,
+            compute_mode = cmode,
+            augmented = true,
+            steer = true,
+            steer_rate = convert(tp, 0.1),
+        )
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
 

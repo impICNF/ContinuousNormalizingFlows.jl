@@ -5,13 +5,20 @@ Implementation of FFJORD from
 
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 """
-struct FFJORD{T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode} <:
-       AbstractICNF{T, AT, CM}
+struct FFJORD{
+    T <: AbstractFloat,
+    AT <: AbstractArray,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+} <: AbstractICNF{T, AT, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
+    naugmented::Integer
 
     basedist::Distribution
     tspan::NTuple{2, T}
+    steer_rate::T
     differentiation_backend::AbstractDifferentiation.AbstractBackend
     sol_args::Tuple
     sol_kwargs::Dict
@@ -25,7 +32,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug)]
@@ -51,7 +59,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -72,7 +81,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -96,7 +106,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars, n_batch)
+    n_aug_input = n_augment_input(icnf)
+    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
