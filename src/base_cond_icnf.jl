@@ -23,7 +23,7 @@ function inference_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(xs, zrs),
-        steer_tspan(icnf, tspan, steer_rate, rng),
+        steer_tspan(icnf, mode, tspan, steer_rate, rng),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -94,7 +94,7 @@ function inference_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(xs, zrs),
-        steer_tspan(icnf, tspan, steer_rate, rng),
+        steer_tspan(icnf, mode, tspan, steer_rate, rng),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -164,7 +164,7 @@ function generate_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
-        reverse(steer_tspan(icnf, tspan, steer_rate, rng)),
+        reverse(steer_tspan(icnf, mode, tspan, steer_rate, rng)),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -231,7 +231,7 @@ function generate_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
-        reverse(steer_tspan(icnf, tspan, steer_rate, rng)),
+        reverse(steer_tspan(icnf, mode, tspan, steer_rate, rng)),
         ps,
         sol_args...;
         sol_kwargs...,

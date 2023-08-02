@@ -80,6 +80,7 @@ end
 
 @inline function steer_tspan(
     icnf::AbstractFlows{T, <:AbstractArray, <:ComputeMode, AUGMENTED, true},
+    ::TrainMode,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     rng::AbstractRNG = Random.default_rng(),
@@ -93,6 +94,7 @@ end
 
 @inline function steer_tspan(
     icnf::AbstractFlows,
+    ::Mode,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     rng::AbstractRNG = Random.default_rng(),
