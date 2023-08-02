@@ -332,9 +332,9 @@
         r2_arr = convert(at{tp}, hcat(r2))
 
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars * 2, tanh; cond = true)
+            nn = PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars * 2 => nvars * 2, tanh)
+            nn = Lux.Dense(nvars * 2 + nvars => nvars * 2, tanh)
         end
         icnf = construct(
             mt,
@@ -476,9 +476,9 @@
         r2_arr = convert(at{tp}, hcat(r2))
 
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars * 2, tanh; cond = true)
+            nn = PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars * 2 => nvars * 2, tanh)
+            nn = Lux.Dense(nvars * 2 + nvars => nvars * 2, tanh)
         end
         icnf = construct(
             mt,
