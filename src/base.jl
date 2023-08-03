@@ -102,28 +102,11 @@ end
 end
 
 @inline function zeros_T_AT(
-    resource::CUDALibs,
-    ::AbstractFlows{T},
-    dims...,
-) where {T <: AbstractFloat}
-    CUDA.zeros(T, dims...)
-end
-
-@inline function zeros_T_AT(
     resource::AbstractResource,
     ::AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
     zeros(T, dims...)
-end
-
-@inline function rand_T_AT(
-    resource::CUDALibs,
-    ::AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
-    dims...,
-) where {T <: AbstractFloat}
-    CUDA.rand(T, dims...)
 end
 
 @inline function rand_T_AT(
@@ -136,31 +119,12 @@ end
 end
 
 @inline function randn_T_AT(
-    resource::CUDALibs,
-    ::AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
-    dims...,
-) where {T <: AbstractFloat}
-    CUDA.randn(T, dims...)
-end
-
-@inline function randn_T_AT(
     resource::AbstractResource,
     ::AbstractFlows{T},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
 ) where {T <: AbstractFloat}
     randn(rng, T, dims...)
-end
-
-@inline function rand_cstm_AT(
-    resource::CUDALibs,
-    icnf::AbstractFlows{T},
-    cstm::Any,
-    rng::AbstractRNG = Random.default_rng(),
-    dims...,
-) where {T <: AbstractFloat}
-    convert(CuArray, rand_cstm_AT(CPU1(), icnf, cstm, rng, dims...))
 end
 
 @inline function rand_cstm_AT(
@@ -172,7 +136,3 @@ end
 ) where {T <: AbstractFloat}
     convert.(T, rand(rng, cstm, dims...))
 end
-
-@non_differentiable CUDA.zeros(::Any...)
-@non_differentiable CUDA.rand(::Any...)
-@non_differentiable CUDA.randn(::Any...)
