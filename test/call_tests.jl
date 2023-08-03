@@ -35,7 +35,7 @@
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
     rng = Random.default_rng()
-    gdev = gpu_device()
+    gdev = Lux.gpu_device()
 
     @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
                                                                                            resources,
