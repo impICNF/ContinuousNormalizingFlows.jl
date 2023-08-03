@@ -34,7 +34,7 @@ nvars = 1
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Flux #, Lux
+using ContinuousNormalizingFlows, Flux #, Lux, CUDA
 nn = FluxCompatLayer(
     Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)),
 ) # use Flux
