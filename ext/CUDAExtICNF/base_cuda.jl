@@ -1,6 +1,6 @@
 @inline function ContinuousNormalizingFlows.zeros_T_AT(
     resource::CUDALibs,
-    ::AbstractFlows{T},
+    ::ContinuousNormalizingFlows.AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
     CUDA.zeros(T, dims...)
@@ -8,7 +8,7 @@ end
 
 @inline function ContinuousNormalizingFlows.rand_T_AT(
     resource::CUDALibs,
-    ::AbstractFlows{T},
+    ::ContinuousNormalizingFlows.AbstractFlows{T},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
 ) where {T <: AbstractFloat}
@@ -17,7 +17,7 @@ end
 
 @inline function ContinuousNormalizingFlows.randn_T_AT(
     resource::CUDALibs,
-    ::AbstractFlows{T},
+    ::ContinuousNormalizingFlows.AbstractFlows{T},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
 ) where {T <: AbstractFloat}
@@ -26,12 +26,15 @@ end
 
 @inline function ContinuousNormalizingFlows.rand_cstm_AT(
     resource::CUDALibs,
-    icnf::AbstractFlows{T},
+    icnf::ContinuousNormalizingFlows.AbstractFlows{T},
     cstm::Any,
     rng::AbstractRNG = Random.default_rng(),
     dims...,
 ) where {T <: AbstractFloat}
-    convert(CuArray, rand_cstm_AT(CPU1(), icnf, cstm, rng, dims...))
+    convert(
+        CuArray,
+        ContinuousNormalizingFlows.rand_cstm_AT(CPU1(), icnf, cstm, rng, dims...),
+    )
 end
 
 @non_differentiable CUDA.zeros(::Any...)
