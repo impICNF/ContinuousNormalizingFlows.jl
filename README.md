@@ -17,16 +17,14 @@ Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Juli
 
 See [`CITATION.bib`](CITATION.bib) for the relevant reference(s).
 
-## Usage
-
-To add this package, we can do it by
+## Installation
 
 ```julia
 using Pkg
 Pkg.add("ContinuousNormalizingFlows")
 ```
 
-To use this package, here is an example:
+## Usage
 
 ```julia
 # Parameters
@@ -34,15 +32,14 @@ nvars = 1
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Flux
-# using Lux, CUDA
+using ContinuousNormalizingFlows, Flux #, Lux, CUDA, ComputationalResources
 nn = FluxCompatLayer(
     Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)),
 ) # use Flux
 # nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
 icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode) # process data in batches
 # icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 10.0f0)) # have bigger time span
-# icnf = construct(RNODE, nn, nvars; array_type = CuArray) # process data by GPU
+# icnf = construct(RNODE, nn, nvars; resource = CUDALibs()) # process data by GPU
 
 # Data
 using Distributions
@@ -51,13 +48,11 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase
-# using ForwardDiff, ADTypes, ComputationalResources
+using DataFrames, MLJBase #, ForwardDiff, ADTypes
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(icnf; n_epochs = 100) # have less epochs
 # model = ICNFModel(icnf; batch_size = 512) # have bigger batchs
 # model = ICNFModel(icnf; adtype = AutoForwardDiff()) # use ForwardDiff
-# model = ICNFModel(icnf; resource = CUDALibs()) # use GPU
 mach = machine(model, df)
 fit!(mach)
 ps, st = fitted_params(mach)

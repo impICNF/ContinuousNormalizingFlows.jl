@@ -6,8 +6,6 @@ using AbstractDifferentiation,
     ChainRulesCore,
     ComponentArrays,
     ComputationalResources,
-    CUDA,
-    cuDNN,
     DataFrames,
     Dates,
     DifferentialEquations,
@@ -18,7 +16,6 @@ using AbstractDifferentiation,
     LinearAlgebra,
     Lux,
     LuxCore,
-    LuxCUDA,
     MLJBase,
     MLJModelInterface,
     MLUtils,
@@ -27,6 +24,7 @@ using AbstractDifferentiation,
     Optimization,
     OptimizationOptimisers,
     OrdinaryDiffEq,
+    PackageExtensionCompat,
     PrecompileTools,
     ProgressMeter,
     Random,
@@ -62,6 +60,10 @@ include("utils.jl")
 
 @static if isdefined(Base, :get_extension)
     include("precompile.jl")
+end
+
+function __init__()
+    @require_extensions
 end
 
 """

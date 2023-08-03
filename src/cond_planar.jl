@@ -3,17 +3,13 @@ export CondPlanar
 """
 Implementation of Planar (Conditional Version)
 """
-struct CondPlanar{
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    CM <: ComputeMode,
-    AUGMENTED,
-    STEER,
-} <: AbstractCondICNF{T, AT, CM, AUGMENTED, STEER}
+struct CondPlanar{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
+       AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::PlanarLayer
     nvars::Integer
     naugmented::Integer
 
+    resource::AbstractResource
     basedist::Distribution
     tspan::NTuple{2, T}
     steer_rate::T
@@ -23,10 +19,11 @@ struct CondPlanar{
 end
 
 function augmented_f(
-    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
+    icnf::CondPlanar{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
     st::Any;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
@@ -51,10 +48,11 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
+    icnf::CondPlanar{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
@@ -79,17 +77,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
+    icnf::CondPlanar{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -103,17 +102,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
+    icnf::CondPlanar{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -129,17 +129,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondPlanar{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
+    icnf::CondPlanar{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]

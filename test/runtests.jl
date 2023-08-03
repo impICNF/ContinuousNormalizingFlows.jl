@@ -33,7 +33,7 @@ TruncatedStacktraces.VERBOSE[] = true
 include("core.jl")
 
 GROUP = get(ENV, "GROUP", "All")
-SMALL = get(ENV, "SMALL", "No") == "Yes"
+USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
 
 @testset "Overall" begin
     if GROUP == "All" || GROUP in ["RNODE", "FFJORD", "Planar"]

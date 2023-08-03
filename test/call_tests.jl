@@ -1,5 +1,5 @@
 @testset "Call Tests" begin
-    if SMALL || GROUP == "RNODE"
+    if GROUP == "RNODE"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE]
         cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE]
     elseif GROUP == "FFJORD"
@@ -16,17 +16,18 @@
             CondPlanar,
         ]
     end
-    ats = Type{<:AbstractArray}[Array]
-    if CUDA.has_cuda_gpu() && !SMALL
-        push!(ats, CUDA.CuArray)
+    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
+    if CUDA.has_cuda_gpu() && USE_GPU
+        push!(resources, ComputationalResources.CUDALibs())
     end
-    tps = Type{<:AbstractFloat}[Float32]
+    data_types = Type{<:AbstractFloat}[Float32]
     cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ZygoteMatrixMode,
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
     ]
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
+    aug_steers = Bool[false, true]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -34,39 +35,61 @@
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
     rng = Random.default_rng()
+    gdev = Lux.gpu_device()
 
-    @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
-        tp in tps,
+    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
+                                                                                           resources,
+        data_type in data_types,
         adb_u in adb_list,
+        aug_steer in aug_steers,
         nvars in nvars_,
         omode in omodes,
         mt in mts
 
-        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, hcat(r))
+        data_dist =
+            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
 
         if mt <: Planar
-            nn = PlanarLayer(nvars, tanh)
+            nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
         else
-            nn = Lux.Dense(nvars => nvars, tanh)
+            nn =
+                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
+                Lux.Dense(nvars => nvars, tanh)
         end
-        icnf = construct(
-            mt,
-            nn,
-            nvars;
-            data_type = tp,
-            array_type = at,
-            differentiation_backend = adb_u,
-        )
+        icnf =
+            aug_steer ?
+            construct(
+                mt,
+                nn,
+                nvars,
+                nvars;
+                data_type,
+                resource,
+                augmented = true,
+                steer = true,
+                steer_rate = convert(data_type, 0.1),
+                differentiation_backend = adb_u,
+            ) :
+            construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r_arr = gdev(r_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, st))
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(ContinuousNormalizingFlows.inference_prob(icnf, omode, r, ps, st))
         @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st))
 
@@ -170,34 +193,60 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$at | $tp | $cmode | $nvars Vars | $mt" for at in ats,
-        tp in tps,
+    @testset "$resource | $data_type | $cmode | $nvars Vars | $mt" for resource in
+                                                                       resources,
+        data_type in data_types,
         cmode in cmodes,
+        aug_steer in aug_steers,
         nvars in nvars_,
         omode in omodes,
         mt in mts
 
-        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, hcat(r))
+        data_dist =
+            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
 
         if mt <: Planar
-            nn = PlanarLayer(nvars, tanh)
+            nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
         else
-            nn = Lux.Dense(nvars => nvars, tanh)
+            nn =
+                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
+                Lux.Dense(nvars => nvars, tanh)
         end
         icnf =
-            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
+            aug_steer ?
+            construct(
+                mt,
+                nn,
+                nvars,
+                nvars;
+                data_type,
+                resource,
+                augmented = true,
+                steer = true,
+                steer_rate = convert(data_type, 0.1),
+                compute_mode = cmode,
+            ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r_arr = gdev(r_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(
             ContinuousNormalizingFlows.augmented_f(icnf, omode, st, size(r_arr, 2)),
         )
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, ps, st),
         )
@@ -303,41 +352,67 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$at | $tp | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for at in ats,
-        tp in tps,
+    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
+                                                                                           resources,
+        data_type in data_types,
         adb_u in adb_list,
+        aug_steer in aug_steers,
         nvars in nvars_,
         omode in omodes,
         mt in cmts
 
-        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, hcat(r))
-        r2 = convert(at{tp}, rand(data_dist, nvars))
-        r2_arr = convert(at{tp}, hcat(r2))
+        data_dist =
+            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
+        data_dist2 =
+            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
+        r2 = convert.(data_type, rand(data_dist, nvars))
+        r2_arr = hcat(r2)
 
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+            nn =
+                aug_steer ? PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars) :
+                PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars, tanh)
+            nn =
+                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
+                Lux.Dense(nvars * 2 => nvars, tanh)
         end
-        icnf = construct(
-            mt,
-            nn,
-            nvars;
-            data_type = tp,
-            array_type = at,
-            differentiation_backend = adb_u,
-        )
+        icnf =
+            aug_steer ?
+            construct(
+                mt,
+                nn,
+                nvars,
+                nvars;
+                data_type,
+                resource,
+                augmented = true,
+                steer = true,
+                steer_rate = convert(data_type, 0.1),
+                differentiation_backend = adb_u,
+            ) :
+            construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r2 = gdev(r2)
+            r_arr = gdev(r_arr)
+            r2_arr = gdev(r2_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, r2, st))
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r, r2, ps, st),
         )
@@ -443,37 +518,68 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$at | $tp | $cmode | $nvars Vars | $mt" for at in ats,
-        tp in tps,
+    @testset "$resource | $data_type | $cmode | $nvars Vars | $mt" for resource in
+                                                                       resources,
+        data_type in data_types,
         cmode in cmodes,
+        aug_steer in aug_steers,
         nvars in nvars_,
         omode in omodes,
         mt in cmts
 
-        data_dist = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (2, 4))...)
-        data_dist2 = Distributions.Beta{tp}(convert(Tuple{tp, tp}, (4, 2))...)
-        r = convert(at{tp}, rand(data_dist, nvars))
-        r_arr = convert(at{tp}, hcat(r))
-        r2 = convert(at{tp}, rand(data_dist, nvars))
-        r2_arr = convert(at{tp}, hcat(r2))
+        data_dist =
+            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
+        data_dist2 =
+            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
+        r2 = convert.(data_type, rand(data_dist, nvars))
+        r2_arr = hcat(r2)
 
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+            nn =
+                aug_steer ? PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars) :
+                PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars, tanh)
+            nn =
+                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
+                Lux.Dense(nvars * 2 => nvars, tanh)
         end
         icnf =
-            construct(mt, nn, nvars; data_type = tp, array_type = at, compute_mode = cmode)
+            aug_steer ?
+            construct(
+                mt,
+                nn,
+                nvars,
+                nvars;
+                data_type,
+                resource,
+                augmented = true,
+                steer = true,
+                steer_rate = convert(data_type, 0.1),
+                compute_mode = cmode,
+            ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{tp}, ps))
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r2 = gdev(r2)
+            r_arr = gdev(r_arr)
+            r2_arr = gdev(r2_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(
             ContinuousNormalizingFlows.augmented_f(icnf, omode, r2_arr, st, size(r_arr, 2)),
         )
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
+        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, r2_arr, ps, st),
         )

@@ -14,27 +14,12 @@ struct SDVecJacMatrixMode <: SDMatrixMode end
 struct SDJacVecMatrixMode <: SDMatrixMode end
 struct ZygoteMatrixMode <: MatrixMode end
 
-abstract type AbstractFlows{
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    CM <: ComputeMode,
-    AUGMENTED,
-    STEER,
-} <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} end
-abstract type AbstractICNF{
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    CM <: ComputeMode,
-    AUGMENTED,
-    STEER,
-} <: AbstractFlows{T, AT, CM, AUGMENTED, STEER} end
-abstract type AbstractCondICNF{
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    CM <: ComputeMode,
-    AUGMENTED,
-    STEER,
-} <: AbstractFlows{T, AT, CM, AUGMENTED, STEER} end
+abstract type AbstractFlows{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
+              LuxCore.AbstractExplicitContainerLayer{(:nn,)} end
+abstract type AbstractICNF{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
+              AbstractFlows{T, CM, AUGMENTED, STEER} end
+abstract type AbstractCondICNF{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
+              AbstractFlows{T, CM, AUGMENTED, STEER} end
 
 # MLJ interface
 

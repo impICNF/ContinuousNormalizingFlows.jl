@@ -23,14 +23,12 @@ mutable struct ICNFModel <: MLJICNF
     batch_size::Integer
     have_callback::Bool
 
-    resource::AbstractResource
     data_type::Type{<:AbstractFloat}
-    array_type::Type{<:AbstractArray}
     compute_mode::Type{<:ComputeMode}
 end
 
 function ICNFModel(
-    m::AbstractICNF{T, AT, CM},
+    m::AbstractICNF{T, CM},
     loss::Function = loss;
     optimizers::AbstractVector = Any[Optimisers.Lion(),],
     n_epochs::Integer = 300,
@@ -38,8 +36,7 @@ function ICNFModel(
     use_batch::Bool = true,
     batch_size::Integer = 32,
     have_callback::Bool = true,
-    resource::AbstractResource = CPU1(),
-) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
+) where {T <: AbstractFloat, CM <: ComputeMode}
     ICNFModel(
         m,
         loss,
@@ -49,9 +46,7 @@ function ICNFModel(
         use_batch,
         batch_size,
         have_callback,
-        resource,
         T,
-        AT,
         CM,
     )
 end
@@ -63,18 +58,11 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     if !(model.m isa FluxCompatLayer)
         ps = ComponentArray(ps)
     end
-    if model.resource isa CUDALibs
+    if model.m.resource isa CUDALibs
         gdev = gpu_device()
         x = gdev(x)
         ps = gdev(ps)
         st = gdev(st)
-    else
-        x = convert(model.array_type{model.data_type}, x)
-        if model.m isa FluxCompatLayer
-            ps = convert(model.array_type{model.data_type}, ps)
-        else
-            ps = ComponentArray{model.data_type}(ps)
-        end
     end
     _loss = loss_f(model.m, model.loss, st)
     optfunc = OptimizationFunction(_loss, model.adtype)
@@ -148,7 +136,7 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    if model.resource isa CUDALibs
+    if model.m.resource isa CUDALibs
         gdev = gpu_device()
         xnew = gdev(xnew)
     end
@@ -213,36 +201,36 @@ function Base.eltype(d::ICNFDist)
     typeof(d.m).parameters[1]
 end
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ps, d.st))
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(Distributions._logpdf(d, hcat(x)))
     else
         error("Not Implemented")
     end
 end
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ps, d.st))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         x .= generate(d.m, d.mode, d.ps, d.st; rng)
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2); rng)
     else
         error("Not Implemented")

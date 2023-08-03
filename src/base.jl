@@ -6,10 +6,10 @@ function construct(
     nvars::Integer,
     naugmented::Integer = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     augmented::Bool = false,
     steer::Bool = false,
+    resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
         Eye{data_type}(nvars + naugmented),
@@ -26,10 +26,11 @@ function construct(
     !augmented && !iszero(naugmented) && error("'naugmented' > 0: 'augmented' must be true")
     !steer && !iszero(steer_rate) && error("'steer_rate' > 0: 'steer' must be true")
 
-    aicnf{data_type, array_type, compute_mode, augmented, steer}(
+    aicnf{data_type, compute_mode, augmented, steer}(
         nn,
         nvars,
         naugmented,
+        resource,
         basedist,
         tspan,
         steer_rate,
@@ -58,9 +59,7 @@ function Base.show(io::IO, icnf::AbstractFlows)
     )
 end
 
-@inline function n_augment_input(
-    icnf::AbstractFlows{<:AbstractFloat, <:AbstractArray, <:ComputeMode, true},
-)
+@inline function n_augment_input(icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, true})
     icnf.naugmented
 end
 
@@ -69,7 +68,7 @@ end
 end
 
 @inline function steer_rate_value(
-    icnf::AbstractFlows{<:AbstractFloat, <:AbstractArray, <:ComputeMode, AUGMENTED, true},
+    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, AUGMENTED, true},
 ) where {AUGMENTED}
     icnf.steer_rate
 end
@@ -79,7 +78,7 @@ end
 end
 
 @inline function steer_tspan(
-    icnf::AbstractFlows{T, <:AbstractArray, <:ComputeMode, AUGMENTED, true},
+    icnf::AbstractFlows{T, <:ComputeMode, AUGMENTED, true},
     ::TrainMode,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
@@ -103,25 +102,15 @@ end
 end
 
 @inline function zeros_T_AT(
-    ::AbstractFlows{T, <:CuArray},
+    resource::AbstractResource,
+    ::AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
-    CUDA.zeros(T, dims...)
-end
-
-@inline function zeros_T_AT(::AbstractFlows{T}, dims...) where {T <: AbstractFloat}
     zeros(T, dims...)
 end
 
 @inline function rand_T_AT(
-    ::AbstractFlows{T, <:CuArray},
-    rng::AbstractRNG = Random.default_rng(),
-    dims...,
-) where {T <: AbstractFloat}
-    CUDA.rand(T, dims...)
-end
-
-@inline function rand_T_AT(
+    resource::AbstractResource,
     ::AbstractFlows{T},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
@@ -130,14 +119,7 @@ end
 end
 
 @inline function randn_T_AT(
-    ::AbstractFlows{T, <:CuArray},
-    rng::AbstractRNG = Random.default_rng(),
-    dims...,
-) where {T <: AbstractFloat}
-    CUDA.randn(T, dims...)
-end
-
-@inline function randn_T_AT(
+    resource::AbstractResource,
     ::AbstractFlows{T},
     rng::AbstractRNG = Random.default_rng(),
     dims...,
@@ -145,6 +127,12 @@ end
     randn(rng, T, dims...)
 end
 
-@non_differentiable CUDA.zeros(::Any...)
-@non_differentiable CUDA.rand(::Any...)
-@non_differentiable CUDA.randn(::Any...)
+@inline function rand_cstm_AT(
+    resource::AbstractResource,
+    ::AbstractFlows{T},
+    cstm::Any,
+    rng::AbstractRNG = Random.default_rng(),
+    dims...,
+) where {T <: AbstractFloat}
+    convert.(T, rand(rng, cstm, dims...))
+end
