@@ -18,12 +18,14 @@ Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Juli
 See [`CITATION.bib`](CITATION.bib) for the relevant reference(s).
 
 ## Installation
+
 ```julia
 using Pkg
 Pkg.add("ContinuousNormalizingFlows")
 ```
 
 ## Usage
+
 ```julia
 # Parameters
 nvars = 1
