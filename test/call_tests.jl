@@ -27,6 +27,7 @@
         # SDJacVecMatrixMode,
     ]
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
+    aug_steers = Bool[false, true]
     nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -34,7 +35,6 @@
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
     rng = Random.default_rng()
-    aug_steers = Bool[false, true]
 
     @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
                                                                                            resources,
