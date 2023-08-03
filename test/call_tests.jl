@@ -87,6 +87,9 @@
         @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
         @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
         @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(ContinuousNormalizingFlows.inference_prob(icnf, omode, r, ps, st))
         @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st))
 
@@ -241,6 +244,9 @@
         @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
         @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
         @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, ps, st),
         )
@@ -405,6 +411,9 @@
         @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
         @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
         @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
+        @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r, r2, ps, st),
         )
         @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, r2, ps, st))
@@ -568,6 +577,9 @@
         @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
         @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
         @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
+        @test !isnothing(
+            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
+        )
         @test !isnothing(
             ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, r2_arr, ps, st),
         )
