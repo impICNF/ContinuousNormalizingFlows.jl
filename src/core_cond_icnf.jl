@@ -23,14 +23,12 @@ mutable struct CondICNFModel <: MLJICNF
     batch_size::Integer
     have_callback::Bool
 
-    resource::AbstractResource
     data_type::Type{<:AbstractFloat}
-    array_type::Type{<:AbstractArray}
     compute_mode::Type{<:ComputeMode}
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF{T, AT, CM},
+    m::AbstractCondICNF{T, CM},
     loss::Function = loss;
     optimizers::AbstractVector = Any[Optimisers.Lion(),],
     n_epochs::Integer = 300,
@@ -38,8 +36,7 @@ function CondICNFModel(
     use_batch::Bool = true,
     batch_size::Integer = 32,
     have_callback::Bool = true,
-    resource::AbstractResource = CPU1(),
-) where {T <: AbstractFloat, AT <: AbstractArray, CM <: ComputeMode}
+) where {T <: AbstractFloat, CM <: ComputeMode}
     CondICNFModel(
         m,
         loss,
@@ -49,9 +46,7 @@ function CondICNFModel(
         use_batch,
         batch_size,
         have_callback,
-        resource,
         T,
-        AT,
         CM,
     )
 end
@@ -65,20 +60,12 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     if !(model.m isa FluxCompatLayer)
         ps = ComponentArray(ps)
     end
-    if model.resource isa CUDALibs
+    if model.m.resource isa CUDALibs
         gdev = gpu_device()
         x = gdev(x)
         y = gdev(y)
         ps = gdev(ps)
         st = gdev(st)
-    else
-        x = convert(model.array_type{model.data_type}, x)
-        y = convert(model.array_type{model.data_type}, y)
-        if model.m isa FluxCompatLayer
-            ps = convert(model.array_type{model.data_type}, ps)
-        else
-            ps = ComponentArray{model.data_type}(ps)
-        end
     end
     _loss = loss_f(model.m, model.loss, st)
     optfunc = OptimizationFunction(_loss, model.adtype)
@@ -154,7 +141,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     Xnew, Ynew = XYnew
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
-    if model.resource isa CUDALibs
+    if model.m.resource isa CUDALibs
         gdev = gpu_device()
         xnew = gdev(xnew)
         ynew = gdev(ynew)
@@ -227,36 +214,36 @@ function Base.eltype(d::CondICNFDist)
     typeof(d.m).parameters[1]
 end
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ys, d.ps, d.st))
-    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         first(Distributions._logpdf(d, hcat(x)))
     else
         error("Not Implemented")
     end
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
         broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
-    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ys[:, begin:size(A, 2)], d.ps, d.st))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
         x .= generate(d.m, d.mode, d.ys, d.ps, d.st; rng)
-    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
         error("Not Implemented")
     end
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode}
+    if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
-    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode}
+    elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ys[:, begin:size(A, 2)], d.ps, d.st, size(A, 2); rng)
     else
         error("Not Implemented")

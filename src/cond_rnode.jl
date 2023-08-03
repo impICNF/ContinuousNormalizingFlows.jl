@@ -3,17 +3,13 @@ export CondRNODE
 """
 Implementation of RNODE (Conditional Version)
 """
-struct CondRNODE{
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    CM <: ComputeMode,
-    AUGMENTED,
-    STEER,
-} <: AbstractCondICNF{T, AT, CM, AUGMENTED, STEER}
+struct CondRNODE{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
+       AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
     naugmented::Integer
 
+    resource::AbstractResource
     basedist::Distribution
     tspan::NTuple{2, T}
     steer_rate::T
@@ -30,10 +26,10 @@ function construct(
     nvars::Integer,
     naugmented::Integer = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    array_type::Type{<:AbstractArray} = Array,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     augmented::Bool = false,
     steer::Bool = false,
+    resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
         Eye{data_type}(nvars + naugmented),
@@ -52,10 +48,11 @@ function construct(
     !augmented && !iszero(naugmented) && error("'naugmented' > 0: 'augmented' must be true")
     !steer && !iszero(steer_rate) && error("'steer_rate' > 0: 'steer' must be true")
 
-    aicnf{data_type, array_type, compute_mode, augmented, steer}(
+    aicnf{data_type, compute_mode, augmented, steer}(
         nn,
         nvars,
         naugmented,
+        resource,
         basedist,
         tspan,
         steer_rate,
@@ -68,16 +65,17 @@ function construct(
 end
 
 function augmented_f(
-    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
+    icnf::CondRNODE{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug)]
@@ -97,17 +95,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
+    icnf::CondRNODE{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -123,17 +122,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
+    icnf::CondRNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -151,17 +151,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
+    icnf::CondRNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -179,12 +180,13 @@ function augmented_f(
 end
 
 @inline function loss(
-    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:VectorMode},
+    icnf::CondRNODE{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -214,12 +216,13 @@ end
 end
 
 @inline function loss(
-    icnf::CondRNODE{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
+    icnf::CondRNODE{<:AbstractFloat, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,

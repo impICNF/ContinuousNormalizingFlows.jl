@@ -1,10 +1,11 @@
 function jacobian_batched(
-    icnf::AbstractFlows{T, <:AbstractArray, <:ZygoteMatrixMode},
+    icnf::AbstractFlows{T, <:ZygoteMatrixMode},
     f,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{<:Real};
+    resource::AbstractResource = icnf.resource,
 ) where {T <: AbstractFloat}
     y, back = Zygote.pullback(f, xs)
-    z = zeros_T_AT(icnf, size(xs))
+    z = zeros_T_AT(resource, icnf, size(xs))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         @ignore_derivatives z[i, :] .= one(T)
@@ -15,12 +16,13 @@ function jacobian_batched(
 end
 
 function jacobian_batched(
-    icnf::AbstractFlows{T, <:AbstractArray, <:SDVecJacMatrixMode},
+    icnf::AbstractFlows{T, <:SDVecJacMatrixMode},
     f,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{<:Real};
+    resource::AbstractResource = icnf.resource,
 ) where {T <: AbstractFloat}
     y = f(xs)
-    z = zeros_T_AT(icnf, size(xs))
+    z = zeros_T_AT(resource, icnf, size(xs))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         @ignore_derivatives z[i, :] .= one(T)
@@ -31,12 +33,13 @@ function jacobian_batched(
 end
 
 function jacobian_batched(
-    icnf::AbstractFlows{T, <:AbstractArray, <:SDJacVecMatrixMode},
+    icnf::AbstractFlows{T, <:SDJacVecMatrixMode},
     f,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{<:Real};
+    resource::AbstractResource = icnf.resource,
 ) where {T <: AbstractFloat}
     y = f(xs)
-    z = zeros_T_AT(icnf, size(xs))
+    z = zeros_T_AT(resource, icnf, size(xs))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         @ignore_derivatives z[i, :] .= one(T)

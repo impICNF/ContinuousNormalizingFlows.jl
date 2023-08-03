@@ -1,11 +1,12 @@
 export inference, generate, loss
 
 function inference_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -16,8 +17,8 @@ function inference_prob(
 )
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    zrs = zeros_T_AT(icnf, n_aug_input + n_aug + 1)
-    f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
+    zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1)
+    f_aug = augmented_f(icnf, mode, st; resource, differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -31,11 +32,12 @@ function inference_prob(
 end
 
 function inference(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -69,11 +71,12 @@ function inference(
 end
 
 function inference_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -84,8 +87,8 @@ function inference_prob(
 )
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    zrs = zeros_T_AT(icnf, n_aug_input + n_aug + 1, size(xs, 2))
-    f_aug = augmented_f(icnf, mode, st, size(xs, 2); differentiation_backend, rng)
+    zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
+    f_aug = augmented_f(icnf, mode, st, size(xs, 2); resource, differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -99,11 +102,12 @@ function inference_prob(
 end
 
 function inference(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -137,10 +141,11 @@ function inference(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T, AT, <:VectorMode},
+    icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -148,11 +153,11 @@ function generate_prob(
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-) where {T <: AbstractFloat, AT <: AbstractArray}
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT{T}, rand(rng, basedist))
-    zrs = zeros_T_AT(icnf, n_aug + 1)
-    f_aug = augmented_f(icnf, mode, st; differentiation_backend, rng)
+    new_xs = rand_cstm_AT(resource, icnf, basedist, rng)
+    zrs = zeros_T_AT(resource, icnf, n_aug + 1)
+    f_aug = augmented_f(icnf, mode, st; resource, differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -165,10 +170,11 @@ function generate_prob(
     prob
 end
 function generate(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -199,11 +205,12 @@ function generate(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T, AT, <:MatrixMode},
+    icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Integer;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -211,11 +218,12 @@ function generate_prob(
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
-) where {T <: AbstractFloat, AT <: AbstractArray}
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    new_xs = convert(AT{T}, rand(rng, basedist, n))
-    zrs = zeros_T_AT(icnf, n_aug + 1, size(new_xs, 2))
-    f_aug = augmented_f(icnf, mode, st, size(new_xs, 2); differentiation_backend, rng)
+    new_xs = rand_cstm_AT(resource, icnf, basedist, rng, n)
+    zrs = zeros_T_AT(resource, icnf, n_aug + 1, size(new_xs, 2))
+    f_aug =
+        augmented_f(icnf, mode, st, size(new_xs, 2); resource, differentiation_backend, rng)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -229,11 +237,12 @@ function generate_prob(
 end
 
 function generate(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Integer;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -265,11 +274,12 @@ function generate(
 end
 
 @inline function loss(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -296,11 +306,12 @@ end
 end
 
 @inline function loss(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steer_rate::AbstractFloat = steer_rate_value(icnf),
     basedist::Distribution = icnf.basedist,
@@ -329,9 +340,10 @@ end
 end
 
 function augmented_f(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     st::Any;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
@@ -351,10 +363,11 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::AbstractICNF{<:AbstractFloat, <:AbstractArray, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::TestMode,
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
@@ -362,7 +375,12 @@ function augmented_f(
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
-        mz, J = jacobian_batched(icnf, x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
+        mz, J = jacobian_batched(
+            icnf,
+            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
+            z;
+            resource,
+        )
         trace_J = transpose(tr.(eachslice(J; dims = 3)))
         vcat(mz, -trace_J)
     end

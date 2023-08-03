@@ -3,17 +3,13 @@ export CondFFJORD
 """
 Implementation of FFJORD (Conditional Version)
 """
-struct CondFFJORD{
-    T <: AbstractFloat,
-    AT <: AbstractArray,
-    CM <: ComputeMode,
-    AUGMENTED,
-    STEER,
-} <: AbstractCondICNF{T, AT, CM, AUGMENTED, STEER}
+struct CondFFJORD{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
+       AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
     nvars::Integer
     naugmented::Integer
 
+    resource::AbstractResource
     basedist::Distribution
     tspan::NTuple{2, T}
     steer_rate::T
@@ -23,16 +19,17 @@ struct CondFFJORD{
 end
 
 function augmented_f(
-    icnf::CondFFJORD{<:AbstractFloat, <:AbstractArray, <:ADVectorMode},
+    icnf::CondFFJORD{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     st::Any;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug)]
@@ -50,17 +47,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{<:AbstractFloat, <:AbstractArray, <:ZygoteMatrixMode},
+    icnf::CondFFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -74,17 +72,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{<:AbstractFloat, <:AbstractArray, <:SDVecJacMatrixMode},
+    icnf::CondFFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
@@ -100,17 +99,18 @@ function augmented_f(
 end
 
 function augmented_f(
-    icnf::CondFFJORD{<:AbstractFloat, <:AbstractArray, <:SDJacVecMatrixMode},
+    icnf::CondFFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     st::Any,
     n_batch::Integer;
+    resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode) + 1
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(icnf, rng, icnf.nvars + n_aug_input, n_batch)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
 
     function f_aug(u, p, t)
         z = @view u[begin:(end - n_aug), :]
