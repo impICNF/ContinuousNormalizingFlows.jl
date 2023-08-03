@@ -35,6 +35,7 @@
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
     rng = Random.default_rng()
+    gdev = gpu_device()
 
     @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
                                                                                            resources,
@@ -73,6 +74,13 @@
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r_arr = gdev(r_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, st))
@@ -218,6 +226,13 @@
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r_arr = gdev(r_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(
@@ -374,6 +389,15 @@
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r2 = gdev(r2)
+            r_arr = gdev(r_arr)
+            r2_arr = gdev(r2_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, r2, st))
@@ -527,6 +551,15 @@
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
+        ps = ComponentArray(ps)
+        if resource isa CUDALibs
+            r = gdev(r)
+            r2 = gdev(r2)
+            r_arr = gdev(r_arr)
+            r2_arr = gdev(r2_arr)
+            ps = gdev(ps)
+            st = gdev(st)
+        end
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(
