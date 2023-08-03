@@ -48,7 +48,7 @@
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        r = convert(at{data_type}, rand(data_dist, nvars, 1))
+        r = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
@@ -76,7 +76,7 @@
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        r = convert(at{data_type}, rand(data_dist, nvars, 1))
+        r = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
             nn = PlanarLayer(nvars, tanh)
@@ -93,8 +93,8 @@
         @test !isnothing(ICNFDist(mach, TrainMode()))
         @test !isnothing(ICNFDist(mach, TestMode()))
     end
-    @testset "$at | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                                                       resources,
+    @testset "$resource | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
+                                                                                                                             resources,
         data_type in data_types,
         adb_u in adb_list,
         go_ad in go_ads,
@@ -105,8 +105,8 @@
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        r = convert(at{data_type}, rand(data_dist, nvars, 1))
-        r2 = convert(at{data_type}, rand(data_dist, nvars, 1))
+        r = convert.(data_type, rand(data_dist, nvars, 1))
+        r2 = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
@@ -137,8 +137,8 @@
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        r = convert(at{data_type}, rand(data_dist, nvars, 1))
-        r2 = convert(at{data_type}, rand(data_dist, nvars, 1))
+        r = convert.(data_type, rand(data_dist, nvars, 1))
+        r2 = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar

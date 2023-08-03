@@ -47,8 +47,8 @@
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        r = convert(at{data_type}, rand(data_dist, nvars))
-        r_arr = convert(at{data_type}, hcat(r))
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
 
         if mt <: Planar
             nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
@@ -73,7 +73,6 @@
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{data_type}, ps))
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, st))
@@ -194,8 +193,8 @@
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        r = convert(at{data_type}, rand(data_dist, nvars))
-        r_arr = convert(at{data_type}, hcat(r))
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
 
         if mt <: Planar
             nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
@@ -219,7 +218,6 @@
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{data_type}, ps))
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(
@@ -346,10 +344,10 @@
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        r = convert(at{data_type}, rand(data_dist, nvars))
-        r_arr = convert(at{data_type}, hcat(r))
-        r2 = convert(at{data_type}, rand(data_dist, nvars))
-        r2_arr = convert(at{data_type}, hcat(r2))
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
+        r2 = convert.(data_type, rand(data_dist, nvars))
+        r2_arr = hcat(r2)
 
         if mt <: CondPlanar
             nn =
@@ -376,7 +374,6 @@
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{data_type}, ps))
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, r2, st))
@@ -501,10 +498,10 @@
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        r = convert(at{data_type}, rand(data_dist, nvars))
-        r_arr = convert(at{data_type}, hcat(r))
-        r2 = convert(at{data_type}, rand(data_dist, nvars))
-        r2_arr = convert(at{data_type}, hcat(r2))
+        r = convert.(data_type, rand(data_dist, nvars))
+        r_arr = hcat(r)
+        r2 = convert.(data_type, rand(data_dist, nvars))
+        r2_arr = hcat(r2)
 
         if mt <: CondPlanar
             nn =
@@ -530,7 +527,6 @@
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
-        ps = ComponentArrays.ComponentArray(map(at{data_type}, ps))
 
         @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
         @test !isnothing(
