@@ -125,8 +125,8 @@
         @test !isnothing(CondICNFDist(mach, TrainMode(), r2))
         @test !isnothing(CondICNFDist(mach, TestMode(), r2))
     end
-    @testset "$resources | $data_type | $cmode | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                             resources,
+    @testset "$resource | $data_type | $cmode | $go_ad for fitting | $nvars Vars | $mt" for resource in
+                                                                                            resources,
         data_type in data_types,
         cmode in cmodes,
         go_ad in go_ads,
@@ -146,7 +146,7 @@
         else
             nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type, resources, compute_mode = cmode)
+        icnf = construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))
