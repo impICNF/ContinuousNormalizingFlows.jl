@@ -16,7 +16,7 @@
             CondPlanar,
         ]
     end
-    resources = ComputationalResources.AbstractResource[CPU1()]
+    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
     if CUDA.has_cuda_gpu() && USE_GPU
         push!(resources, ComputationalResources.CUDALibs())
     end
