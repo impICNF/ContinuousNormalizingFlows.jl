@@ -17,24 +17,20 @@ Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Juli
 
 See [`CITATION.bib`](CITATION.bib) for the relevant reference(s).
 
-## Usage
-
-To add this package, we can do it by
-
+## Installation
 ```julia
 using Pkg
 Pkg.add("ContinuousNormalizingFlows")
 ```
 
-To use this package, here is an example:
-
+## Usage
 ```julia
 # Parameters
 nvars = 1
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Flux #, Lux, CUDA
+using ContinuousNormalizingFlows, Flux #, Lux, CUDA, ComputationalResources
 nn = FluxCompatLayer(
     Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)),
 ) # use Flux
@@ -50,7 +46,7 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase #, ForwardDiff, ADTypes, ComputationalResources
+using DataFrames, MLJBase #, ForwardDiff, ADTypes
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(icnf; n_epochs = 100) # have less epochs
 # model = ICNFModel(icnf; batch_size = 512) # have bigger batchs
