@@ -82,17 +82,6 @@
             st = gdev(st)
         end
 
-        @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
-        @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, st))
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(
-            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
-        )
-        @test !isnothing(ContinuousNormalizingFlows.inference_prob(icnf, omode, r, ps, st))
-        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st))
-
         @test !isnothing(inference(icnf, omode, r, ps, st))
         @test !isnothing(generate(icnf, omode, ps, st))
 
@@ -236,21 +225,6 @@
             ps = gdev(ps)
             st = gdev(st)
         end
-
-        @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
-        @test !isnothing(
-            ContinuousNormalizingFlows.augmented_f(icnf, omode, st, size(r_arr, 2)),
-        )
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(
-            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
-        )
-        @test !isnothing(
-            ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, ps, st),
-        )
-        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, ps, st, 1))
 
         @test !isnothing(inference(icnf, omode, r_arr, ps, st))
         @test !isnothing(generate(icnf, omode, ps, st, 1))
@@ -405,19 +379,6 @@
             st = gdev(st)
         end
 
-        @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
-        @test !isnothing(ContinuousNormalizingFlows.augmented_f(icnf, omode, r2, st))
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(
-            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
-        )
-        @test !isnothing(
-            ContinuousNormalizingFlows.inference_prob(icnf, omode, r, r2, ps, st),
-        )
-        @test !isnothing(ContinuousNormalizingFlows.generate_prob(icnf, omode, r2, ps, st))
-
         @test !isnothing(inference(icnf, omode, r, r2, ps, st))
         @test !isnothing(generate(icnf, omode, r2, ps, st))
 
@@ -569,23 +530,6 @@
             ps = gdev(ps)
             st = gdev(st)
         end
-
-        @test !isnothing(ContinuousNormalizingFlows.n_augment(icnf, omode))
-        @test !isnothing(
-            ContinuousNormalizingFlows.augmented_f(icnf, omode, r2_arr, st, size(r_arr, 2)),
-        )
-        @test !isnothing(ContinuousNormalizingFlows.zeros_T_AT(resource, icnf, 1))
-        @test !isnothing(ContinuousNormalizingFlows.rand_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(ContinuousNormalizingFlows.randn_T_AT(resource, icnf, rng, 1))
-        @test !isnothing(
-            ContinuousNormalizingFlows.rand_cstm_AT(resource, icnf, data_dist, rng, 1),
-        )
-        @test !isnothing(
-            ContinuousNormalizingFlows.inference_prob(icnf, omode, r_arr, r2_arr, ps, st),
-        )
-        @test !isnothing(
-            ContinuousNormalizingFlows.generate_prob(icnf, omode, r2_arr, ps, st, 1),
-        )
 
         @test !isnothing(inference(icnf, omode, r_arr, r2_arr, ps, st))
         @test !isnothing(generate(icnf, omode, r2_arr, ps, st, 1))
