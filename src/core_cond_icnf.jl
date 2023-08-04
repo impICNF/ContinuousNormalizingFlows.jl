@@ -97,7 +97,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                     desc = "Fitting (epoch: $ep of $(model.n_epochs)): ",
                     showspeed = true,
                 )
-                itr_n = [1]
+                itr_n = ones(Int)
                 tst_one = @timed res = solve(
                     optprob_re,
                     opt,
