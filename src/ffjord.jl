@@ -32,9 +32,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
     z = @view u[begin:(end - n_aug - 1)]
+    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
         x -> first(LuxCore.apply(icnf.nn, x, p, st)),
@@ -52,16 +51,14 @@ function augmented_f(
     t,
     icnf::FFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
-    st::Any,
-    n_batch::Integer;
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
     z = @view u[begin:(end - n_aug - 1), :]
+    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
     ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -74,16 +71,14 @@ function augmented_f(
     t,
     icnf::FFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    st::Any,
-    n_batch::Integer;
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
     z = @view u[begin:(end - n_aug - 1), :]
+    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     mz = first(LuxCore.apply(icnf.nn, z, p, st))
     ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -96,16 +91,14 @@ function augmented_f(
     t,
     icnf::FFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    st::Any,
-    n_batch::Integer;
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
     z = @view u[begin:(end - n_aug - 1), :]
+    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     mz = first(LuxCore.apply(icnf.nn, z, p, st))
     Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)

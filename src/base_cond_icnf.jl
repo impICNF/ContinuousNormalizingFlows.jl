@@ -112,8 +112,7 @@ function inference_prob(
             icnf,
             mode,
             ys,
-            st,
-            size(xs, 2);
+            st;
             resource,
             differentiation_backend,
             rng,
@@ -278,8 +277,7 @@ function generate_prob(
             icnf,
             mode,
             ys,
-            st,
-            size(new_xs, 2);
+            st;
             resource,
             differentiation_backend,
             rng,
@@ -435,8 +433,7 @@ function augmented_f(
     icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::TestMode,
     ys::AbstractMatrix{<:Real},
-    st::Any,
-    n_batch::Integer;
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
