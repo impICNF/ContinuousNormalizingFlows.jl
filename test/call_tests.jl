@@ -75,7 +75,7 @@
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        if resource isa CUDALibs
+        if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
             r_arr = gdev(r_arr)
             ps = gdev(ps)
@@ -230,7 +230,7 @@
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        if resource isa CUDALibs
+        if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
             r_arr = gdev(r_arr)
             ps = gdev(ps)
@@ -396,7 +396,7 @@
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        if resource isa CUDALibs
+        if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
             r2 = gdev(r2)
             r_arr = gdev(r_arr)
@@ -561,7 +561,7 @@
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         ps, st = Lux.setup(rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        if resource isa CUDALibs
+        if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
             r2 = gdev(r2)
             r_arr = gdev(r_arr)
