@@ -19,6 +19,7 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
         (u, p, t) -> augmented_f(
             u,
@@ -27,6 +28,7 @@ function inference_prob(
             icnf,
             mode,
             ys,
+            ϵ,
             st;
             resource,
             differentiation_backend,
@@ -104,6 +106,7 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, size(xs, 2))
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
         (u, p, t) -> augmented_f(
             u,
@@ -112,6 +115,7 @@ function inference_prob(
             icnf,
             mode,
             ys,
+            ϵ,
             st;
             resource,
             differentiation_backend,
@@ -186,8 +190,10 @@ function generate_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(resource, icnf, basedist, rng)
     zrs = zeros_T_AT(resource, icnf, n_aug + 1)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
         (u, p, t) -> augmented_f(
             u,
@@ -196,6 +202,7 @@ function generate_prob(
             icnf,
             mode,
             ys,
+            ϵ,
             st;
             resource,
             differentiation_backend,
@@ -267,8 +274,10 @@ function generate_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(resource, icnf, basedist, rng, n)
     zrs = zeros_T_AT(resource, icnf, n_aug + 1, size(new_xs, 2))
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, size(new_xs, 2))
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
         (u, p, t) -> augmented_f(
             u,
@@ -277,6 +286,7 @@ function generate_prob(
             icnf,
             mode,
             ys,
+            ϵ,
             st;
             resource,
             differentiation_backend,
@@ -404,12 +414,13 @@ end
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::AbstractCondICNF{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -427,12 +438,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::TestMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,

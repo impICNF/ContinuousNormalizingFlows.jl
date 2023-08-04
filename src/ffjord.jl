@@ -21,11 +21,12 @@ struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -33,7 +34,6 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
         x -> first(LuxCore.apply(icnf.nn, x, p, st)),
@@ -46,11 +46,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -58,7 +59,6 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
     ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -66,11 +66,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -78,7 +79,6 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     mz = first(LuxCore.apply(icnf.nn, z, p, st))
     ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -86,11 +86,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -98,7 +99,6 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ϵ = randn_T_AT(resource, icnf, rng, size(z)...)
     mz = first(LuxCore.apply(icnf.nn, z, p, st))
     Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
