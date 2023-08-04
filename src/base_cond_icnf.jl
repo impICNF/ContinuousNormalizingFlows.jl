@@ -19,8 +19,22 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1)
-    f_aug = augmented_f(icnf, mode, ys, st; resource, differentiation_backend, rng)
-    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(
+        (u, p, t) -> augmented_f(
+            u,
+            p,
+            t,
+            icnf,
+            mode,
+            ys,
+            ϵ,
+            st;
+            resource,
+            differentiation_backend,
+            rng,
+        ),
+    )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(xs, zrs),
@@ -92,9 +106,22 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
-    f_aug =
-        augmented_f(icnf, mode, ys, st, size(xs, 2); resource, differentiation_backend, rng)
-    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, size(xs, 2))
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(
+        (u, p, t) -> augmented_f(
+            u,
+            p,
+            t,
+            icnf,
+            mode,
+            ys,
+            ϵ,
+            st;
+            resource,
+            differentiation_backend,
+            rng,
+        ),
+    )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(xs, zrs),
@@ -163,10 +190,25 @@ function generate_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(resource, icnf, basedist, rng)
     zrs = zeros_T_AT(resource, icnf, n_aug + 1)
-    f_aug = augmented_f(icnf, mode, ys, st; resource, differentiation_backend, rng)
-    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(
+        (u, p, t) -> augmented_f(
+            u,
+            p,
+            t,
+            icnf,
+            mode,
+            ys,
+            ϵ,
+            st;
+            resource,
+            differentiation_backend,
+            rng,
+        ),
+    )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
@@ -232,19 +274,25 @@ function generate_prob(
     sol_kwargs::Dict = icnf.sol_kwargs,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(resource, icnf, basedist, rng, n)
     zrs = zeros_T_AT(resource, icnf, n_aug + 1, size(new_xs, 2))
-    f_aug = augmented_f(
-        icnf,
-        mode,
-        ys,
-        st,
-        size(new_xs, 2);
-        resource,
-        differentiation_backend,
-        rng,
+    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, size(new_xs, 2))
+    func = ODEFunction{false, SciMLBase.FullSpecialize}(
+        (u, p, t) -> augmented_f(
+            u,
+            p,
+            t,
+            icnf,
+            mode,
+            ys,
+            ϵ,
+            st;
+            resource,
+            differentiation_backend,
+            rng,
+        ),
     )
-    func = ODEFunction{false, SciMLBase.FullSpecialize}(f_aug)
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
@@ -366,53 +414,52 @@ end
 end
 
 function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::AbstractCondICNF{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug)]
-        mz, J = AbstractDifferentiation.value_and_jacobian(
-            differentiation_backend,
-            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-            z,
-        )
-        trace_J = tr(only(J))
-        vcat(mz, -trace_J)
-    end
-    f_aug
+    n_aug = n_augment(icnf, mode)
+    z = @view u[begin:(end - n_aug - 1)]
+    mz, J = AbstractDifferentiation.value_and_jacobian(
+        differentiation_backend,
+        x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
+        z,
+    )
+    trace_J = tr(only(J))
+    vcat(mz, -trace_J)
 end
 
 function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::TestMode,
     ys::AbstractMatrix{<:Real},
-    st::Any,
-    n_batch::Integer;
+    ϵ::AbstractMatrix{<:Real},
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        mz, J = jacobian_batched(
-            icnf,
-            x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-            z;
-            resource,
-        )
-        trace_J = transpose(tr.(eachslice(J; dims = 3)))
-        vcat(mz, -trace_J)
-    end
-    f_aug
+    n_aug = n_augment(icnf, mode)
+    z = @view u[begin:(end - n_aug - 1), :]
+    mz, J = jacobian_batched(
+        icnf,
+        x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
+        z;
+        resource,
+    )
+    trace_J = transpose(tr.(eachslice(J; dims = 3)))
+    vcat(mz, -trace_J)
 end
 
 @inline function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)

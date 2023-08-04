@@ -67,113 +67,96 @@ function construct(
 end
 
 function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::RNODE{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug)]
-        v_pb = AbstractDifferentiation.value_and_pullback_function(
-            differentiation_backend,
-            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
-            z,
-        )
-        ż, ϵJ = v_pb(ϵ)
-        ϵJ = only(ϵJ)
-        l̇ = ϵJ ⋅ ϵ
-        Ė = norm(ż)
-        ṅ = norm(ϵJ)
-        vcat(ż, -l̇, Ė, ṅ)
-    end
-    f_aug
+    n_aug = n_augment(icnf, mode)
+    z = @view u[begin:(end - n_aug - 1)]
+    v_pb = AbstractDifferentiation.value_and_pullback_function(
+        differentiation_backend,
+        x -> first(LuxCore.apply(icnf.nn, x, p, st)),
+        z,
+    )
+    ż, ϵJ = v_pb(ϵ)
+    ϵJ = only(ϵJ)
+    l̇ = ϵJ ⋅ ϵ
+    Ė = norm(ż)
+    ṅ = norm(ϵJ)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::RNODE{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
-    st::Any,
-    n_batch::Integer;
+    ϵ::AbstractMatrix{<:Real},
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        ż, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
-        ϵJ = only(back(ϵ))
-        l̇ = sum(ϵJ .* ϵ; dims = 1)
-        Ė = transpose(norm.(eachcol(ż)))
-        ṅ = transpose(norm.(eachcol(ϵJ)))
-        vcat(ż, -l̇, Ė, ṅ)
-    end
-    f_aug
+    n_aug = n_augment(icnf, mode)
+    z = @view u[begin:(end - n_aug - 1), :]
+    ż, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
+    ϵJ = only(back(ϵ))
+    l̇ = sum(ϵJ .* ϵ; dims = 1)
+    Ė = transpose(norm.(eachcol(ż)))
+    ṅ = transpose(norm.(eachcol(ϵJ)))
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::RNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    st::Any,
-    n_batch::Integer;
+    ϵ::AbstractMatrix{<:Real},
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        ż = first(LuxCore.apply(icnf.nn, z, p, st))
-        ϵJ = reshape(
-            auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
-            size(z),
-        )
-        l̇ = sum(ϵJ .* ϵ; dims = 1)
-        Ė = transpose(norm.(eachcol(ż)))
-        ṅ = transpose(norm.(eachcol(ϵJ)))
-        vcat(ż, -l̇, Ė, ṅ)
-    end
-    f_aug
+    n_aug = n_augment(icnf, mode)
+    z = @view u[begin:(end - n_aug - 1), :]
+    ż = first(LuxCore.apply(icnf.nn, z, p, st))
+    ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+    l̇ = sum(ϵJ .* ϵ; dims = 1)
+    Ė = transpose(norm.(eachcol(ż)))
+    ṅ = transpose(norm.(eachcol(ϵJ)))
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::RNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    st::Any,
-    n_batch::Integer;
+    ϵ::AbstractMatrix{<:Real},
+    st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
-    n_aug_input = n_augment_input(icnf)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        ż = first(LuxCore.apply(icnf.nn, z, p, st))
-        Jϵ = reshape(
-            auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
-            size(z),
-        )
-        l̇ = sum(ϵ .* Jϵ; dims = 1)
-        Ė = transpose(norm.(eachcol(ż)))
-        ṅ = transpose(norm.(eachcol(Jϵ)))
-        vcat(ż, -l̇, Ė, ṅ)
-    end
-    f_aug
+    n_aug = n_augment(icnf, mode)
+    z = @view u[begin:(end - n_aug - 1), :]
+    ż = first(LuxCore.apply(icnf.nn, z, p, st))
+    Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+    l̇ = sum(ϵ .* Jϵ; dims = 1)
+    Ė = transpose(norm.(eachcol(ż)))
+    ṅ = transpose(norm.(eachcol(Jϵ)))
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @inline function loss(

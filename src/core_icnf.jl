@@ -1,14 +1,5 @@
 export ICNFModel, ICNFDist
 
-# SciML interface
-
-function loss_f(icnf::AbstractICNF, loss::Function, st::Any)
-    @inline function f(ps, θ, xs)
-        loss(icnf, TrainMode(), xs, ps, st)
-    end
-    f
-end
-
 # MLJ interface
 
 mutable struct ICNFModel <: MLJICNF
@@ -64,8 +55,10 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         ps = gdev(ps)
         st = gdev(st)
     end
-    _loss = loss_f(model.m, model.loss, st)
-    optfunc = OptimizationFunction(_loss, model.adtype)
+    optfunc = OptimizationFunction(
+        (ps_, θ, xs_) -> model.loss(model.m, TrainMode(), xs_, ps_, st),
+        model.adtype,
+    )
     optprob = OptimizationProblem(optfunc, ps)
 
     tst_overall = @timed for opt in model.optimizers
@@ -102,9 +95,13 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
                     desc = "Fitting (epoch: $ep of $(model.n_epochs)): ",
                     showspeed = true,
                 )
-                _callback = callback_f(model.m, prgr)
-                tst_one =
-                    @timed res = solve(optprob_re, opt, data; callback = _callback)
+                itr_n = [1]
+                tst_one = @timed res = solve(
+                    optprob_re,
+                    opt,
+                    data;
+                    callback = (ps_, l_) -> callback_f(ps_, l_, model.m, prgr, itr_n),
+                )
                 ProgressMeter.finish!(prgr)
             else
                 tst_one = @timed res = solve(optprob_re, opt, data)
