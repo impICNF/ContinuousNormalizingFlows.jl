@@ -19,6 +19,7 @@
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
     if CUDA.has_cuda_gpu() && USE_GPU
         push!(resources, ComputationalResources.CUDALibs())
+        gdev = Lux.gpu_device()
     end
     data_types = Type{<:AbstractFloat}[Float32]
     cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
@@ -35,7 +36,6 @@
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
     rng = Random.default_rng()
-    gdev = Lux.gpu_device()
 
     @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
                                                                                            resources,
