@@ -21,6 +21,9 @@ struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
 end
 
 function augmented_f(
+    u,
+    p,
+    t,
     icnf::FFJORD{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     st::Any;
@@ -28,26 +31,25 @@ function augmented_f(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
+    n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug)]
-        v_pb = AbstractDifferentiation.value_and_pullback_function(
-            differentiation_backend,
-            x -> first(LuxCore.apply(icnf.nn, x, p, st)),
-            z,
-        )
-        mz, ϵJ = v_pb(ϵ)
-        ϵJ = only(ϵJ)
-        trace_J = ϵJ ⋅ ϵ
-        vcat(mz, -trace_J)
-    end
-    f_aug
+    z = @view u[begin:(end - n_aug - 1)]
+    v_pb = AbstractDifferentiation.value_and_pullback_function(
+        differentiation_backend,
+        x -> first(LuxCore.apply(icnf.nn, x, p, st)),
+        z,
+    )
+    mz, ϵJ = v_pb(ϵ)
+    ϵJ = only(ϵJ)
+    trace_J = ϵJ ⋅ ϵ
+    vcat(mz, -trace_J)
 end
 
 function augmented_f(
+    u,
+    p,
+    t,
     icnf::FFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     st::Any,
@@ -56,21 +58,20 @@ function augmented_f(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
+    n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
-        ϵJ = only(back(ϵ))
-        trace_J = sum(ϵJ .* ϵ; dims = 1)
-        vcat(mz, -trace_J)
-    end
-    f_aug
+    z = @view u[begin:(end - n_aug - 1), :]
+    mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
+    ϵJ = only(back(ϵ))
+    trace_J = sum(ϵJ .* ϵ; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 function augmented_f(
+    u,
+    p,
+    t,
     icnf::FFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     st::Any,
@@ -79,24 +80,20 @@ function augmented_f(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
+    n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        mz = first(LuxCore.apply(icnf.nn, z, p, st))
-        ϵJ = reshape(
-            auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
-            size(z),
-        )
-        trace_J = sum(ϵJ .* ϵ; dims = 1)
-        vcat(mz, -trace_J)
-    end
-    f_aug
+    z = @view u[begin:(end - n_aug - 1), :]
+    mz = first(LuxCore.apply(icnf.nn, z, p, st))
+    ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+    trace_J = sum(ϵJ .* ϵ; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 function augmented_f(
+    u,
+    p,
+    t,
     icnf::FFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     st::Any,
@@ -105,19 +102,12 @@ function augmented_f(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
-    n_aug = n_augment(icnf, mode) + 1
+    n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, n_batch)
-
-    function f_aug(u, p, t)
-        z = @view u[begin:(end - n_aug), :]
-        mz = first(LuxCore.apply(icnf.nn, z, p, st))
-        Jϵ = reshape(
-            auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ),
-            size(z),
-        )
-        trace_J = sum(ϵ .* Jϵ; dims = 1)
-        vcat(mz, -trace_J)
-    end
-    f_aug
+    z = @view u[begin:(end - n_aug - 1), :]
+    mz = first(LuxCore.apply(icnf.nn, z, p, st))
+    Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+    trace_J = sum(ϵ .* Jϵ; dims = 1)
+    vcat(mz, -trace_J)
 end

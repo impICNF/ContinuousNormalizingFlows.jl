@@ -1,14 +1,5 @@
 export CondICNFModel, CondICNFDist
 
-# SciML interface
-
-function loss_f(icnf::AbstractCondICNF, loss::Function, st::Any)
-    @inline function f(ps, θ, xs, ys)
-        loss(icnf, TrainMode(), xs, ys, ps, st)
-    end
-    f
-end
-
 # MLJ interface
 
 mutable struct CondICNFModel <: MLJICNF
@@ -67,8 +58,10 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         ps = gdev(ps)
         st = gdev(st)
     end
-    _loss = loss_f(model.m, model.loss, st)
-    optfunc = OptimizationFunction(_loss, model.adtype)
+    optfunc = OptimizationFunction(
+        (ps_, θ, xs_, ys_) -> model.loss(model.m, TrainMode(), xs_, ys_, ps_, st),
+        model.adtype,
+    )
     optprob = OptimizationProblem(optfunc, ps)
     tst_overall = @timed for opt in model.optimizers
         tst_epochs = @timed for ep in 1:(model.n_epochs)
@@ -104,9 +97,13 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                     desc = "Fitting (epoch: $ep of $(model.n_epochs)): ",
                     showspeed = true,
                 )
-                _callback = callback_f(model.m, prgr)
-                tst_one =
-                    @timed res = solve(optprob_re, opt, data; callback = _callback)
+                itr_n = [1]
+                tst_one = @timed res = solve(
+                    optprob_re,
+                    opt,
+                    data;
+                    callback = (ps_, l_) -> callback_f(ps_, l_, model.m, prgr, itr_n),
+                )
                 ProgressMeter.finish!(prgr)
 
             else
