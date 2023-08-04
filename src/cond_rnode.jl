@@ -65,12 +65,13 @@ function construct(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondRNODE{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -93,12 +94,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondRNODE{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -116,12 +118,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondRNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -142,12 +145,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondRNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,

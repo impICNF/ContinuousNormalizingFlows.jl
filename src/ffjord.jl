@@ -21,11 +21,12 @@ struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -46,11 +47,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -66,11 +68,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -86,11 +89,12 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::FFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,

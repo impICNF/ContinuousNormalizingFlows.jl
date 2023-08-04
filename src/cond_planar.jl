@@ -19,12 +19,13 @@ struct CondPlanar{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondPlanar{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -47,12 +48,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondPlanar{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -75,12 +77,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondPlanar{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -96,12 +99,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondPlanar{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
@@ -120,12 +124,13 @@ function augmented_f(
 end
 
 function augmented_f(
-    u,
-    p,
-    t,
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondPlanar{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{<:Real},
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
