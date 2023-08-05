@@ -1,11 +1,19 @@
 @setup_workload begin
     @compile_workload begin
+        fllprcmpltn = @load_preference("fullprecompilation", false)
         rng = Random.default_rng()
-        mts = Type{<:AbstractICNF}[RNODE]
-        cmts = Type{<:AbstractCondICNF}[CondRNODE]
-        cmodes = Type{<:ComputeMode}[ADVectorMode, ZygoteMatrixMode, SDVecJacMatrixMode]
+        mts =
+            fllprcmpltn ? Type{<:AbstractICNF}[RNODE, FFJORD, Planar] :
+            Type{<:AbstractICNF}[RNODE]
+        cmts =
+            fllprcmpltn ? Type{<:AbstractCondICNF}[CondRNODE, CondFFJORD, CondPlanar] :
+            Type{<:AbstractCondICNF}[]
+        cmodes =
+            fllprcmpltn ?
+            Type{<:ComputeMode}[ADVectorMode, ZygoteMatrixMode, SDVecJacMatrixMode] :
+            Type{<:ComputeMode}[ZygoteMatrixMode]
         omodes = Mode[TrainMode(), TestMode()]
-        nvars = 2
+        nvars = 1
         r = rand(Float32, nvars)
         r_arr = hcat(r)
         r2 = rand(Float32, nvars)
@@ -28,7 +36,7 @@
         end
         for cmode in cmodes, omode in omodes, mt in cmts
             if mt <: CondPlanar
-                nn = PlanarLayer(nvars, tanh; cond = true)
+                nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
             else
                 nn = Lux.Dense(2 * nvars => nvars, tanh)
             end

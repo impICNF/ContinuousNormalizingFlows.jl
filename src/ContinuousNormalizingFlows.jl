@@ -26,6 +26,7 @@ using AbstractDifferentiation,
     OrdinaryDiffEq,
     PackageExtensionCompat,
     PrecompileTools,
+    Preferences,
     ProgressMeter,
     Random,
     ScientificTypes,
@@ -58,7 +59,9 @@ include("cond_planar.jl")
 
 include("utils.jl")
 
-@static if isdefined(Base, :get_extension)
+dprcmpltn = @load_preference("doprecompilation", true)
+
+@static if isdefined(Base, :get_extension) && dprcmpltn
     include("precompile.jl")
 end
 
