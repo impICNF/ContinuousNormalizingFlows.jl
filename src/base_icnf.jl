@@ -8,7 +8,7 @@ function inference_prob(
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -36,7 +36,7 @@ function inference_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(xs, zrs),
-        steer_tspan(icnf, mode, tspan, steer_rate, rng),
+        steer_tspan(icnf, mode; tspan, steerdist, rng),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -52,7 +52,7 @@ function inference(
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -66,7 +66,7 @@ function inference(
         ps,
         st;
         tspan,
-        steer_rate,
+        steerdist,
         basedist,
         differentiation_backend,
         rng,
@@ -91,7 +91,7 @@ function inference_prob(
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -119,7 +119,7 @@ function inference_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(xs, zrs),
-        steer_tspan(icnf, mode, tspan, steer_rate, rng),
+        steer_tspan(icnf, mode; tspan, steerdist, rng),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -135,7 +135,7 @@ function inference(
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -149,7 +149,7 @@ function inference(
         ps,
         st;
         tspan,
-        steer_rate,
+        steerdist,
         basedist,
         differentiation_backend,
         rng,
@@ -173,7 +173,7 @@ function generate_prob(
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -202,7 +202,7 @@ function generate_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
-        reverse(steer_tspan(icnf, mode, tspan, steer_rate, rng)),
+        reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -216,7 +216,7 @@ function generate(
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -229,7 +229,7 @@ function generate(
         ps,
         st;
         tspan,
-        steer_rate,
+        steerdist,
         basedist,
         differentiation_backend,
         rng,
@@ -252,7 +252,7 @@ function generate_prob(
     n::Integer;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -281,7 +281,7 @@ function generate_prob(
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         vcat(new_xs, zrs),
-        reverse(steer_tspan(icnf, mode, tspan, steer_rate, rng)),
+        reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
         ps,
         sol_args...;
         sol_kwargs...,
@@ -297,7 +297,7 @@ function generate(
     n::Integer;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -311,7 +311,7 @@ function generate(
         st,
         n;
         tspan,
-        steer_rate,
+        steerdist,
         basedist,
         differentiation_backend,
         rng,
@@ -334,7 +334,7 @@ end
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -348,7 +348,9 @@ end
             xs,
             ps,
             st;
+            resource,
             tspan,
+            steerdist,
             basedist,
             differentiation_backend,
             rng,
@@ -366,7 +368,7 @@ end
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -381,7 +383,9 @@ end
                 xs,
                 ps,
                 st;
+                resource,
                 tspan,
+                steerdist,
                 basedist,
                 differentiation_backend,
                 rng,

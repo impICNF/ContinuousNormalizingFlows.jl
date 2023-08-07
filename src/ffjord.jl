@@ -14,7 +14,7 @@ struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
     resource::AbstractResource
     basedist::Distribution
     tspan::NTuple{2, T}
-    steer_rate::T
+    steerdist::Distribution
     differentiation_backend::AbstractDifferentiation.AbstractBackend
     sol_args::Tuple
     sol_kwargs::Dict

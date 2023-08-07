@@ -67,8 +67,6 @@
                 nvars;
                 data_type,
                 resource,
-                augmented = true,
-                steer = true,
                 steer_rate = convert(data_type, 0.1),
                 differentiation_backend = adb_u,
             ) :
@@ -212,8 +210,6 @@
                 nvars;
                 data_type,
                 resource,
-                augmented = true,
-                steer = true,
                 steer_rate = convert(data_type, 0.1),
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
@@ -362,8 +358,6 @@
                 nvars;
                 data_type,
                 resource,
-                augmented = true,
-                steer = true,
                 steer_rate = convert(data_type, 0.1),
                 differentiation_backend = adb_u,
             ) :
@@ -515,8 +509,6 @@
                 nvars;
                 data_type,
                 resource,
-                augmented = true,
-                steer = true,
                 steer_rate = convert(data_type, 0.1),
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)

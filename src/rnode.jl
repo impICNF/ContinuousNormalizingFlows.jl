@@ -14,7 +14,7 @@ struct RNODE{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
     resource::AbstractResource
     basedist::Distribution
     tspan::NTuple{2, T}
-    steer_rate::T
+    steerdist::Distribution
     differentiation_backend::AbstractDifferentiation.AbstractBackend
     sol_args::Tuple
     sol_kwargs::Dict
@@ -29,8 +29,6 @@ function construct(
     naugmented::Integer = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
-    augmented::Bool = false,
-    steer::Bool = false,
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
@@ -47,17 +45,16 @@ function construct(
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
-    !augmented && !iszero(naugmented) && error("'naugmented' > 0: 'augmented' must be true")
-    !steer && !iszero(steer_rate) && error("'steer_rate' > 0: 'steer' must be true")
+    steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    aicnf{data_type, compute_mode, augmented, steer}(
+    aicnf{data_type, compute_mode, !iszero(naugmented), !iszero(steer_rate)}(
         nn,
         nvars,
         naugmented,
         resource,
         basedist,
         tspan,
-        steer_rate,
+        steerdist,
         differentiation_backend,
         sol_args,
         sol_kwargs,
@@ -167,7 +164,7 @@ end
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -182,8 +179,9 @@ end
         xs,
         ps,
         st;
+        resource,
         tspan,
-        steer_rate,
+        steerdist,
         basedist,
         differentiation_backend,
         rng,
@@ -201,7 +199,7 @@ end
     st::Any;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     rng::AbstractRNG = Random.default_rng(),
@@ -216,8 +214,9 @@ end
         xs,
         ps,
         st;
+        resource,
         tspan,
-        steer_rate,
+        steerdist,
         basedist,
         differentiation_backend,
         rng,

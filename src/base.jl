@@ -7,8 +7,6 @@ function construct(
     naugmented::Integer = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
-    augmented::Bool = false,
-    steer::Bool = false,
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
@@ -23,17 +21,16 @@ function construct(
         :reltol => 1e-2 + eps(1e-2),
     ),
 )
-    !augmented && !iszero(naugmented) && error("'naugmented' > 0: 'augmented' must be true")
-    !steer && !iszero(steer_rate) && error("'steer_rate' > 0: 'steer' must be true")
+    steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    aicnf{data_type, compute_mode, augmented, steer}(
+    aicnf{data_type, compute_mode, !iszero(naugmented), !iszero(steer_rate)}(
         nn,
         nvars,
         naugmented,
         resource,
         basedist,
         tspan,
-        steer_rate,
+        steerdist,
         differentiation_backend,
         sol_args,
         sol_kwargs,
@@ -67,35 +64,25 @@ end
     0
 end
 
-@inline function steer_rate_value(
-    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, AUGMENTED, true},
-) where {AUGMENTED}
-    icnf.steer_rate
-end
-
-@inline function steer_rate_value(::AbstractFlows{T}) where {T <: AbstractFloat}
-    zero(T)
-end
-
 @inline function steer_tspan(
     icnf::AbstractFlows{T, <:ComputeMode, AUGMENTED, true},
-    ::TrainMode,
+    ::TrainMode;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     rng::AbstractRNG = Random.default_rng(),
 ) where {T <: AbstractFloat, AUGMENTED}
     t₀, t₁ = tspan
-    steer_b = steer_rate * t₁
-    d_s = Uniform{T}(t₁ - steer_b, t₁ + steer_b)
-    t₁_new = convert(T, rand(rng, d_s))
+    Δt = abs(t₁ - t₀)
+    r = convert(T, rand(rng, steerdist))
+    t₁_new = muladd(Δt, r, t₁)
     (t₀, t₁_new)
 end
 
 @inline function steer_tspan(
     icnf::AbstractFlows,
-    ::Mode,
+    ::Mode;
     tspan::NTuple{2} = icnf.tspan,
-    steer_rate::AbstractFloat = steer_rate_value(icnf),
+    steerdist::Distribution = icnf.steerdist,
     rng::AbstractRNG = Random.default_rng(),
 )
     tspan
