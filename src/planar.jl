@@ -5,17 +5,26 @@ Implementation of Planar Flows from
 
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
-struct Planar{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
-       AbstractICNF{T, CM, AUGMENTED, STEER}
+struct Planar{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+    RESOURCE <: AbstractResource,
+    BASEDIST <: Distribution,
+    TSPAN <: NTuple{2, T},
+    STEERDIST <: Distribution,
+    DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+} <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::PlanarLayer
-    nvars::Integer
-    naugmented::Integer
+    nvars::Int
+    naugmented::Int
 
-    resource::AbstractResource
-    basedist::Distribution
-    tspan::NTuple{2, T}
-    steerdist::Distribution
-    differentiation_backend::AbstractDifferentiation.AbstractBackend
+    resource::RESOURCE
+    basedist::BASEDIST
+    tspan::TSPAN
+    steerdist::STEERDIST
+    differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
 end

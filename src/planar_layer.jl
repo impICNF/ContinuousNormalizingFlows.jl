@@ -10,7 +10,7 @@ struct PlanarLayer{use_bias, cond, F1, F2, F3} <: LuxCore.AbstractExplicitLayer
     nvars::Int
     init_weight::F2
     init_bias::F3
-    n_cond::Integer
+    n_cond::Int
 end
 
 function PlanarLayer(
@@ -21,7 +21,7 @@ function PlanarLayer(
     use_bias::Bool = true,
     allow_fast_activation::Bool = true,
     cond::Bool = false,
-    n_cond::Integer = 0,
+    n_cond::Int = 0,
 )
     activation = allow_fast_activation ? NNlib.fast_act(activation) : activation
     PlanarLayer{use_bias, cond, typeof(activation), typeof(init_weight), typeof(init_bias)}(

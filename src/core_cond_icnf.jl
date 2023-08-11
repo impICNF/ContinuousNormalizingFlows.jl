@@ -7,11 +7,11 @@ mutable struct CondICNFModel <: MLJICNF
     loss::Function
 
     optimizers::AbstractVector
-    n_epochs::Integer
+    n_epochs::Int
     adtype::ADTypes.AbstractADType
 
     use_batch::Bool
-    batch_size::Integer
+    batch_size::Int
     have_callback::Bool
 
     data_type::Type{<:AbstractFloat}
@@ -22,10 +22,10 @@ function CondICNFModel(
     m::AbstractCondICNF{T, CM},
     loss::Function = loss;
     optimizers::AbstractVector = Any[Optimisers.Lion(),],
-    n_epochs::Integer = 300,
+    n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,
-    batch_size::Integer = 32,
+    batch_size::Int = 32,
     have_callback::Bool = true,
 ) where {T <: AbstractFloat, CM <: ComputeMode}
     CondICNFModel(

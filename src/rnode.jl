@@ -5,17 +5,26 @@ Implementation of RNODE from
 
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
 """
-struct RNODE{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
-       AbstractICNF{T, CM, AUGMENTED, STEER}
+struct RNODE{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+    RESOURCE <: AbstractResource,
+    BASEDIST <: Distribution,
+    TSPAN <: NTuple{2, T},
+    STEERDIST <: Distribution,
+    DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+} <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
-    nvars::Integer
-    naugmented::Integer
+    nvars::Int
+    naugmented::Int
 
-    resource::AbstractResource
-    basedist::Distribution
-    tspan::NTuple{2, T}
-    steerdist::Distribution
-    differentiation_backend::AbstractDifferentiation.AbstractBackend
+    resource::RESOURCE
+    basedist::BASEDIST
+    tspan::TSPAN
+    steerdist::STEERDIST
+    differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
     λ₁::T
@@ -25,8 +34,8 @@ end
 function construct(
     aicnf::Type{<:RNODE},
     nn,
-    nvars::Integer,
-    naugmented::Integer = 0;
+    nvars::Int,
+    naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     resource::AbstractResource = CPU1(),
@@ -47,7 +56,17 @@ function construct(
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    aicnf{data_type, compute_mode, !iszero(naugmented), !iszero(steer_rate)}(
+    aicnf{
+        data_type,
+        compute_mode,
+        !iszero(naugmented),
+        !iszero(steer_rate),
+        typeof(resource),
+        typeof(basedist),
+        typeof(tspan),
+        typeof(steerdist),
+        typeof(differentiation_backend),
+    }(
         nn,
         nvars,
         naugmented,

@@ -249,7 +249,7 @@ function generate_prob(
     mode::Mode,
     ps::Any,
     st::Any,
-    n::Integer;
+    n::Int;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steerdist::Distribution = icnf.steerdist,
@@ -294,7 +294,7 @@ function generate(
     mode::Mode,
     ps::Any,
     st::Any,
-    n::Integer;
+    n::Int;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steerdist::Distribution = icnf.steerdist,

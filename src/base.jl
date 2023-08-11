@@ -3,8 +3,8 @@ export construct
 function construct(
     aicnf::Type{<:AbstractFlows},
     nn,
-    nvars::Integer,
-    naugmented::Integer = 0;
+    nvars::Int,
+    naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     resource::AbstractResource = CPU1(),
@@ -23,7 +23,17 @@ function construct(
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    aicnf{data_type, compute_mode, !iszero(naugmented), !iszero(steer_rate)}(
+    aicnf{
+        data_type,
+        compute_mode,
+        !iszero(naugmented),
+        !iszero(steer_rate),
+        typeof(resource),
+        typeof(basedist),
+        typeof(tspan),
+        typeof(steerdist),
+        typeof(differentiation_backend),
+    }(
         nn,
         nvars,
         naugmented,
