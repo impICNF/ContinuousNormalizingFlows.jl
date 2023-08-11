@@ -263,7 +263,7 @@ function generate_prob(
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-    n::Integer;
+    n::Int;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steerdist::Distribution = icnf.steerdist,
@@ -310,7 +310,7 @@ function generate(
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-    n::Integer;
+    n::Int;
     resource::AbstractResource = icnf.resource,
     tspan::NTuple{2} = icnf.tspan,
     steerdist::Distribution = icnf.steerdist,

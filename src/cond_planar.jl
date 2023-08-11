@@ -3,17 +3,26 @@ export CondPlanar
 """
 Implementation of Planar (Conditional Version)
 """
-struct CondPlanar{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
-       AbstractCondICNF{T, CM, AUGMENTED, STEER}
+struct CondPlanar{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+    RESOURCE <: AbstractResource,
+    BASEDIST <: Distribution,
+    TSPAN <: NTuple{2, T},
+    STEERDIST <: Distribution,
+    DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+} <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::PlanarLayer
-    nvars::Integer
-    naugmented::Integer
+    nvars::Int
+    naugmented::Int
 
-    resource::AbstractResource
-    basedist::Distribution
-    tspan::NTuple{2, T}
-    steerdist::Distribution
-    differentiation_backend::AbstractDifferentiation.AbstractBackend
+    resource::RESOURCE
+    basedist::BASEDIST
+    tspan::TSPAN
+    steerdist::STEERDIST
+    differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
 end

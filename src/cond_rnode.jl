@@ -3,17 +3,26 @@ export CondRNODE
 """
 Implementation of RNODE (Conditional Version)
 """
-struct CondRNODE{T <: AbstractFloat, CM <: ComputeMode, AUGMENTED, STEER} <:
-       AbstractCondICNF{T, CM, AUGMENTED, STEER}
+struct CondRNODE{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    AUGMENTED,
+    STEER,
+    RESOURCE <: AbstractResource,
+    BASEDIST <: Distribution,
+    TSPAN <: NTuple{2, T},
+    STEERDIST <: Distribution,
+    DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+} <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::LuxCore.AbstractExplicitLayer
-    nvars::Integer
-    naugmented::Integer
+    nvars::Int
+    naugmented::Int
 
-    resource::AbstractResource
-    basedist::Distribution
-    tspan::NTuple{2, T}
-    steerdist::Distribution
-    differentiation_backend::AbstractDifferentiation.AbstractBackend
+    resource::RESOURCE
+    basedist::BASEDIST
+    tspan::TSPAN
+    steerdist::STEERDIST
+    differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
     λ₁::T
@@ -23,8 +32,8 @@ end
 function construct(
     aicnf::Type{<:CondRNODE},
     nn,
-    nvars::Integer,
-    naugmented::Integer = 0;
+    nvars::Int,
+    naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
     resource::AbstractResource = CPU1(),
@@ -45,7 +54,17 @@ function construct(
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    aicnf{data_type, compute_mode, !iszero(naugmented), !iszero(steer_rate)}(
+    aicnf{
+        data_type,
+        compute_mode,
+        !iszero(naugmented),
+        !iszero(steer_rate),
+        typeof(resource),
+        typeof(basedist),
+        typeof(tspan),
+        typeof(steerdist),
+        typeof(differentiation_backend),
+    }(
         nn,
         nvars,
         naugmented,
