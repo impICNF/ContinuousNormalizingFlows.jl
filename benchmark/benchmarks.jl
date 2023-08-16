@@ -1,4 +1,4 @@
-using ContinuousNormalizingFlows, BenchmarkTools, PkgBenchmark
+using ContinuousNormalizingFlows, BenchmarkTools, Flux, Lux, PkgBenchmark, Random, Zygote
 
 SUITE = BenchmarkGroup()
 
