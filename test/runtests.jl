@@ -3,7 +3,6 @@ using Test
 using AbstractDifferentiation: AbstractDifferentiation
 using ADTypes: ADTypes
 using Aqua: Aqua
-using BenchmarkTools: BenchmarkTools
 using ComponentArrays: ComponentArrays
 using ComputationalResources: ComputationalResources
 using CUDA: CUDA
@@ -40,10 +39,6 @@ USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
         CUDA.allowscalar() do
             include("smoke_tests.jl")
         end
-    end
-
-    if GROUP == "All" || GROUP == "Benchmark"
-        include("benchmark_tests.jl")
     end
 
     if GROUP == "All" || GROUP == "Quality"

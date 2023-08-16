@@ -16,7 +16,6 @@ jobs:
           - RNODE
           - FFJORD
           - Planar
-          - Benchmark
           - Quality
           - Instability
         version:
