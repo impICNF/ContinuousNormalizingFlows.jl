@@ -46,7 +46,7 @@ CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 CUDAExtICNF = "CUDA"
 
 [compat]
-ADTypes = "0.1"
+ADTypes = "0.1, 0.2"
 AbstractDifferentiation = "0.5"
 CUDA = "4"
 ChainRulesCore = "1"
