@@ -80,7 +80,7 @@ function inference(
     Δlogp = fsol[(end - n_aug)]
     augs = @view fsol[(end - n_aug + 1):end]
     logp̂x = logpdf(basedist, z) - Δlogp
-    iszero(n_aug) ? (logp̂x,) : (logp̂x, augs...)
+    (logp̂x, augs...)
 end
 
 function inference_prob(
@@ -163,7 +163,7 @@ function inference(
     Δlogp = @view fsol[(end - n_aug), :]
     augs = @view fsol[(end - n_aug + 1):end, :]
     logp̂x = logpdf(basedist, z) - Δlogp
-    iszero(n_aug) ? (logp̂x,) : (logp̂x, eachrow(augs)...)
+    (logp̂x, eachrow(augs)...)
 end
 
 function generate_prob(
