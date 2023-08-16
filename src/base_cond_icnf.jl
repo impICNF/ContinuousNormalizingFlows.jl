@@ -82,9 +82,13 @@ function inference(
     fsol = @view sol[:, end]
     z = @view fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
-    augs = @view fsol[(end - n_aug + 1):end]
     logp̂x = logpdf(basedist, z) - Δlogp
-    (logp̂x, augs...)
+    if iszero(n_aug)
+        (logp̂x,)
+    else
+        augs = @view fsol[(end - n_aug + 1):end]
+        (logp̂x, augs...)
+    end
 end
 
 function inference_prob(
@@ -169,9 +173,13 @@ function inference(
     fsol = @view sol[:, :, end]
     z = @view fsol[begin:(end - n_aug - 1), :]
     Δlogp = @view fsol[(end - n_aug), :]
-    augs = @view fsol[(end - n_aug + 1):end, :]
     logp̂x = logpdf(basedist, z) - Δlogp
-    (logp̂x, eachrow(augs)...)
+    if iszero(n_aug)
+        (logp̂x,)
+    else
+        augs = @view fsol[(end - n_aug + 1):end, :]
+        (logp̂x, eachrow(augs)...)
+    end
 end
 
 function generate_prob(
