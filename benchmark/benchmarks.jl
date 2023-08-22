@@ -1,5 +1,12 @@
 using ContinuousNormalizingFlows,
-    BenchmarkTools, Flux, Lux, PkgBenchmark, Random, SciMLSensitivity, Zygote
+    BenchmarkTools,
+    ComponentArrays,
+    Flux,
+    Lux,
+    PkgBenchmark,
+    Random,
+    SciMLSensitivity,
+    Zygote
 
 SUITE = BenchmarkGroup()
 
@@ -40,6 +47,7 @@ nn2 = Lux.Dense(nvars => nvars, tanh)
 icnf2 = construct(RNODE, nn2, nvars; compute_mode = ZygoteMatrixMode)
 icnf2.sol_kwargs[:sensealg] = ForwardDiffSensitivity()
 ps2, st2 = Lux.setup(rng, icnf2)
+ps2 = ComponentArray(ps2)
 
 loss(icnf2, TrainMode(), r, ps2, st2)
 loss(icnf2, TestMode(), r, ps2, st2)
