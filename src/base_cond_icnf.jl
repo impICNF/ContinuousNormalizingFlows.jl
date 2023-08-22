@@ -39,8 +39,7 @@ function inference_prob(
         func,
         vcat(xs, zrs),
         steer_tspan(icnf, mode; tspan, steerdist, rng),
-        ps,
-        sol_args...;
+        ps;
         sol_kwargs...,
     )
     prob
@@ -130,8 +129,7 @@ function inference_prob(
         func,
         vcat(xs, zrs),
         steer_tspan(icnf, mode; tspan, steerdist, rng),
-        ps,
-        sol_args...;
+        ps;
         sol_kwargs...,
     )
     prob
@@ -221,8 +219,7 @@ function generate_prob(
         func,
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
-        ps,
-        sol_args...;
+        ps;
         sol_kwargs...,
     )
     prob
@@ -305,8 +302,7 @@ function generate_prob(
         func,
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
-        ps,
-        sol_args...;
+        ps;
         sol_kwargs...,
     )
     prob
