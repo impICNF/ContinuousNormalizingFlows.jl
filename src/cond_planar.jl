@@ -43,7 +43,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = LuxCore.apply(icnf.nn, vcat(z, ys), p, st)
+    mz, _ = icnf.nn(vcat(z, ys), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -72,7 +72,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = LuxCore.apply(icnf.nn, vcat(z, ys), p, st)
+    mz, _ = icnf.nn(vcat(z, ys), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -101,7 +101,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
+    mz, back = Zygote.pullback(x -> first(icnf.nn(vcat(x, ys), p, st)), z)
     ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
@@ -122,11 +122,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-    ϵJ = reshape(
-        auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
-        size(z),
-    )
+    mz = first(icnf.nn(vcat(z, ys), p, st))
+    ϵJ = reshape(auto_vecjac(x -> first(icnf.nn(vcat(x, ys), p, st)), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -146,11 +143,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-    Jϵ = reshape(
-        auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
-        size(z),
-    )
+    mz = first(icnf.nn(vcat(z, ys), p, st))
+    Jϵ = reshape(auto_jacvec(x -> first(icnf.nn(vcat(x, ys), p, st)), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     vcat(mz, -trace_J)
 end

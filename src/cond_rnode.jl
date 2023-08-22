@@ -98,7 +98,7 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
-        x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
+        x -> first(icnf.nn(vcat(x, ys), p, st)),
         z,
     )
     ż, ϵJ = v_pb(ϵ)
@@ -124,7 +124,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
+    ż, back = Zygote.pullback(x -> first(icnf.nn(vcat(x, ys), p, st)), z)
     ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -147,11 +147,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-    ϵJ = reshape(
-        auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
-        size(z),
-    )
+    ż = first(icnf.nn(vcat(z, ys), p, st))
+    ϵJ = reshape(auto_vecjac(x -> first(icnf.nn(vcat(x, ys), p, st)), z, ϵ), size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -173,11 +170,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-    Jϵ = reshape(
-        auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
-        size(z),
-    )
+    ż = first(icnf.nn(vcat(z, ys), p, st))
+    Jϵ = reshape(auto_jacvec(x -> first(icnf.nn(vcat(x, ys), p, st)), z, ϵ), size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))
