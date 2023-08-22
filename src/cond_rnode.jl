@@ -8,13 +8,14 @@ struct CondRNODE{
     CM <: ComputeMode,
     AUGMENTED,
     STEER,
+    NN <: LuxCore.AbstractExplicitLayer,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
-    nn::LuxCore.AbstractExplicitLayer
+    nn::NN
     nvars::Int
     naugmented::Int
 

@@ -10,13 +10,14 @@ struct Planar{
     CM <: ComputeMode,
     AUGMENTED,
     STEER,
+    NN <: PlanarLayer,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
-    nn::PlanarLayer
+    nn::NN
     nvars::Int
     naugmented::Int
 
