@@ -42,8 +42,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = icnf.nn(vcat(z, ys), p, st)
+    mz = fnn(vcat(z, ys), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -71,8 +72,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = icnf.nn(vcat(z, ys), p, st)
+    mz = fnn(vcat(z, ys), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -100,9 +102,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(x -> first(icnf.nn(vcat(x, ys), p, st)), z)
-    ϵJ = only(back(ϵ))
+    mz, back = Zygote.pullback(fnn, vcat(z, ys), p, st)
+    ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -121,9 +124,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(icnf.nn(vcat(z, ys), p, st))
-    ϵJ = reshape(auto_vecjac(x -> first(icnf.nn(vcat(x, ys), p, st)), z, ϵ), size(z))
+    mz = fnn(vcat(z, ys), p, st)
+    ϵJ = reshape(auto_vecjac(x -> fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -142,9 +146,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(icnf.nn(vcat(z, ys), p, st))
-    Jϵ = reshape(auto_jacvec(x -> first(icnf.nn(vcat(x, ys), p, st)), z, ϵ), size(z))
+    mz = fnn(vcat(z, ys), p, st)
+    Jϵ = reshape(auto_jacvec(x -> fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     vcat(mz, -trace_J)
 end

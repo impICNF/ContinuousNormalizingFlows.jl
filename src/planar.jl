@@ -43,8 +43,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = icnf.nn(z, p, st)
+    mz = fnn(z, p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -71,8 +72,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = icnf.nn(z, p, st)
+    mz = fnn(z, p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -99,9 +101,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(x -> first(icnf.nn(x, p, st)), z)
-    ϵJ = only(back(ϵ))
+    mz, back = Zygote.pullback(fnn, z, p, st)
+    ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -119,9 +122,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(icnf.nn(z, p, st))
-    ϵJ = reshape(auto_vecjac(x -> first(icnf.nn(x, p, st)), z, ϵ), size(z))
+    mz = fnn(z, p, st)
+    ϵJ = reshape(auto_vecjac(x -> fnn(x, p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -139,9 +143,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(icnf.nn(z, p, st))
-    Jϵ = reshape(auto_jacvec(x -> first(icnf.nn(x, p, st)), z, ϵ), size(z))
+    mz = fnn(z, p, st)
+    Jϵ = reshape(auto_jacvec(x -> fnn(x, p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     vcat(mz, -trace_J)
 end

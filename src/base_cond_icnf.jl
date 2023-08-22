@@ -439,10 +439,11 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
         differentiation_backend,
-        x -> first(icnf.nn(vcat(x, ys), p, st)),
+        x -> fnn(vcat(x, ys), p, st),
         z,
     )
     trace_J = tr(only(J))
@@ -463,8 +464,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
+    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, x -> first(icnf.nn(vcat(x, ys), p, st)), z; resource)
+    mz, J = jacobian_batched(icnf, x -> fnn(vcat(x, ys), p, st), z; resource)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     vcat(mz, -trace_J)
 end
