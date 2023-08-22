@@ -28,6 +28,7 @@ function construct(
         compute_mode,
         !iszero(naugmented),
         !iszero(steer_rate),
+        typeof(nn),
         typeof(resource),
         typeof(basedist),
         typeof(tspan),
