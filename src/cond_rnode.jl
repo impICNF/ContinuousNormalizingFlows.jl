@@ -14,6 +14,7 @@ struct CondRNODE{
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+    _FNN <: ComposedFunction,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::Int
@@ -26,6 +27,7 @@ struct CondRNODE{
     differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
+    _fnn::_FNN
     λ₁::T
     λ₂::T
 end
@@ -54,6 +56,7 @@ function construct(
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
+    _fnn = first ∘ nn
 
     aicnf{
         data_type,
@@ -66,6 +69,7 @@ function construct(
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
+        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -77,6 +81,7 @@ function construct(
         differentiation_backend,
         sol_args,
         sol_kwargs,
+        _fnn,
         λ₁,
         λ₂,
     )
@@ -96,11 +101,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
-        x -> fnn(vcat(x, ys), p, st),
+        x -> icnf._fnn(vcat(x, ys), p, st),
         z,
     )
     ż, ϵJ = v_pb(ϵ)
@@ -125,9 +129,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(fnn, vcat(z, ys), p, st)
+    ż, back = Zygote.pullback(icnf._fnn, vcat(z, ys), p, st)
     ϵJ = first(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -149,10 +152,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = fnn(vcat(z, ys), p, st)
-    ϵJ = reshape(auto_vecjac(x -> fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    ż = icnf._fnn(vcat(z, ys), p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -173,10 +175,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = fnn(vcat(z, ys), p, st)
-    Jϵ = reshape(auto_jacvec(x -> fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    ż = icnf._fnn(vcat(z, ys), p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))

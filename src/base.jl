@@ -22,6 +22,7 @@ function construct(
     ),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
+    _fnn = first ∘ nn
 
     aicnf{
         data_type,
@@ -34,6 +35,7 @@ function construct(
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
+        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -45,6 +47,7 @@ function construct(
         differentiation_backend,
         sol_args,
         sol_kwargs,
+        _fnn,
     )
 end
 

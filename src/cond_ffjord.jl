@@ -14,6 +14,7 @@ struct CondFFJORD{
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+    _FNN <: ComposedFunction,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::Int
@@ -26,6 +27,7 @@ struct CondFFJORD{
     differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
+    _fnn::_FNN
 end
 
 function augmented_f(
@@ -42,11 +44,10 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
-        x -> fnn(vcat(x, ys), p, st),
+        x -> icnf._fnn(vcat(x, ys), p, st),
         z,
     )
     mz, ϵJ = v_pb(ϵ)
@@ -69,9 +70,8 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(fnn, vcat(z, ys), p, st)
+    mz, back = Zygote.pullback(icnf._fnn, vcat(z, ys), p, st)
     ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
@@ -91,10 +91,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = fnn(vcat(z, ys), p, st)
-    ϵJ = reshape(auto_vecjac(x -> fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    mz = icnf._fnn(vcat(z, ys), p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -113,10 +112,9 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    fnn = first ∘ icnf.nn
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = fnn(vcat(z, ys), p, st)
-    Jϵ = reshape(auto_jacvec(x -> fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    mz = icnf._fnn(vcat(z, ys), p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     vcat(mz, -trace_J)
 end
