@@ -10,13 +10,15 @@ struct RNODE{
     CM <: ComputeMode,
     AUGMENTED,
     STEER,
+    NN <: LuxCore.AbstractExplicitLayer,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+    _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
-    nn::LuxCore.AbstractExplicitLayer
+    nn::NN
     nvars::Int
     naugmented::Int
 
@@ -27,6 +29,7 @@ struct RNODE{
     differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
+    _fnn::_FNN
     λ₁::T
     λ₂::T
 end
@@ -55,17 +58,20 @@ function construct(
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
+    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,
         compute_mode,
         !iszero(naugmented),
         !iszero(steer_rate),
+        typeof(nn),
         typeof(resource),
         typeof(basedist),
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
+        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -77,6 +83,7 @@ function construct(
         differentiation_backend,
         sol_args,
         sol_kwargs,
+        _fnn,
         λ₁,
         λ₂,
     )
@@ -98,7 +105,7 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
-        x -> first(LuxCore.apply(icnf.nn, x, p, st)),
+        x -> icnf._fnn(x, p, st),
         z,
     )
     ż, ϵJ = v_pb(ϵ)
@@ -123,8 +130,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z)
-    ϵJ = only(back(ϵ))
+    ż, back = Zygote.pullback(icnf._fnn, z, p, st)
+    ϵJ = first(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -145,8 +152,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = first(LuxCore.apply(icnf.nn, z, p, st))
-    ϵJ = reshape(auto_vecjac(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+    ż = icnf._fnn(z, p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(x, p, st), z, ϵ), size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -167,8 +174,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = first(LuxCore.apply(icnf.nn, z, p, st))
-    Jϵ = reshape(auto_jacvec(x -> first(LuxCore.apply(icnf.nn, x, p, st)), z, ϵ), size(z))
+    ż = icnf._fnn(z, p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(x, p, st), z, ϵ), size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))

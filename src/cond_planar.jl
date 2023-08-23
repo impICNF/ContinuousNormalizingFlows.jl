@@ -8,13 +8,15 @@ struct CondPlanar{
     CM <: ComputeMode,
     AUGMENTED,
     STEER,
+    NN <: PlanarLayer,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
+    _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
-    nn::PlanarLayer
+    nn::NN
     nvars::Int
     naugmented::Int
 
@@ -25,6 +27,7 @@ struct CondPlanar{
     differentiation_backend::DIFFERENTIATION_BACKEND
     sol_args::Tuple
     sol_kwargs::Dict
+    _fnn::_FNN
 end
 
 function augmented_f(
@@ -42,7 +45,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = LuxCore.apply(icnf.nn, vcat(z, ys), p, st)
+    mz = icnf._fnn(vcat(z, ys), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -71,7 +74,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    mz, _ = LuxCore.apply(icnf.nn, vcat(z, ys), p, st)
+    mz = icnf._fnn(vcat(z, ys), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -100,8 +103,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z)
-    ϵJ = only(back(ϵ))
+    mz, back = Zygote.pullback(icnf._fnn, vcat(z, ys), p, st)
+    ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -121,11 +124,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-    ϵJ = reshape(
-        auto_vecjac(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
-        size(z),
-    )
+    mz = icnf._fnn(vcat(z, ys), p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     vcat(mz, -trace_J)
 end
@@ -145,11 +145,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = first(LuxCore.apply(icnf.nn, vcat(z, ys), p, st))
-    Jϵ = reshape(
-        auto_jacvec(x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)), z, ϵ),
-        size(z),
-    )
+    mz = icnf._fnn(vcat(z, ys), p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     vcat(mz, -trace_J)
 end

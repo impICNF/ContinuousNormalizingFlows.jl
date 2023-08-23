@@ -22,17 +22,20 @@ function construct(
     ),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
+    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,
         compute_mode,
         !iszero(naugmented),
         !iszero(steer_rate),
+        typeof(nn),
         typeof(resource),
         typeof(basedist),
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
+        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -44,6 +47,7 @@ function construct(
         differentiation_backend,
         sol_args,
         sol_kwargs,
+        _fnn,
     )
 end
 

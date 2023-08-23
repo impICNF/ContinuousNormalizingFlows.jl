@@ -438,7 +438,7 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
         differentiation_backend,
-        x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
+        x -> icnf._fnn(vcat(x, ys), p, st),
         z,
     )
     trace_J = tr(only(J))
@@ -460,12 +460,7 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(
-        icnf,
-        x -> first(LuxCore.apply(icnf.nn, vcat(x, ys), p, st)),
-        z;
-        resource,
-    )
+    mz, J = jacobian_batched(icnf, x -> icnf._fnn(vcat(x, ys), p, st), z; resource)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     vcat(mz, -trace_J)
 end
