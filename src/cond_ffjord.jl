@@ -14,7 +14,7 @@ struct CondFFJORD{
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
-    _FNN <: ComposedFunction,
+    _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::Int

@@ -22,7 +22,7 @@ function construct(
     ),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
-    _fnn = first ∘ nn
+    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,

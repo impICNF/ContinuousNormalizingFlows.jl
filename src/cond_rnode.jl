@@ -14,7 +14,7 @@ struct CondRNODE{
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
-    _FNN <: ComposedFunction,
+    _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::Int
@@ -56,7 +56,7 @@ function construct(
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
-    _fnn = first ∘ nn
+    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,
