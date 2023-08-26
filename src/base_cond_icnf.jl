@@ -37,7 +37,7 @@ function inference_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        vcat(xs, zrs),
+        [xs; zrs],
         steer_tspan(icnf, mode; tspan, steerdist, rng),
         ps;
         sol_kwargs...,
@@ -127,7 +127,7 @@ function inference_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        vcat(xs, zrs),
+        [xs; zrs],
         steer_tspan(icnf, mode; tspan, steerdist, rng),
         ps;
         sol_kwargs...,
@@ -217,7 +217,7 @@ function generate_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        vcat(new_xs, zrs),
+        [new_xs; zrs],
         reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
         ps;
         sol_kwargs...,
@@ -300,7 +300,7 @@ function generate_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        vcat(new_xs, zrs),
+        [new_xs; zrs],
         reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
         ps;
         sol_kwargs...,
@@ -438,11 +438,11 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
         differentiation_backend,
-        x -> icnf._fnn(vcat(x, ys), p, st),
+        x -> icnf._fnn([x; ys], p, st),
         z,
     )
     trace_J = tr(only(J))
-    vcat(mz, -trace_J)
+    [mz; -trace_J]
 end
 
 function augmented_f(
@@ -460,9 +460,9 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, x -> icnf._fnn(vcat(x, ys), p, st), z; resource)
+    mz, J = jacobian_batched(icnf, x -> icnf._fnn([x; ys], p, st), z; resource)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
-    vcat(mz, -trace_J)
+    [mz; -trace_J]
 end
 
 @inline function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)

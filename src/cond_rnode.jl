@@ -104,7 +104,7 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
-        x -> icnf._fnn(vcat(x, ys), p, st),
+        x -> icnf._fnn([x; ys], p, st),
         z,
     )
     ż, ϵJ = v_pb(ϵ)
@@ -112,7 +112,7 @@ function augmented_f(
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 function augmented_f(
@@ -130,12 +130,12 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(icnf._fnn, vcat(z, ys), p, st)
+    ż, back = Zygote.pullback(icnf._fnn, [z; ys], p, st)
     ϵJ = first(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 function augmented_f(
@@ -153,12 +153,12 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = icnf._fnn(vcat(z, ys), p, st)
-    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    ż = icnf._fnn([z; ys], p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn([x; ys], p, st), z, ϵ), size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 function augmented_f(
@@ -176,12 +176,12 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż = icnf._fnn(vcat(z, ys), p, st)
-    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    ż = icnf._fnn([z; ys], p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn([x; ys], p, st), z, ϵ), size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 @inline function loss(

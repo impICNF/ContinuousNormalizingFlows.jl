@@ -113,7 +113,7 @@ function augmented_f(
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 function augmented_f(
@@ -135,7 +135,7 @@ function augmented_f(
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 function augmented_f(
@@ -157,7 +157,7 @@ function augmented_f(
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 function augmented_f(
@@ -179,7 +179,7 @@ function augmented_f(
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))
-    vcat(ż, -l̇, Ė, ṅ)
+    [ż; -l̇; Ė; ṅ]
 end
 
 @inline function loss(

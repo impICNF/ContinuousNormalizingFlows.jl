@@ -47,13 +47,13 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
-        x -> icnf._fnn(vcat(x, ys), p, st),
+        x -> icnf._fnn([x; ys], p, st),
         z,
     )
     mz, ϵJ = v_pb(ϵ)
     ϵJ = only(ϵJ)
     trace_J = ϵJ ⋅ ϵ
-    vcat(mz, -trace_J)
+    [mz; -trace_J]
 end
 
 function augmented_f(
@@ -71,10 +71,10 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(icnf._fnn, vcat(z, ys), p, st)
+    mz, back = Zygote.pullback(icnf._fnn, [z; ys], p, st)
     ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    vcat(mz, -trace_J)
+    [mz; -trace_J]
 end
 
 function augmented_f(
@@ -92,10 +92,10 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(vcat(z, ys), p, st)
-    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    mz = icnf._fnn([z; ys], p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn([x; ys], p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    vcat(mz, -trace_J)
+    [mz; -trace_J]
 end
 
 function augmented_f(
@@ -113,8 +113,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(vcat(z, ys), p, st)
-    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    mz = icnf._fnn([z; ys], p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn([x; ys], p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
-    vcat(mz, -trace_J)
+    [mz; -trace_J]
 end
