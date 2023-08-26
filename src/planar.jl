@@ -57,7 +57,7 @@ function augmented_f(
                 ),
             ),
         )
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -85,7 +85,7 @@ function augmented_f(
                 ),
             ),
         )
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -105,7 +105,7 @@ function augmented_f(
     mz, back = Zygote.pullback(icnf._fnn, z, p, st)
     ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -125,7 +125,7 @@ function augmented_f(
     mz = icnf._fnn(z, p, st)
     ϵJ = reshape(auto_vecjac(x -> icnf._fnn(x, p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -145,5 +145,5 @@ function augmented_f(
     mz = icnf._fnn(z, p, st)
     Jϵ = reshape(auto_jacvec(x -> icnf._fnn(x, p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
