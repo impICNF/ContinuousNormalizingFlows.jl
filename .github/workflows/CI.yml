@@ -24,7 +24,7 @@ jobs:
           # - '1.8'
           # - '1.9'
           - '1'
-          # - 'nightly'
+          - 'nightly'
         os:
           - ubuntu-latest
           # - macOS-latest
