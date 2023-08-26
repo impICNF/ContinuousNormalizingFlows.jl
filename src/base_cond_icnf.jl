@@ -37,7 +37,7 @@ function inference_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        cat(xs, zrs; dims=1),
+        cat(xs, zrs; dims = 1),
         steer_tspan(icnf, mode; tspan, steerdist, rng),
         ps;
         sol_kwargs...,
@@ -127,7 +127,7 @@ function inference_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        cat(xs, zrs; dims=1),
+        cat(xs, zrs; dims = 1),
         steer_tspan(icnf, mode; tspan, steerdist, rng),
         ps;
         sol_kwargs...,
@@ -217,7 +217,7 @@ function generate_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        cat(new_xs, zrs; dims=1),
+        cat(new_xs, zrs; dims = 1),
         reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
         ps;
         sol_kwargs...,
@@ -300,7 +300,7 @@ function generate_prob(
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
-        cat(new_xs, zrs; dims=1),
+        cat(new_xs, zrs; dims = 1),
         reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
         ps;
         sol_kwargs...,
@@ -438,11 +438,11 @@ function augmented_f(
     z = @view u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
         differentiation_backend,
-        x -> icnf._fnn(cat(x, ys; dims=1), p, st),
+        x -> icnf._fnn(cat(x, ys; dims = 1), p, st),
         z,
     )
     trace_J = tr(only(J))
-    cat(mz, -trace_J; dims=1)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -460,9 +460,9 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, x -> icnf._fnn(cat(x, ys; dims=1), p, st), z; resource)
+    mz, J = jacobian_batched(icnf, x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; resource)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
-    cat(mz, -trace_J; dims=1)
+    cat(mz, -trace_J; dims = 1)
 end
 
 @inline function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)
