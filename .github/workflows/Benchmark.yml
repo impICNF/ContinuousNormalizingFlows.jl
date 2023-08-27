@@ -1,6 +1,6 @@
 name: Benchmarks
-on: pull_request
-
+on:
+  pull_request:
 jobs:
   Benchmark:
     runs-on: ubuntu-latest
