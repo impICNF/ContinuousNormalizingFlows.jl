@@ -130,8 +130,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(icnf._fnn, z, p, st)
-    ϵJ = first(back(ϵ))
+    ż, back = Zygote.pullback(x -> icnf._fnn(x, p, st), z)
+    ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
