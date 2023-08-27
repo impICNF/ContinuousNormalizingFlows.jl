@@ -45,18 +45,18 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    mz = icnf._fnn(vcat(z, ys), p, st)
+    mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
                     differentiation_backend,
-                    x -> first(pl_h(icnf.nn, vcat(x, ys), p, st)),
+                    x -> first(pl_h(icnf.nn, cat(x, ys; dims = 1), p, st)),
                     z,
                 ),
             ),
         )
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -74,18 +74,18 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1)]
-    mz = icnf._fnn(vcat(z, ys), p, st)
+    mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     trace_J =
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
                     differentiation_backend,
-                    x -> first(pl_h(icnf.nn, vcat(x, ys), p, st)),
+                    x -> first(pl_h(icnf.nn, cat(x, ys; dims = 1), p, st)),
                     z,
                 ),
             ),
         )
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -103,10 +103,10 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(icnf._fnn, vcat(z, ys), p, st)
+    mz, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
     ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -124,10 +124,10 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(vcat(z, ys), p, st)
-    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
+    ϵJ = reshape(auto_vecjac(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z, ϵ), size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
 
 function augmented_f(
@@ -145,8 +145,8 @@ function augmented_f(
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(vcat(z, ys), p, st)
-    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(vcat(x, ys), p, st), z, ϵ), size(z))
+    mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
+    Jϵ = reshape(auto_jacvec(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z, ϵ), size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
-    vcat(mz, -trace_J)
+    cat(mz, -trace_J; dims = 1)
 end
