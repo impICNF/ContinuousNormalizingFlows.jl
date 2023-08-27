@@ -1,5 +1,6 @@
 name: Invalidations
-on: [push, pull_request]
+on:
+  pull_request:
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.

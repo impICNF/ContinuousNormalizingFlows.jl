@@ -1,5 +1,11 @@
 name: Documentation
-on: [push, pull_request, release, create, workflow_dispatch]
+on:
+  push:
+      branches:
+        - 'main'
+  pull_request:
+  release:
+  workflow_dispatch:
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
