@@ -32,7 +32,7 @@ struct CondPlanar{
     _fnn::_FNN
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -47,7 +47,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1)]
+    z = u[begin:(end - n_aug - 1)]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     trace_J =
         p.u ⋅ transpose(
@@ -62,7 +62,7 @@ function augmented_f(
     cat(mz, -trace_J; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -77,7 +77,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1)]
+    z = u[begin:(end - n_aug - 1)]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     trace_J =
         p.u ⋅ transpose(
@@ -92,7 +92,7 @@ function augmented_f(
     cat(mz, -trace_J; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -107,14 +107,14 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
     ϵJ = first(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -129,7 +129,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     Jf = VecJac(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; autodiff = autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
@@ -137,7 +137,7 @@ function augmented_f(
     cat(mz, -trace_J; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -152,7 +152,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     Jf = JacVec(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; autodiff = autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
