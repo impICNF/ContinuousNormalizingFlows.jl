@@ -59,9 +59,7 @@ include("cond_planar.jl")
 
 include("utils.jl")
 
-dprcmpltn = @load_preference("doprecompilation", true)
-
-@static if isdefined(Base, :get_extension) && dprcmpltn
+@static if isdefined(Base, :get_extension)
     include("precompile.jl")
 end
 
