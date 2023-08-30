@@ -94,7 +94,7 @@ function construct(
     )
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -108,7 +108,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1)]
+    z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         differentiation_backend,
         x -> icnf._fnn(x, p, st),
@@ -122,7 +122,7 @@ function augmented_f(
     cat(ż, -l̇, Ė, ṅ; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -136,7 +136,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     ż, back = Zygote.pullback(icnf._fnn, z, p, st)
     ϵJ = first(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
@@ -145,7 +145,7 @@ function augmented_f(
     cat(ż, -l̇, Ė, ṅ; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -159,7 +159,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
     Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
@@ -169,7 +169,7 @@ function augmented_f(
     cat(ż, -l̇, Ė, ṅ; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -183,7 +183,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
     Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))

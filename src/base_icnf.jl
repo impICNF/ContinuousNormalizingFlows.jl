@@ -1,6 +1,6 @@
 export inference, generate, loss
 
-function inference_prob(
+@views function inference_prob(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -45,7 +45,7 @@ function inference_prob(
     prob
 end
 
-function inference(
+@views function inference(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -78,19 +78,19 @@ function inference(
     )
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = @view sol[:, end]
-    z = @view fsol[begin:(end - n_aug - 1)]
+    fsol = sol[:, end]
+    z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(basedist, z) - Δlogp
     if iszero(n_aug)
         (logp̂x,)
     else
-        augs = @view fsol[(end - n_aug + 1):end]
+        augs = fsol[(end - n_aug + 1):end]
         (logp̂x, augs...)
     end
 end
 
-function inference_prob(
+@views function inference_prob(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -135,7 +135,7 @@ function inference_prob(
     prob
 end
 
-function inference(
+@views function inference(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -168,19 +168,19 @@ function inference(
     )
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = @view sol[:, :, end]
-    z = @view fsol[begin:(end - n_aug - 1), :]
-    Δlogp = @view fsol[(end - n_aug), :]
+    fsol = sol[:, :, end]
+    z = fsol[begin:(end - n_aug - 1), :]
+    Δlogp = fsol[(end - n_aug), :]
     logp̂x = logpdf(basedist, z) - Δlogp
     if iszero(n_aug)
         (logp̂x,)
     else
-        augs = @view fsol[(end - n_aug + 1):end, :]
+        augs = fsol[(end - n_aug + 1):end, :]
         (logp̂x, eachrow(augs)...)
     end
 end
 
-function generate_prob(
+@views function generate_prob(
     icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
     ps::Any,
@@ -224,7 +224,7 @@ function generate_prob(
     )
     prob
 end
-function generate(
+@views function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ps::Any,
@@ -256,12 +256,12 @@ function generate(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = @view sol[:, end]
-    z = @view fsol[begin:(end - n_aug_input - n_aug - 1)]
+    fsol = sol[:, end]
+    z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
 end
 
-function generate_prob(
+@views function generate_prob(
     icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
     ps::Any,
@@ -307,7 +307,7 @@ function generate_prob(
     prob
 end
 
-function generate(
+@views function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
@@ -341,8 +341,8 @@ function generate(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob, sol_args...; sol_kwargs...)
-    fsol = @view sol[:, :, end]
-    z = @view fsol[begin:(end - n_aug_input - n_aug - 1), :]
+    fsol = sol[:, :, end]
+    z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
 end
 
@@ -420,7 +420,7 @@ end
     )
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -434,7 +434,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1)]
+    z = u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
         differentiation_backend,
         x -> icnf._fnn(x, p, st),
@@ -444,7 +444,7 @@ function augmented_f(
     cat(mz, -trace_J; dims = 1)
 end
 
-function augmented_f(
+@views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -458,7 +458,7 @@ function augmented_f(
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
-    z = @view u[begin:(end - n_aug - 1), :]
+    z = u[begin:(end - n_aug - 1), :]
     mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z; resource, autodiff_backend)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     cat(mz, -trace_J; dims = 1)
