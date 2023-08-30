@@ -15,6 +15,7 @@ function construct(
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
+    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
     sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff, :memorybound],
@@ -35,6 +36,7 @@ function construct(
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
+        typeof(autodiff_backend),
         typeof(_fnn),
     }(
         nn,
@@ -45,6 +47,7 @@ function construct(
         tspan,
         steerdist,
         differentiation_backend,
+        autodiff_backend,
         sol_args,
         sol_kwargs,
         _fnn,

@@ -11,6 +11,7 @@ function inference_prob(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -30,6 +31,7 @@ function inference_prob(
             st;
             resource,
             differentiation_backend,
+            autodiff_backend,
             rng,
         ),
     )
@@ -54,6 +56,7 @@ function inference(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -68,6 +71,7 @@ function inference(
         steerdist,
         basedist,
         differentiation_backend,
+        autodiff_backend,
         rng,
         sol_args,
         sol_kwargs,
@@ -97,6 +101,7 @@ function inference_prob(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -116,6 +121,7 @@ function inference_prob(
             st;
             resource,
             differentiation_backend,
+            autodiff_backend,
             rng,
         ),
     )
@@ -140,6 +146,7 @@ function inference(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -154,6 +161,7 @@ function inference(
         steerdist,
         basedist,
         differentiation_backend,
+        autodiff_backend,
         rng,
         sol_args,
         sol_kwargs,
@@ -182,6 +190,7 @@ function generate_prob(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -202,6 +211,7 @@ function generate_prob(
             st;
             resource,
             differentiation_backend,
+            autodiff_backend,
             rng,
         ),
     )
@@ -224,6 +234,7 @@ function generate(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -237,6 +248,7 @@ function generate(
         steerdist,
         basedist,
         differentiation_backend,
+        autodiff_backend,
         rng,
         sol_args,
         sol_kwargs,
@@ -260,6 +272,7 @@ function generate_prob(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -280,6 +293,7 @@ function generate_prob(
             st;
             resource,
             differentiation_backend,
+            autodiff_backend,
             rng,
         ),
     )
@@ -304,6 +318,7 @@ function generate(
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -318,6 +333,7 @@ function generate(
         steerdist,
         basedist,
         differentiation_backend,
+        autodiff_backend,
         rng,
         sol_args,
         sol_kwargs,
@@ -341,6 +357,7 @@ end
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -357,6 +374,7 @@ end
             steerdist,
             basedist,
             differentiation_backend,
+            autodiff_backend,
             rng,
             sol_args,
             sol_kwargs,
@@ -375,6 +393,7 @@ end
     steerdist::Distribution = icnf.steerdist,
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
@@ -392,6 +411,7 @@ end
                 steerdist,
                 basedist,
                 differentiation_backend,
+                autodiff_backend,
                 rng,
                 sol_args,
                 sol_kwargs,
@@ -410,6 +430,7 @@ function augmented_f(
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
@@ -433,11 +454,12 @@ function augmented_f(
     st::Any;
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
+    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
     rng::AbstractRNG = Random.default_rng(),
 )
     n_aug = n_augment(icnf, mode)
     z = @view u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z; resource)
+    mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z; resource, autodiff_backend)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     cat(mz, -trace_J; dims = 1)
 end
