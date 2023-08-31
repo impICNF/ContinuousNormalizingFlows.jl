@@ -11,7 +11,7 @@ struct Planar{
     AUGMENTED,
     STEER,
     NN <: PlanarLayer,
-    VARS <: Int,
+    NVARS <: Int,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
@@ -23,8 +23,8 @@ struct Planar{
     _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
-    nvars::VARS
-    naugmented::VARS
+    nvars::NVARS
+    naugmented::NVARS
 
     resource::RESOURCE
     basedist::BASEDIST

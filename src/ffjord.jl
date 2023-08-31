@@ -11,7 +11,7 @@ struct FFJORD{
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
-    VARS <: Int,
+    NVARS <: Int,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
@@ -23,8 +23,8 @@ struct FFJORD{
     _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
-    nvars::VARS
-    naugmented::VARS
+    nvars::NVARS
+    naugmented::NVARS
 
     resource::RESOURCE
     basedist::BASEDIST
