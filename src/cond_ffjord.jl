@@ -18,6 +18,7 @@ struct CondFFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_ARGS <: Tuple,
     SOL_KWARGS <: Dict,
+    RNG <: AbstractRNG,
     _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
@@ -32,6 +33,7 @@ struct CondFFJORD{
     autodiff_backend::AUTODIFF_BACKEND
     sol_args::SOL_ARGS
     sol_kwargs::SOL_KWARGS
+    rng::RNG
     _fnn::_FNN
 end
 

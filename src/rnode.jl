@@ -20,6 +20,7 @@ struct RNODE{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_ARGS <: Tuple,
     SOL_KWARGS <: Dict,
+    RNG <: AbstractRNG,
     _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
@@ -34,6 +35,7 @@ struct RNODE{
     autodiff_backend::AUTODIFF_BACKEND
     sol_args::SOL_ARGS
     sol_kwargs::SOL_KWARGS
+    rng::RNG
     _fnn::_FNN
     λ₁::T
     λ₂::T
@@ -60,6 +62,7 @@ function construct(
         :alg_hints => [:nonstiff, :memorybound],
         :reltol => 1e-2 + eps(1e-2),
     ),
+    rng::AbstractRNG = Random.default_rng(),
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
@@ -81,6 +84,7 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_args),
         typeof(sol_kwargs),
+        typeof(rng),
         typeof(_fnn),
     }(
         nn,
@@ -94,6 +98,7 @@ function construct(
         autodiff_backend,
         sol_args,
         sol_kwargs,
+        rng,
         _fnn,
         λ₁,
         λ₂,

@@ -21,6 +21,7 @@ function construct(
         :alg_hints => [:nonstiff, :memorybound],
         :reltol => 1e-2 + eps(1e-2),
     ),
+    rng::AbstractRNG = Random.default_rng(),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
     _fnn(x, ps, st) = first(nn(x, ps, st))
@@ -40,6 +41,7 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_args),
         typeof(sol_kwargs),
+        typeof(rng),
         typeof(_fnn),
     }(
         nn,
@@ -53,6 +55,7 @@ function construct(
         autodiff_backend,
         sol_args,
         sol_kwargs,
+        rng,
         _fnn,
     )
 end
