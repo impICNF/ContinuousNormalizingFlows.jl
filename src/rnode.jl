@@ -11,17 +11,20 @@ struct RNODE{
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
+    NVARS <: Int,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
+    SOL_ARGS <: Tuple,
+    SOL_KWARGS <: Dict,
     _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
-    nvars::Int
-    naugmented::Int
+    nvars::NVARS
+    naugmented::NVARS
 
     resource::RESOURCE
     basedist::BASEDIST
@@ -29,8 +32,8 @@ struct RNODE{
     steerdist::STEERDIST
     differentiation_backend::DIFFERENTIATION_BACKEND
     autodiff_backend::AUTODIFF_BACKEND
-    sol_args::Tuple
-    sol_kwargs::Dict
+    sol_args::SOL_ARGS
+    sol_kwargs::SOL_KWARGS
     _fnn::_FNN
     λ₁::T
     λ₂::T
@@ -69,12 +72,15 @@ function construct(
         !iszero(naugmented),
         !iszero(steer_rate),
         typeof(nn),
+        typeof(nvars),
         typeof(resource),
         typeof(basedist),
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
         typeof(autodiff_backend),
+        typeof(sol_args),
+        typeof(sol_kwargs),
         typeof(_fnn),
     }(
         nn,
