@@ -11,17 +11,20 @@ struct Planar{
     AUGMENTED,
     STEER,
     NN <: PlanarLayer,
+    VARS <: Int,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
+    SOL_ARGS <: Tuple,
+    SOL_KWARGS <: Dict,
     _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
-    nvars::Int
-    naugmented::Int
+    nvars::VARS
+    naugmented::VARS
 
     resource::RESOURCE
     basedist::BASEDIST
@@ -29,8 +32,8 @@ struct Planar{
     steerdist::STEERDIST
     differentiation_backend::DIFFERENTIATION_BACKEND
     autodiff_backend::AUTODIFF_BACKEND
-    sol_args::Tuple
-    sol_kwargs::Dict
+    sol_args::SOL_ARGS
+    sol_kwargs::SOL_KWARGS
     _fnn::_FNN
 end
 

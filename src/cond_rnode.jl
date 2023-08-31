@@ -9,17 +9,20 @@ struct CondRNODE{
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
+    VARS <: Int,
     RESOURCE <: AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
+    SOL_ARGS <: Tuple,
+    SOL_KWARGS <: Dict,
     _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
-    nvars::Int
-    naugmented::Int
+    nvars::VARS
+    naugmented::VARS
 
     resource::RESOURCE
     basedist::BASEDIST
@@ -27,8 +30,8 @@ struct CondRNODE{
     steerdist::STEERDIST
     differentiation_backend::DIFFERENTIATION_BACKEND
     autodiff_backend::AUTODIFF_BACKEND
-    sol_args::Tuple
-    sol_kwargs::Dict
+    sol_args::SOL_ARGS
+    sol_kwargs::SOL_KWARGS
     _fnn::_FNN
     λ₁::T
     λ₂::T
@@ -67,12 +70,15 @@ function construct(
         !iszero(naugmented),
         !iszero(steer_rate),
         typeof(nn),
+        typeof(nvars),
         typeof(resource),
         typeof(basedist),
         typeof(tspan),
         typeof(steerdist),
         typeof(differentiation_backend),
         typeof(autodiff_backend),
+        typeof(sol_args),
+        typeof(sol_kwargs),
         typeof(_fnn),
     }(
         nn,
