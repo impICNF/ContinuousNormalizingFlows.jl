@@ -1,12 +1,5 @@
 using ContinuousNormalizingFlows,
-    BenchmarkTools,
-    ComponentArrays,
-    Flux,
-    Lux,
-    PkgBenchmark,
-    Random,
-    SciMLSensitivity,
-    Zygote
+    BenchmarkTools, ComponentArrays, Flux, Lux, PkgBenchmark, SciMLSensitivity, Zygote
 
 SUITE = BenchmarkGroup()
 
