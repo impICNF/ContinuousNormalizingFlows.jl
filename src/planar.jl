@@ -43,11 +43,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{<:AbstractFloat, <:ADVectorMode},
+    icnf::Planar{T, <:ADVectorMode},
     mode::TestMode,
-    ϵ::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz = icnf._fnn(z, p, st)
@@ -68,11 +68,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{<:AbstractFloat, <:ADVectorMode},
+    icnf::Planar{T, <:ADVectorMode},
     mode::TrainMode,
-    ϵ::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz = icnf._fnn(z, p, st)
@@ -93,11 +93,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::Planar{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(icnf._fnn, z, p, st)
@@ -110,11 +110,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::Planar{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
@@ -128,11 +128,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::Planar{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)

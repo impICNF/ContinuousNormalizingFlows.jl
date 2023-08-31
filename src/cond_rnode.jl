@@ -107,12 +107,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:ADVectorMode},
+    icnf::CondRNODE{T, <:ADVectorMode},
     mode::TrainMode,
-    ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
+    ys::AbstractVector{T},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
@@ -132,12 +132,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::CondRNODE{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
@@ -152,12 +152,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::CondRNODE{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(cat(z, ys; dims = 1), p, st)
@@ -177,12 +177,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::CondRNODE{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(cat(z, ys; dims = 1), p, st)
@@ -199,25 +199,25 @@ end
 end
 
 @inline function loss(
-    icnf::CondRNODE{<:AbstractFloat, <:VectorMode},
+    icnf::CondRNODE{T, <:VectorMode},
     mode::TrainMode,
-    xs::AbstractVector{<:Real},
-    ys::AbstractVector{<:Real},
+    xs::AbstractVector{T},
+    ys::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
 @inline function loss(
-    icnf::CondRNODE{<:AbstractFloat, <:MatrixMode},
+    icnf::CondRNODE{T, <:MatrixMode},
     mode::TrainMode,
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
+    ys::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end

@@ -1,13 +1,13 @@
 export inference, generate, loss
 
 @views function inference_prob(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{<:Real},
-    ys::AbstractVector{<:Real},
+    xs::AbstractVector{T},
+    ys::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
@@ -26,13 +26,13 @@ export inference, generate, loss
 end
 
 @views function inference(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{<:Real},
-    ys::AbstractVector{<:Real},
+    xs::AbstractVector{T},
+    ys::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     prob = inference_prob(icnf, mode, xs, ys, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -49,13 +49,13 @@ end
 end
 
 @views function inference_prob(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
+    ys::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
@@ -74,13 +74,13 @@ end
 end
 
 @views function inference(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
+    ys::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     prob = inference_prob(icnf, mode, xs, ys, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -99,7 +99,7 @@ end
 @views function generate_prob(
     icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    ys::AbstractVector{<:Real},
+    ys::AbstractVector{T},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -122,12 +122,12 @@ end
 end
 
 @views function generate(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    ys::AbstractVector{<:Real},
+    ys::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     prob = generate_prob(icnf, mode, ys, ps, st)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
@@ -140,7 +140,7 @@ end
 @views function generate_prob(
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    ys::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
     ps::Any,
     st::Any,
     n::Int,
@@ -164,13 +164,13 @@ end
 end
 
 @views function generate(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    ys::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
     ps::Any,
     st::Any,
     n::Int,
-)
+) where {T <: AbstractFloat}
     prob = generate_prob(icnf, mode, ys, ps, st, n)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
@@ -181,24 +181,24 @@ end
 end
 
 @inline function loss(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{<:Real},
-    ys::AbstractVector{<:Real},
+    xs::AbstractVector{T},
+    ys::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     -first(inference(icnf, mode, xs, ys, ps, st))
 end
 
 @inline function loss(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
+    ys::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     -mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 
@@ -206,12 +206,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{<:AbstractFloat, <:ADVectorMode},
+    icnf::AbstractCondICNF{T, <:ADVectorMode},
     mode::TestMode,
-    ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
+    ys::AbstractVector{T},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
@@ -227,12 +227,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::TestMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, J = jacobian_batched(icnf, x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z)

@@ -41,12 +41,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:ADVectorMode},
+    icnf::CondFFJORD{T, <:ADVectorMode},
     mode::TrainMode,
-    ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
+    ys::AbstractVector{T},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
@@ -64,12 +64,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::CondFFJORD{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
@@ -82,12 +82,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::CondFFJORD{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
@@ -105,12 +105,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::CondFFJORD{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)

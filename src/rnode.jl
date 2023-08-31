@@ -109,11 +109,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::RNODE{<:AbstractFloat, <:ADVectorMode},
+    icnf::RNODE{T, <:ADVectorMode},
     mode::TrainMode,
-    ϵ::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
@@ -133,11 +133,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::RNODE{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::RNODE{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, back = Zygote.pullback(icnf._fnn, z, p, st)
@@ -152,11 +152,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::RNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::RNODE{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
@@ -172,11 +172,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::RNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::RNODE{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
@@ -189,23 +189,23 @@ end
 end
 
 @inline function loss(
-    icnf::RNODE{<:AbstractFloat, <:VectorMode},
+    icnf::RNODE{T, <:VectorMode},
     mode::TrainMode,
-    xs::AbstractVector{<:Real},
+    xs::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
 @inline function loss(
-    icnf::RNODE{<:AbstractFloat, <:MatrixMode},
+    icnf::RNODE{T, <:MatrixMode},
     mode::TrainMode,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end

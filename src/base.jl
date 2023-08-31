@@ -88,9 +88,9 @@ end
 end
 
 @inline function steer_tspan(
-    icnf::AbstractFlows{T, <:ComputeMode, AUGMENTED, true},
+    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, AUGMENTED, true},
     ::TrainMode,
-) where {T <: AbstractFloat, AUGMENTED}
+) where {AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
     r = rand_cstm_AT(icnf.resource, icnf, icnf.steerdist)

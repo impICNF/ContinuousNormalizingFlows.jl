@@ -1,12 +1,12 @@
 export inference, generate, loss
 
 @views function inference_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{<:Real},
+    xs::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
@@ -25,12 +25,12 @@ export inference, generate, loss
 end
 
 @views function inference(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{<:Real},
+    xs::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     prob = inference_prob(icnf, mode, xs, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -47,12 +47,12 @@ end
 end
 
 @views function inference_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
@@ -71,12 +71,12 @@ end
 end
 
 @views function inference(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     prob = inference_prob(icnf, mode, xs, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -93,11 +93,11 @@ end
 end
 
 @views function generate_prob(
-    icnf::AbstractICNF{T, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
@@ -131,12 +131,12 @@ end
 end
 
 @views function generate_prob(
-    icnf::AbstractICNF{T, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Int,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
@@ -172,22 +172,22 @@ end
 end
 
 @inline function loss(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{<:Real},
+    xs::AbstractVector{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     -first(inference(icnf, mode, xs, ps, st))
 end
 
 @inline function loss(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{<:Real},
+    xs::AbstractMatrix{T},
     ps::Any,
     st::Any,
-)
+) where {T <: AbstractFloat}
     -mean(first(inference(icnf, mode, xs, ps, st)))
 end
 
@@ -195,11 +195,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractICNF{<:AbstractFloat, <:ADVectorMode},
+    icnf::AbstractICNF{T, <:ADVectorMode},
     mode::TestMode,
-    ϵ::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
@@ -215,11 +215,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractICNF{T, <:MatrixMode},
     mode::TestMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z)

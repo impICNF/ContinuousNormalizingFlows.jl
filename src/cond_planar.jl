@@ -41,12 +41,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondPlanar{<:AbstractFloat, <:ADVectorMode},
+    icnf::CondPlanar{T, <:ADVectorMode},
     mode::TestMode,
-    ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
+    ys::AbstractVector{T},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
@@ -67,12 +67,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondPlanar{<:AbstractFloat, <:ADVectorMode},
+    icnf::CondPlanar{T, <:ADVectorMode},
     mode::TrainMode,
-    ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
+    ys::AbstractVector{T},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
@@ -93,12 +93,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondPlanar{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::CondPlanar{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
@@ -111,12 +111,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondPlanar{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::CondPlanar{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
@@ -134,12 +134,12 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondPlanar{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::CondPlanar{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{T},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)

@@ -43,11 +43,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:ADVectorMode},
+    icnf::FFJORD{T, <:ADVectorMode},
     mode::TrainMode,
-    ϵ::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
@@ -65,11 +65,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::FFJORD{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(icnf._fnn, z, p, st)
@@ -82,11 +82,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::FFJORD{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
@@ -100,11 +100,11 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::FFJORD{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
     st::Any,
-)
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
