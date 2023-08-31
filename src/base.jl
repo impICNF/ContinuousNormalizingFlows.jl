@@ -92,7 +92,7 @@ end
     ::TrainMode;
     tspan::NTuple{2} = icnf.tspan,
     steerdist::Distribution = icnf.steerdist,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
 ) where {T <: AbstractFloat, AUGMENTED}
     t₀, t₁ = tspan
     Δt = abs(t₁ - t₀)
@@ -106,7 +106,7 @@ end
     ::Mode;
     tspan::NTuple{2} = icnf.tspan,
     steerdist::Distribution = icnf.steerdist,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
 )
     tspan
 end
@@ -121,8 +121,8 @@ end
 
 @inline function rand_T_AT(
     resource::AbstractResource,
-    ::AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
+    icnf::AbstractFlows{T},
+    rng::AbstractRNG = icnf.rng,
     dims...,
 ) where {T <: AbstractFloat}
     rand(rng, T, dims...)
@@ -130,8 +130,8 @@ end
 
 @inline function randn_T_AT(
     resource::AbstractResource,
-    ::AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
+    icnf::AbstractFlows{T},
+    rng::AbstractRNG = icnf.rng,
     dims...,
 ) where {T <: AbstractFloat}
     randn(rng, T, dims...)
@@ -139,9 +139,9 @@ end
 
 @inline function rand_cstm_AT(
     resource::AbstractResource,
-    ::AbstractFlows{T},
+    icnf::AbstractFlows{T},
     cstm::Any,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
     dims...,
 ) where {T <: AbstractFloat}
     convert.(T, rand(rng, cstm, dims...))

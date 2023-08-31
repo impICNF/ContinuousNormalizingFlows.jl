@@ -8,8 +8,8 @@ end
 
 @inline function ContinuousNormalizingFlows.rand_T_AT(
     resource::CUDALibs,
-    ::ContinuousNormalizingFlows.AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
+    icnf::ContinuousNormalizingFlows.AbstractFlows{T},
+    rng::AbstractRNG = icnf.rng,
     dims...,
 ) where {T <: AbstractFloat}
     CUDA.rand(T, dims...)
@@ -17,8 +17,8 @@ end
 
 @inline function ContinuousNormalizingFlows.randn_T_AT(
     resource::CUDALibs,
-    ::ContinuousNormalizingFlows.AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
+    icnf::ContinuousNormalizingFlows.AbstractFlows{T},
+    rng::AbstractRNG = icnf.rng,
     dims...,
 ) where {T <: AbstractFloat}
     CUDA.randn(T, dims...)
@@ -28,7 +28,7 @@ end
     resource::CUDALibs,
     icnf::ContinuousNormalizingFlows.AbstractFlows{T},
     cstm::Any,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
     dims...,
 ) where {T <: AbstractFloat}
     convert(

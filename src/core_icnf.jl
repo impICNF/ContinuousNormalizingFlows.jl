@@ -43,9 +43,8 @@ function ICNFModel(
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
-    rng = Random.default_rng()
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    ps, st = LuxCore.setup(rng, model.m)
+    ps, st = LuxCore.setup(model.m.rng, model.m)
     if !(model.m isa FluxCompatLayer)
         ps = ComponentArray(ps)
     end

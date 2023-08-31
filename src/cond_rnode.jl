@@ -115,7 +115,7 @@ end
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
@@ -144,7 +144,7 @@ end
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
@@ -168,7 +168,7 @@ end
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
@@ -193,7 +193,7 @@ end
     resource::AbstractResource = icnf.resource,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
@@ -219,7 +219,7 @@ end
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
     λ₁::AbstractFloat = icnf.λ₁,
@@ -258,7 +258,7 @@ end
     basedist::Distribution = icnf.basedist,
     differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
     autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = icnf.rng,
     sol_args::Tuple = icnf.sol_args,
     sol_kwargs::Dict = icnf.sol_kwargs,
     λ₁::AbstractFloat = icnf.λ₁,

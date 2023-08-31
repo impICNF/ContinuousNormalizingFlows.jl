@@ -1,7 +1,6 @@
 @setup_workload begin
     @compile_workload begin
         fllprcmpltn = @load_preference("fullprecompilation", false)
-        rng = Random.default_rng()
         mts =
             fllprcmpltn ? Type{<:AbstractICNF}[RNODE, FFJORD, Planar] :
             Type{<:AbstractICNF}[RNODE]
@@ -26,7 +25,7 @@
                 nn = Lux.Dense(nvars => nvars, tanh)
             end
             icnf = construct(mt, nn, nvars; compute_mode = cmode)
-            ps, st = Lux.setup(rng, icnf)
+            ps, st = Lux.setup(icnf.rng, icnf)
             ps = ComponentArray(ps)
             if cmode <: VectorMode
                 L = loss(icnf, omode, r, ps, st)
@@ -41,7 +40,7 @@
                 nn = Lux.Dense(2 * nvars => nvars, tanh)
             end
             icnf = construct(mt, nn, nvars; compute_mode = cmode)
-            ps, st = Lux.setup(rng, icnf)
+            ps, st = Lux.setup(icnf.rng, icnf)
             ps = ComponentArray(ps)
             if cmode <: VectorMode
                 L = loss(icnf, omode, r, r2, ps, st)
