@@ -112,16 +112,12 @@ end
     icnf::RNODE{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
-        differentiation_backend,
+        icnf.differentiation_backend,
         x -> icnf._fnn(x, p, st),
         z,
     )
@@ -140,11 +136,7 @@ end
     icnf::RNODE{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
@@ -163,16 +155,12 @@ end
     icnf::RNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
-    Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
+    Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -187,16 +175,12 @@ end
     icnf::RNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
-    Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
+    Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -209,36 +193,10 @@ end
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
-    λ₁::AbstractFloat = icnf.λ₁,
-    λ₂::AbstractFloat = icnf.λ₂,
+    st::Any,
 )
-    logp̂x, Ė, ṅ = inference(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        resource,
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
-    -logp̂x + λ₁ * Ė + λ₂ * ṅ
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ps, st)
+    -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
 @inline function loss(
@@ -246,36 +204,10 @@ end
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
-    λ₁::AbstractFloat = icnf.λ₁,
-    λ₂::AbstractFloat = icnf.λ₂,
+    st::Any,
 )
-    logp̂x, Ė, ṅ = inference(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        resource,
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
-    mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ps, st)
+    mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end
 
 @inline function n_augment(::RNODE, ::TrainMode)

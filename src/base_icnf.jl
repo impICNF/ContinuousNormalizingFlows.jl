@@ -5,42 +5,21 @@ export inference, generate, loss
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
+    zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
+    ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(
-            u,
-            p,
-            t,
-            icnf,
-            mode,
-            ϵ,
-            st;
-            resource,
-            differentiation_backend,
-            autodiff_backend,
-            rng,
-        ),
+        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         cat(xs, zrs; dims = 1),
-        steer_tspan(icnf, mode; tspan, steerdist, rng),
+        steer_tspan(icnf, mode),
         ps;
-        sol_kwargs...,
+        icnf.sol_kwargs...,
     )
     prob
 end
@@ -50,38 +29,15 @@ end
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
-    prob = inference_prob(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
+    prob = inference_prob(icnf, mode, xs, ps, st)
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob, sol_args...; sol_kwargs...)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
-    logp̂x = logpdf(basedist, z) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     if iszero(n_aug)
         (logp̂x,)
     else
@@ -95,42 +51,21 @@ end
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    zrs = zeros_T_AT(resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, size(xs, 2))
+    zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
+    ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(
-            u,
-            p,
-            t,
-            icnf,
-            mode,
-            ϵ,
-            st;
-            resource,
-            differentiation_backend,
-            autodiff_backend,
-            rng,
-        ),
+        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         cat(xs, zrs; dims = 1),
-        steer_tspan(icnf, mode; tspan, steerdist, rng),
+        steer_tspan(icnf, mode),
         ps;
-        sol_kwargs...,
+        icnf.sol_kwargs...,
     )
     prob
 end
@@ -140,38 +75,15 @@ end
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
-    prob = inference_prob(
-        icnf,
-        mode,
-        xs,
-        ps,
-        st;
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
+    prob = inference_prob(icnf, mode, xs, ps, st)
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob, sol_args...; sol_kwargs...)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
-    logp̂x = logpdf(basedist, z) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
     if iszero(n_aug)
         (logp̂x,)
     else
@@ -184,43 +96,22 @@ end
     icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = rand_cstm_AT(resource, icnf, basedist, rng)
-    zrs = zeros_T_AT(resource, icnf, n_aug + 1)
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input)
+    new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
+    zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1)
+    ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(
-            u,
-            p,
-            t,
-            icnf,
-            mode,
-            ϵ,
-            st;
-            resource,
-            differentiation_backend,
-            autodiff_backend,
-            rng,
-        ),
+        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         cat(new_xs, zrs; dims = 1),
-        reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
+        reverse(steer_tspan(icnf, mode)),
         ps;
-        sol_kwargs...,
+        icnf.sol_kwargs...,
     )
     prob
 end
@@ -228,34 +119,12 @@ end
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
-    prob = generate_prob(
-        icnf,
-        mode,
-        ps,
-        st;
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
+    prob = generate_prob(icnf, mode, ps, st)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, sol_args...; sol_kwargs...)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
@@ -266,43 +135,22 @@ end
     mode::Mode,
     ps::Any,
     st::Any,
-    n::Int;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    n::Int,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = rand_cstm_AT(resource, icnf, basedist, rng, n)
-    zrs = zeros_T_AT(resource, icnf, n_aug + 1, size(new_xs, 2))
-    ϵ = randn_T_AT(resource, icnf, rng, icnf.nvars + n_aug_input, size(new_xs, 2))
+    new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
+    zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1, size(new_xs, 2))
+    ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(new_xs, 2))
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(
-            u,
-            p,
-            t,
-            icnf,
-            mode,
-            ϵ,
-            st;
-            resource,
-            differentiation_backend,
-            autodiff_backend,
-            rng,
-        ),
+        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
         cat(new_xs, zrs; dims = 1),
-        reverse(steer_tspan(icnf, mode; tspan, steerdist, rng)),
+        reverse(steer_tspan(icnf, mode)),
         ps;
-        sol_kwargs...,
+        icnf.sol_kwargs...,
     )
     prob
 end
@@ -312,35 +160,12 @@ end
     mode::Mode,
     ps::Any,
     st::Any,
-    n::Int;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    n::Int,
 )
-    prob = generate_prob(
-        icnf,
-        mode,
-        ps,
-        st,
-        n;
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
+    prob = generate_prob(icnf, mode, ps, st, n)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, sol_args...; sol_kwargs...)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
@@ -351,35 +176,9 @@ end
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
-    -first(
-        inference(
-            icnf,
-            mode,
-            xs,
-            ps,
-            st;
-            resource,
-            tspan,
-            steerdist,
-            basedist,
-            differentiation_backend,
-            autodiff_backend,
-            rng,
-            sol_args,
-            sol_kwargs,
-        ),
-    )
+    -first(inference(icnf, mode, xs, ps, st))
 end
 
 @inline function loss(
@@ -387,37 +186,9 @@ end
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
+    st::Any,
 )
-    -mean(
-        first(
-            inference(
-                icnf,
-                mode,
-                xs,
-                ps,
-                st;
-                resource,
-                tspan,
-                steerdist,
-                basedist,
-                differentiation_backend,
-                autodiff_backend,
-                rng,
-                sol_args,
-                sol_kwargs,
-            ),
-        ),
-    )
+    -mean(first(inference(icnf, mode, xs, ps, st)))
 end
 
 @views function augmented_f(
@@ -427,16 +198,12 @@ end
     icnf::AbstractICNF{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
-        differentiation_backend,
+        icnf.differentiation_backend,
         x -> icnf._fnn(x, p, st),
         z,
     )
@@ -451,15 +218,11 @@ end
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::TestMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z; resource, autodiff_backend)
+    mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     cat(mz, -trace_J; dims = 1)
 end

@@ -229,7 +229,7 @@ function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
-        x .= generate(d.m, d.mode, d.ys, d.ps, d.st; rng)
+        x .= generate(d.m, d.mode, d.ys, d.ps, d.st)
     elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
@@ -240,7 +240,7 @@ function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatr
     if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
     elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
-        A .= generate(d.m, d.mode, d.ys[:, begin:size(A, 2)], d.ps, d.st, size(A, 2); rng)
+        A .= generate(d.m, d.mode, d.ys[:, begin:size(A, 2)], d.ps, d.st, size(A, 2))
     else
         error("Not Implemented")
     end

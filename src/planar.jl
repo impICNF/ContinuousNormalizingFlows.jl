@@ -46,11 +46,7 @@ end
     icnf::Planar{<:AbstractFloat, <:ADVectorMode},
     mode::TestMode,
     ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
@@ -59,7 +55,7 @@ end
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
-                    differentiation_backend,
+                    icnf.differentiation_backend,
                     x -> first(pl_h(icnf.nn, x, p, st)),
                     z,
                 ),
@@ -75,11 +71,7 @@ end
     icnf::Planar{<:AbstractFloat, <:ADVectorMode},
     mode::TrainMode,
     ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
@@ -88,7 +80,7 @@ end
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
-                    differentiation_backend,
+                    icnf.differentiation_backend,
                     x -> first(pl_h(icnf.nn, x, p, st)),
                     z,
                 ),
@@ -104,11 +96,7 @@ end
     icnf::Planar{<:AbstractFloat, <:ZygoteMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
@@ -125,16 +113,12 @@ end
     icnf::Planar{<:AbstractFloat, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
-    Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
+    Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
@@ -147,16 +131,12 @@ end
     icnf::Planar{<:AbstractFloat, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = icnf.rng,
+    st::Any,
 )
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
-    Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
+    Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)

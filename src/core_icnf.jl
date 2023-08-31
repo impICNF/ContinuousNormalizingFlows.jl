@@ -216,7 +216,7 @@ function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        x .= generate(d.m, d.mode, d.ps, d.st; rng)
+        x .= generate(d.m, d.mode, d.ps, d.st)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
@@ -227,7 +227,7 @@ function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2); rng)
+        A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
     else
         error("Not Implemented")
     end
