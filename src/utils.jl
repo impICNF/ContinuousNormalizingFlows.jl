@@ -1,7 +1,7 @@
 function jacobian_batched(
     icnf::AbstractFlows{T, <:ZygoteMatrixMode},
     f,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
     y, back = Zygote.pullback(f, xs)
     z = zeros_T_AT(icnf.resource, icnf, size(xs))
@@ -17,7 +17,7 @@ end
 function jacobian_batched(
     icnf::AbstractFlows{T, <:SDVecJacMatrixMode},
     f,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
     y = f(xs)
     z = zeros_T_AT(icnf.resource, icnf, size(xs))
@@ -34,7 +34,7 @@ end
 function jacobian_batched(
     icnf::AbstractFlows{T, <:SDJacVecMatrixMode},
     f,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
     y = f(xs)
     z = zeros_T_AT(icnf.resource, icnf, size(xs))

@@ -109,7 +109,7 @@ end
     t::Any,
     icnf::CondRNODE{T, <:ADVectorMode},
     mode::TrainMode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -134,7 +134,7 @@ end
     t::Any,
     icnf::CondRNODE{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -154,7 +154,7 @@ end
     t::Any,
     icnf::CondRNODE{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -179,7 +179,7 @@ end
     t::Any,
     icnf::CondRNODE{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -201,8 +201,8 @@ end
 @inline function loss(
     icnf::CondRNODE{T, <:VectorMode},
     mode::TrainMode,
-    xs::AbstractVector{T},
-    ys::AbstractVector{T},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -213,8 +213,8 @@ end
 @inline function loss(
     icnf::CondRNODE{T, <:MatrixMode},
     mode::TrainMode,
-    xs::AbstractMatrix{T},
-    ys::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}

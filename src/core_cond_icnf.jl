@@ -14,12 +14,11 @@ mutable struct CondICNFModel <: MLJICNF
     batch_size::Int
     have_callback::Bool
 
-    data_type::Type{<:AbstractFloat}
     compute_mode::Type{<:ComputeMode}
 end
 
 function CondICNFModel(
-    m::AbstractCondICNF{T, CM},
+    m::AbstractCondICNF{<:AbstractFloat, CM},
     loss::Function = loss;
     optimizers::AbstractVector = Any[Optimisers.Lion(),],
     n_epochs::Int = 300,
@@ -27,7 +26,7 @@ function CondICNFModel(
     use_batch::Bool = true,
     batch_size::Int = 32,
     have_callback::Bool = true,
-) where {T <: AbstractFloat, CM <: ComputeMode}
+) where {CM <: ComputeMode}
     CondICNFModel(
         m,
         loss,
@@ -37,7 +36,6 @@ function CondICNFModel(
         use_batch,
         batch_size,
         have_callback,
-        T,
         CM,
     )
 end

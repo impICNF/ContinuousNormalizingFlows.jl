@@ -3,8 +3,8 @@ export inference, generate, loss
 @views function inference_prob(
     icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{T},
-    ys::AbstractVector{T},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -28,8 +28,8 @@ end
 @views function inference(
     icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{T},
-    ys::AbstractVector{T},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -51,8 +51,8 @@ end
 @views function inference_prob(
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{T},
-    ys::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -76,8 +76,8 @@ end
 @views function inference(
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{T},
-    ys::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -99,7 +99,7 @@ end
 @views function generate_prob(
     icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -124,7 +124,7 @@ end
 @views function generate(
     icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -140,7 +140,7 @@ end
 @views function generate_prob(
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
     n::Int,
@@ -166,7 +166,7 @@ end
 @views function generate(
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
     n::Int,
@@ -183,8 +183,8 @@ end
 @inline function loss(
     icnf::AbstractCondICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{T},
-    ys::AbstractVector{T},
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -194,8 +194,8 @@ end
 @inline function loss(
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{T},
-    ys::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -208,7 +208,7 @@ end
     t::Any,
     icnf::AbstractCondICNF{T, <:ADVectorMode},
     mode::TestMode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -229,7 +229,7 @@ end
     t::Any,
     icnf::AbstractCondICNF{T, <:MatrixMode},
     mode::TestMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}

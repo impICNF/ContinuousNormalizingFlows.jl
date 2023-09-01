@@ -191,7 +191,7 @@ end
 @inline function loss(
     icnf::RNODE{T, <:VectorMode},
     mode::TrainMode,
-    xs::AbstractVector{T},
+    xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -202,7 +202,7 @@ end
 @inline function loss(
     icnf::RNODE{T, <:MatrixMode},
     mode::TrainMode,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}

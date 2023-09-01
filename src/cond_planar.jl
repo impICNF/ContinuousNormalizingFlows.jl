@@ -43,7 +43,7 @@ end
     t::Any,
     icnf::CondPlanar{T, <:ADVectorMode},
     mode::TestMode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -69,7 +69,7 @@ end
     t::Any,
     icnf::CondPlanar{T, <:ADVectorMode},
     mode::TrainMode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -95,7 +95,7 @@ end
     t::Any,
     icnf::CondPlanar{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -113,7 +113,7 @@ end
     t::Any,
     icnf::CondPlanar{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -136,7 +136,7 @@ end
     t::Any,
     icnf::CondPlanar{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}

@@ -43,7 +43,7 @@ end
     t::Any,
     icnf::CondFFJORD{T, <:ADVectorMode},
     mode::TrainMode,
-    ys::AbstractVector{T},
+    ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -66,7 +66,7 @@ end
     t::Any,
     icnf::CondFFJORD{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -84,7 +84,7 @@ end
     t::Any,
     icnf::CondFFJORD{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
@@ -107,7 +107,7 @@ end
     t::Any,
     icnf::CondFFJORD{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ys::AbstractMatrix{T},
+    ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}

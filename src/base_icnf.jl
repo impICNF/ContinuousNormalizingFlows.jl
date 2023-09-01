@@ -3,7 +3,7 @@ export inference, generate, loss
 @views function inference_prob(
     icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{T},
+    xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -27,7 +27,7 @@ end
 @views function inference(
     icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{T},
+    xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -49,7 +49,7 @@ end
 @views function inference_prob(
     icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -73,7 +73,7 @@ end
 @views function inference(
     icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -174,7 +174,7 @@ end
 @inline function loss(
     icnf::AbstractICNF{T, <:VectorMode},
     mode::Mode,
-    xs::AbstractVector{T},
+    xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
@@ -184,7 +184,7 @@ end
 @inline function loss(
     icnf::AbstractICNF{T, <:MatrixMode},
     mode::Mode,
-    xs::AbstractMatrix{T},
+    xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
 ) where {T <: AbstractFloat}
