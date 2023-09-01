@@ -55,7 +55,9 @@ end
             only(
                 AbstractDifferentiation.jacobian(
                     icnf.differentiation_backend,
-                    x -> first(pl_h(icnf.nn, cat(x, ys; dims = 1), p, st)),
+                    let ys = ys, p = p, st = st
+                        x -> first(pl_h(icnf.nn, cat(x, ys; dims = 1), p, st))
+                    end,
                     z,
                 ),
             ),
@@ -81,7 +83,9 @@ end
             only(
                 AbstractDifferentiation.jacobian(
                     icnf.differentiation_backend,
-                    x -> first(pl_h(icnf.nn, cat(x, ys; dims = 1), p, st)),
+                    let ys = ys, p = p, st = st
+                        x -> first(pl_h(icnf.nn, cat(x, ys; dims = 1), p, st))
+                    end,
                     z,
                 ),
             ),
@@ -101,7 +105,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z)
+    mz, back = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+    end, z)
     ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
@@ -121,7 +127,9 @@ end
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     Jf = VecJac(
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st),
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
         z;
         autodiff = icnf.autodiff_backend,
     )
@@ -144,7 +152,9 @@ end
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
     Jf = JacVec(
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st),
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
         z;
         autodiff = icnf.autodiff_backend,
     )

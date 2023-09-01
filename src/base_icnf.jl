@@ -12,7 +12,9 @@ export inference, generate, loss
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
+        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+        end,
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -58,7 +60,9 @@ end
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
+        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+        end,
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -104,7 +108,9 @@ end
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
+        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+        end,
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -143,7 +149,9 @@ end
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1, size(new_xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(new_xs, 2))
     func = ODEFunction{false, SciMLBase.FullSpecialize}(
-        (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st),
+        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+        end,
     )
     prob = ODEProblem{false, SciMLBase.FullSpecialize}(
         func,
@@ -204,7 +212,9 @@ end
     z = u[begin:(end - n_aug - 1)]
     mz, J = AbstractDifferentiation.value_and_jacobian(
         icnf.differentiation_backend,
-        x -> icnf._fnn(x, p, st),
+        let p = p, st = st
+            x -> icnf._fnn(x, p, st)
+        end,
         z,
     )
     trace_J = tr(only(J))
@@ -222,7 +232,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, x -> icnf._fnn(x, p, st), z)
+    mz, J = jacobian_batched(icnf, let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     cat(mz, -trace_J; dims = 1)
 end

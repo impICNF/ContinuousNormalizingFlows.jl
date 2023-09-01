@@ -118,7 +118,9 @@ end
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
-        x -> icnf._fnn(x, p, st),
+        let p = p, st = st
+            x -> icnf._fnn(x, p, st)
+        end,
         z,
     )
     ż, ϵJ = v_pb(ϵ)
@@ -140,7 +142,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(x -> icnf._fnn(x, p, st), z)
+    ż, back = Zygote.pullback(let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z)
     ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -160,7 +164,9 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
-    Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = icnf.autodiff_backend)
+    Jf = VecJac(let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -180,7 +186,9 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(z, p, st)
-    Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = icnf.autodiff_backend)
+    Jf = JacVec(let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
