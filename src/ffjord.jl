@@ -20,6 +20,7 @@ struct FFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_ARGS <: Tuple,
     SOL_KWARGS <: Dict,
+    RNG <: AbstractRNG,
     _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
@@ -34,6 +35,7 @@ struct FFJORD{
     autodiff_backend::AUTODIFF_BACKEND
     sol_args::SOL_ARGS
     sol_kwargs::SOL_KWARGS
+    rng::RNG
     _fnn::_FNN
 end
 
@@ -41,20 +43,18 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:ADVectorMode},
+    icnf::FFJORD{T, <:ADVectorMode},
     mode::TrainMode,
-    ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
-        differentiation_backend,
-        x -> icnf._fnn(x, p, st),
+        icnf.differentiation_backend,
+        let p = p, st = st
+            x -> icnf._fnn(x, p, st)
+        end,
         z,
     )
     mz, ϵJ = v_pb(ϵ)
@@ -67,19 +67,17 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::FFJORD{T, <:ZygoteMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(icnf._fnn, z, p, st)
-    ϵJ = first(back(ϵ))
+    mz, back = Zygote.pullback(let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z)
+    ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
@@ -88,19 +86,17 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::FFJORD{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
-    Jf = VecJac(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
+    Jf = VecJac(let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
@@ -110,19 +106,17 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::FFJORD{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(z, p, st)
-    Jf = JacVec(x -> icnf._fnn(x, p, st), z; autodiff = autodiff_backend)
+    Jf = JacVec(let p = p, st = st
+        x -> icnf._fnn(x, p, st)
+    end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)

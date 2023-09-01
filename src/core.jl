@@ -1,6 +1,6 @@
 # SciML interface
 
-function callback_f(ps, l, icnf::AbstractFlows, prgr::Progress, itr_n::AbstractArray)
+function callback_f(ps, l, ::AbstractFlows, prgr::Progress, itr_n::AbstractArray)
     ProgressMeter.next!(
         prgr;
         showvalues = [
@@ -15,7 +15,7 @@ end
 
 # MLJ interface
 
-function MLJModelInterface.fitted_params(model::MLJICNF, fitresult)
+function MLJModelInterface.fitted_params(::MLJICNF, fitresult)
     (ps, st) = fitresult
     (learned_parameters = ps, states = st)
 end

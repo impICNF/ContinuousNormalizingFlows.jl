@@ -18,6 +18,7 @@ struct CondRNODE{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_ARGS <: Tuple,
     SOL_KWARGS <: Dict,
+    RNG <: AbstractRNG,
     _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
@@ -32,6 +33,7 @@ struct CondRNODE{
     autodiff_backend::AUTODIFF_BACKEND
     sol_args::SOL_ARGS
     sol_kwargs::SOL_KWARGS
+    rng::RNG
     _fnn::_FNN
     λ₁::T
     λ₂::T
@@ -58,6 +60,7 @@ function construct(
         :alg_hints => [:nonstiff, :memorybound],
         :reltol => 1e-2 + eps(1e-2),
     ),
+    rng::AbstractRNG = Random.default_rng(),
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
@@ -79,6 +82,7 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_args),
         typeof(sol_kwargs),
+        typeof(rng),
         typeof(_fnn),
     }(
         nn,
@@ -92,6 +96,7 @@ function construct(
         autodiff_backend,
         sol_args,
         sol_kwargs,
+        rng,
         _fnn,
         λ₁,
         λ₂,
@@ -102,21 +107,19 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:ADVectorMode},
+    icnf::CondRNODE{T, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
-        differentiation_backend,
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st),
+        icnf.differentiation_backend,
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
         z,
     )
     ż, ϵJ = v_pb(ϵ)
@@ -131,20 +134,18 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::CondRNODE{T, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
-    ϵJ = first(back(ϵ))
+    ż, back = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+    end, z)
+    ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
@@ -155,20 +156,22 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::CondRNODE{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(cat(z, ys; dims = 1), p, st)
-    Jf = VecJac(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; autodiff = autodiff_backend)
+    Jf = VecJac(
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
+        z;
+        autodiff = icnf.autodiff_backend,
+    )
     ϵJ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -180,20 +183,22 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::CondRNODE{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = icnf._fnn(cat(z, ys; dims = 1), p, st)
-    Jf = JacVec(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; autodiff = autodiff_backend)
+    Jf = JacVec(
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
+        z;
+        autodiff = icnf.autodiff_backend,
+    )
     Jϵ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
@@ -207,37 +212,10 @@ end
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
-    λ₁::AbstractFloat = icnf.λ₁,
-    λ₂::AbstractFloat = icnf.λ₂,
+    st::Any,
 )
-    logp̂x, Ė, ṅ = inference(
-        icnf,
-        mode,
-        xs,
-        ys,
-        ps,
-        st;
-        resource,
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
-    -logp̂x + λ₁ * Ė + λ₂ * ṅ
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
+    -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
 @inline function loss(
@@ -246,37 +224,10 @@ end
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    basedist::Distribution = icnf.basedist,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-    sol_args::Tuple = icnf.sol_args,
-    sol_kwargs::Dict = icnf.sol_kwargs,
-    λ₁::AbstractFloat = icnf.λ₁,
-    λ₂::AbstractFloat = icnf.λ₂,
+    st::Any,
 )
-    logp̂x, Ė, ṅ = inference(
-        icnf,
-        mode,
-        xs,
-        ys,
-        ps,
-        st;
-        resource,
-        tspan,
-        steerdist,
-        basedist,
-        differentiation_backend,
-        autodiff_backend,
-        rng,
-        sol_args,
-        sol_kwargs,
-    )
-    mean(-logp̂x + λ₁ * Ė + λ₂ * ṅ)
+    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
+    mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end
 
 @inline function n_augment(::CondRNODE, ::TrainMode)

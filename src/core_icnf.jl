@@ -14,12 +14,11 @@ mutable struct ICNFModel <: MLJICNF
     batch_size::Int
     have_callback::Bool
 
-    data_type::Type{<:AbstractFloat}
     compute_mode::Type{<:ComputeMode}
 end
 
 function ICNFModel(
-    m::AbstractICNF{T, CM},
+    m::AbstractICNF{<:AbstractFloat, CM},
     loss::Function = loss;
     optimizers::AbstractVector = Any[Optimisers.Lion(),],
     n_epochs::Int = 300,
@@ -27,7 +26,7 @@ function ICNFModel(
     use_batch::Bool = true,
     batch_size::Int = 32,
     have_callback::Bool = true,
-) where {T <: AbstractFloat, CM <: ComputeMode}
+) where {CM <: ComputeMode}
     ICNFModel(
         m,
         loss,
@@ -37,15 +36,13 @@ function ICNFModel(
         use_batch,
         batch_size,
         have_callback,
-        T,
         CM,
     )
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
-    rng = Random.default_rng()
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    ps, st = LuxCore.setup(rng, model.m)
+    ps, st = LuxCore.setup(model.m.rng, model.m)
     if !(model.m isa FluxCompatLayer)
         ps = ComponentArray(ps)
     end
@@ -217,7 +214,7 @@ function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        x .= generate(d.m, d.mode, d.ps, d.st; rng)
+        x .= generate(d.m, d.mode, d.ps, d.st)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
     else
@@ -228,7 +225,7 @@ function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2); rng)
+        A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
     else
         error("Not Implemented")
     end

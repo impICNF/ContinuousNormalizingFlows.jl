@@ -21,6 +21,7 @@ function construct(
         :alg_hints => [:nonstiff, :memorybound],
         :reltol => 1e-2 + eps(1e-2),
     ),
+    rng::AbstractRNG = Random.default_rng(),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
     _fnn(x, ps, st) = first(nn(x, ps, st))
@@ -40,6 +41,7 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_args),
         typeof(sol_kwargs),
+        typeof(rng),
         typeof(_fnn),
     }(
         nn,
@@ -53,6 +55,7 @@ function construct(
         autodiff_backend,
         sol_args,
         sol_kwargs,
+        rng,
         _fnn,
     )
 end
@@ -85,31 +88,22 @@ end
 end
 
 @inline function steer_tspan(
-    icnf::AbstractFlows{T, <:ComputeMode, AUGMENTED, true},
-    ::TrainMode;
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    rng::AbstractRNG = Random.default_rng(),
-) where {T <: AbstractFloat, AUGMENTED}
-    t₀, t₁ = tspan
+    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, AUGMENTED, true},
+    ::TrainMode,
+) where {AUGMENTED}
+    t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
-    r = convert(T, rand(rng, steerdist))
+    r = rand_cstm_AT(icnf.resource, icnf, icnf.steerdist)
     t₁_new = muladd(Δt, r, t₁)
     (t₀, t₁_new)
 end
 
-@inline function steer_tspan(
-    icnf::AbstractFlows,
-    ::Mode;
-    tspan::NTuple{2} = icnf.tspan,
-    steerdist::Distribution = icnf.steerdist,
-    rng::AbstractRNG = Random.default_rng(),
-)
-    tspan
+@inline function steer_tspan(icnf::AbstractFlows, ::Mode)
+    icnf.tspan
 end
 
 @inline function zeros_T_AT(
-    resource::AbstractResource,
+    ::AbstractResource,
     ::AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
@@ -117,29 +111,26 @@ end
 end
 
 @inline function rand_T_AT(
-    resource::AbstractResource,
-    ::AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
+    ::AbstractResource,
+    icnf::AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
-    rand(rng, T, dims...)
+    rand(icnf.rng, T, dims...)
 end
 
 @inline function randn_T_AT(
-    resource::AbstractResource,
-    ::AbstractFlows{T},
-    rng::AbstractRNG = Random.default_rng(),
+    ::AbstractResource,
+    icnf::AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
-    randn(rng, T, dims...)
+    randn(icnf.rng, T, dims...)
 end
 
 @inline function rand_cstm_AT(
-    resource::AbstractResource,
-    ::AbstractFlows{T},
+    ::AbstractResource,
+    icnf::AbstractFlows{T},
     cstm::Any,
-    rng::AbstractRNG = Random.default_rng(),
     dims...,
 ) where {T <: AbstractFloat}
-    convert.(T, rand(rng, cstm, dims...))
+    convert.(T, rand(icnf.rng, cstm, dims...))
 end

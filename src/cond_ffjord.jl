@@ -18,6 +18,7 @@ struct CondFFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_ARGS <: Tuple,
     SOL_KWARGS <: Dict,
+    RNG <: AbstractRNG,
     _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
@@ -32,6 +33,7 @@ struct CondFFJORD{
     autodiff_backend::AUTODIFF_BACKEND
     sol_args::SOL_ARGS
     sol_kwargs::SOL_KWARGS
+    rng::RNG
     _fnn::_FNN
 end
 
@@ -39,21 +41,19 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:ADVectorMode},
+    icnf::CondFFJORD{T, <:ADVectorMode},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     v_pb = AbstractDifferentiation.value_and_pullback_function(
-        differentiation_backend,
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st),
+        icnf.differentiation_backend,
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
         z,
     )
     mz, ϵJ = v_pb(ϵ)
@@ -66,20 +66,18 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:ZygoteMatrixMode},
+    icnf::CondFFJORD{T, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
-    ϵJ = first(back(ϵ))
+    mz, back = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+    end, z)
+    ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
@@ -88,20 +86,22 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:SDVecJacMatrixMode},
+    icnf::CondFFJORD{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
-    Jf = VecJac(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; autodiff = autodiff_backend)
+    Jf = VecJac(
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
+        z;
+        autodiff = icnf.autodiff_backend,
+    )
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
@@ -111,20 +111,22 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{<:AbstractFloat, <:SDJacVecMatrixMode},
+    icnf::CondFFJORD{T, <:SDJacVecMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{<:Real},
-    st::Any;
-    resource::AbstractResource = icnf.resource,
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = icnf.differentiation_backend,
-    autodiff_backend::ADTypes.AbstractADType = icnf.autodiff_backend,
-    rng::AbstractRNG = Random.default_rng(),
-)
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
-    Jf = JacVec(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z; autodiff = autodiff_backend)
+    Jf = JacVec(
+        let ys = ys, p = p, st = st
+            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        end,
+        z;
+        autodiff = icnf.autodiff_backend,
+    )
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)

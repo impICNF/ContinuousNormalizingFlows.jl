@@ -35,7 +35,6 @@
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
-    rng = Random.default_rng()
 
     @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
                                                                                            resources,
@@ -71,7 +70,7 @@
                 differentiation_backend = adb_u,
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
-        ps, st = Lux.setup(rng, icnf)
+        ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
@@ -213,7 +212,7 @@
                 steer_rate = convert(data_type, 0.1),
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
-        ps, st = Lux.setup(rng, icnf)
+        ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
@@ -362,7 +361,7 @@
                 differentiation_backend = adb_u,
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
-        ps, st = Lux.setup(rng, icnf)
+        ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
@@ -512,7 +511,7 @@
                 steer_rate = convert(data_type, 0.1),
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
-        ps, st = Lux.setup(rng, icnf)
+        ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
             r = gdev(r)
