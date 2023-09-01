@@ -140,8 +140,8 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(icnf._fnn, cat(z, ys; dims = 1), p, st)
-    ϵJ = first(back(ϵ))
+    ż, back = Zygote.pullback(x -> icnf._fnn(cat(x, ys; dims = 1), p, st), z)
+    ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))

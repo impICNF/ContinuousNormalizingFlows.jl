@@ -72,8 +72,8 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(icnf._fnn, z, p, st)
-    ϵJ = first(back(ϵ))
+    mz, back = Zygote.pullback(x -> icnf._fnn(x, p, st), z)
+    ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
