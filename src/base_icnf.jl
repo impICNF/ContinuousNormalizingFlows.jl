@@ -1,12 +1,12 @@
 export inference, generate, loss
 
 @views function inference_prob(
-    icnf::AbstractICNF{T, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
@@ -25,12 +25,12 @@ export inference, generate, loss
 end
 
 @views function inference(
-    icnf::AbstractICNF{T, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     prob = inference_prob(icnf, mode, xs, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -47,12 +47,12 @@ end
 end
 
 @views function inference_prob(
-    icnf::AbstractICNF{T, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
@@ -71,12 +71,12 @@ end
 end
 
 @views function inference(
-    icnf::AbstractICNF{T, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     prob = inference_prob(icnf, mode, xs, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -172,22 +172,22 @@ end
 end
 
 @inline function loss(
-    icnf::AbstractICNF{T, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     -first(inference(icnf, mode, xs, ps, st))
 end
 
 @inline function loss(
-    icnf::AbstractICNF{T, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     -mean(first(inference(icnf, mode, xs, ps, st)))
 end
 

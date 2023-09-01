@@ -24,10 +24,10 @@ end
 
 @inline function ContinuousNormalizingFlows.rand_cstm_AT(
     ::CUDALibs,
-    icnf::ContinuousNormalizingFlows.AbstractFlows{T},
+    icnf::ContinuousNormalizingFlows.AbstractFlows,
     cstm::Any,
     dims...,
-) where {T <: AbstractFloat}
+)
     isempty(dims) ? ContinuousNormalizingFlows.rand_cstm_AT(CPU1(), icnf, cstm, dims...) :
     convert(CuArray, ContinuousNormalizingFlows.rand_cstm_AT(CPU1(), icnf, cstm, dims...))
 end

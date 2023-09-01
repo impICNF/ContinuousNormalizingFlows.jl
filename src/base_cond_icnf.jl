@@ -1,13 +1,13 @@
 export inference, generate, loss
 
 @views function inference_prob(
-    icnf::AbstractCondICNF{T, <:VectorMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
@@ -26,13 +26,13 @@ export inference, generate, loss
 end
 
 @views function inference(
-    icnf::AbstractCondICNF{T, <:VectorMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     prob = inference_prob(icnf, mode, xs, ys, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -49,13 +49,13 @@ end
 end
 
 @views function inference_prob(
-    icnf::AbstractCondICNF{T, <:MatrixMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
@@ -74,13 +74,13 @@ end
 end
 
 @views function inference(
-    icnf::AbstractCondICNF{T, <:MatrixMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     prob = inference_prob(icnf, mode, xs, ys, ps, st)
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -97,12 +97,12 @@ end
 end
 
 @views function generate_prob(
-    icnf::AbstractCondICNF{T, <:VectorMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
@@ -122,12 +122,12 @@ end
 end
 
 @views function generate(
-    icnf::AbstractCondICNF{T, <:VectorMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     prob = generate_prob(icnf, mode, ys, ps, st)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
@@ -138,13 +138,13 @@ end
 end
 
 @views function generate_prob(
-    icnf::AbstractCondICNF{T, <:MatrixMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
     n::Int,
-) where {T <: AbstractFloat}
+)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
@@ -164,13 +164,13 @@ end
 end
 
 @views function generate(
-    icnf::AbstractCondICNF{T, <:MatrixMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
     n::Int,
-) where {T <: AbstractFloat}
+)
     prob = generate_prob(icnf, mode, ys, ps, st, n)
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
@@ -181,24 +181,24 @@ end
 end
 
 @inline function loss(
-    icnf::AbstractCondICNF{T, <:VectorMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     -first(inference(icnf, mode, xs, ys, ps, st))
 end
 
 @inline function loss(
-    icnf::AbstractCondICNF{T, <:MatrixMode},
+    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     -mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 

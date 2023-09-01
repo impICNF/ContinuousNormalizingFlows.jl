@@ -199,25 +199,25 @@ end
 end
 
 @inline function loss(
-    icnf::CondRNODE{T, <:VectorMode},
+    icnf::CondRNODE{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
 @inline function loss(
-    icnf::CondRNODE{T, <:MatrixMode},
+    icnf::CondRNODE{<:AbstractFloat, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-) where {T <: AbstractFloat}
+)
     logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end
