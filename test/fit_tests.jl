@@ -38,8 +38,8 @@
         ADTypes.AutoForwardDiff(),
     ]
 
-    @testset "$resources | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                                                              resources,
+    @testset "$resource | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
+                                                                                                                             resources,
         data_type in data_types,
         adb_u in adb_list,
         go_ad in go_ads,
@@ -110,7 +110,7 @@
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; cond = true)
+            nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
         else
             nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
@@ -142,7 +142,7 @@
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; cond = true)
+            nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
         else
             nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
