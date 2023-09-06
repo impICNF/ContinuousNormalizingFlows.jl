@@ -35,7 +35,7 @@
         end
         for cmode in cmodes, omode in omodes, mt in cmts
             if mt <: CondPlanar
-                nn = PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+                nn = PlanarLayer(nvars, tanh; n_cond = nvars)
             else
                 nn = Lux.Dense(2 * nvars => nvars, tanh)
             end

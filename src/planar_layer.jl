@@ -20,11 +20,16 @@ function PlanarLayer(
     init_bias = Lux.zeros32,
     use_bias::Bool = true,
     allow_fast_activation::Bool = true,
-    cond::Bool = false,
     n_cond::Int = 0,
 )
     activation = allow_fast_activation ? NNlib.fast_act(activation) : activation
-    PlanarLayer{use_bias, cond, typeof(activation), typeof(init_weight), typeof(init_bias)}(
+    PlanarLayer{
+        use_bias,
+        !iszero(n_cond),
+        typeof(activation),
+        typeof(init_weight),
+        typeof(init_bias),
+    }(
         activation,
         nvars,
         init_weight,

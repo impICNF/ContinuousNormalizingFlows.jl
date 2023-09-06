@@ -341,8 +341,8 @@
 
         if mt <: CondPlanar
             nn =
-                aug_steer ? PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars) :
-                PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+                aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
+                PlanarLayer(nvars, tanh; n_cond = nvars)
         else
             nn =
                 aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
@@ -492,8 +492,8 @@
 
         if mt <: CondPlanar
             nn =
-                aug_steer ? PlanarLayer(nvars * 2, tanh; cond = true, n_cond = nvars) :
-                PlanarLayer(nvars, tanh; cond = true, n_cond = nvars)
+                aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
+                PlanarLayer(nvars, tanh; n_cond = nvars)
         else
             nn =
                 aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
