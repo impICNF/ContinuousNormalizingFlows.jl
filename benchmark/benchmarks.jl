@@ -1,21 +1,5 @@
 using ContinuousNormalizingFlows,
-    BenchmarkTools,
-    ComponentArrays,
-    DifferentialEquations,
-    Flux,
-    Lux,
-    PkgBenchmark,
-    SciMLSensitivity,
-    Zygote
-
-sol_kwargs = Dict(
-    :alg_hints => [:nonstiff],
-    :alg => VCABM(),
-    :sensealg => QuadratureAdjoint(; autodiff = true, autojacvec = ZygoteVJP()),
-    :reltol => sqrt(eps(one(Float32))),
-    :abstol => eps(one(Float32)),
-    :maxiters => typemax(Int32),
-)
+    BenchmarkTools, ComponentArrays, Flux, Lux, PkgBenchmark, SciMLSensitivity, Zygote
 
 SUITE = BenchmarkGroup()
 
@@ -35,7 +19,7 @@ n = 128
 r = rand(Float32, nvars, n)
 
 nn = FluxCompatLayer(Flux.f32(Flux.Dense(nvars => nvars, tanh)))
-icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode, sol_kwargs)
+icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode)
 ps, st = Lux.setup(icnf.rng, icnf)
 
 loss(icnf, TrainMode(), r, ps, st)
@@ -52,7 +36,7 @@ SUITE["main"]["Flux"]["AD-1-order"]["test"] =
     @benchmarkable Zygote.gradient(loss, icnf, TestMode(), r, ps, st)
 
 nn2 = Lux.Dense(nvars => nvars, tanh)
-icnf2 = construct(RNODE, nn2, nvars; compute_mode = ZygoteMatrixMode, sol_kwargs)
+icnf2 = construct(RNODE, nn2, nvars; compute_mode = ZygoteMatrixMode)
 icnf2.sol_kwargs[:sensealg] = ForwardDiffSensitivity()
 ps2, st2 = Lux.setup(icnf2.rng, icnf2)
 ps2 = ComponentArray(ps2)
