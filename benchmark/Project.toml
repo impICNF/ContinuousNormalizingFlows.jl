@@ -10,7 +10,4 @@ SciMLSensitivity = "1ed8b502-d754-442c-8d5d-10ac956f44a1"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
-ChainRules = "=1.53.0"
 DifferentialEquations = "=7.9.0"
-Lux = "=0.5.3"
-Zygote = "=0.6.63"
