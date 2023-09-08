@@ -18,8 +18,12 @@ function construct(
     autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
     sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff, :memorybound],
-        :reltol => 1e-2 + eps(1e-2),
+        :alg_hints => [:nonstiff],
+        :alg => VCABM(),
+        :sensealg => InterpolatingAdjoint(; autodiff = true, autojacvec = ZygoteVJP()),
+        :reltol => sqrt(eps(one(Float32))),
+        :abstol => eps(one(Float32)),
+        :maxiters => typemax(Int32),
     ),
     rng::AbstractRNG = Random.default_rng(),
 )
