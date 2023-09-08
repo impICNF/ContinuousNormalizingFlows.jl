@@ -70,6 +70,7 @@
                 differentiation_backend = adb_u,
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
+        icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
@@ -212,6 +213,7 @@
                 steer_rate = convert(data_type, 0.1),
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
+        icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
@@ -361,6 +363,7 @@
                 differentiation_backend = adb_u,
             ) :
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
+        icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
@@ -511,6 +514,7 @@
                 steer_rate = convert(data_type, 0.1),
                 compute_mode = cmode,
             ) : construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
+        icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs
