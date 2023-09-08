@@ -12,10 +12,10 @@ export inference, generate, loss
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(;
-        f = let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-        end,
+        end;
         u0 = cat(xs, zrs; dims = 1),
         tspan = steer_tspan(icnf, mode),
         p = ps,
@@ -59,10 +59,10 @@ end
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(;
-        f = let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-        end,
+        end;
         u0 = cat(xs, zrs; dims = 1),
         tspan = steer_tspan(icnf, mode),
         p = ps,
@@ -106,10 +106,10 @@ end
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(;
-        f = let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-        end,
+        end;
         u0 = cat(new_xs, zrs; dims = 1),
         tspan = reverse(steer_tspan(icnf, mode)),
         p = ps,
@@ -147,10 +147,10 @@ end
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1, size(new_xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(new_xs, 2))
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(;
-        f = let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
+    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+        let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-        end,
+        end;
         u0 = cat(new_xs, zrs; dims = 1),
         tspan = reverse(steer_tspan(icnf, mode)),
         p = ps,
