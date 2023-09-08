@@ -18,6 +18,7 @@ using LuxCUDA: LuxCUDA
 using MLJBase: MLJBase
 using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase
+using SciMLSensitivity: SciMLSensitivity
 using TruncatedStacktraces: TruncatedStacktraces
 using Zygote: Zygote
 
