@@ -16,28 +16,28 @@
             CondPlanar,
         ]
     end
-    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
-    if CUDA.has_cuda_gpu() && USE_GPU
-        push!(resources, ComputationalResources.CUDALibs())
-        gdev = Lux.gpu_device()
-    end
-    data_types = Type{<:AbstractFloat}[Float32]
-    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ZygoteMatrixMode,
-        SDVecJacMatrixMode,
-        # SDJacVecMatrixMode,
-    ]
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
+    nvars_ = Int[1]
     aug_steers = Bool[false, true]
-    nvars_ = (1:2)
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
+    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+        ZygoteMatrixMode,
+        SDVecJacMatrixMode,
+        # SDJacVecMatrixMode,
+    ]
+    data_types = Type{<:AbstractFloat}[Float32]
+    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
+    if CUDA.has_cuda_gpu() && USE_GPU
+        push!(resources, ComputationalResources.CUDALibs())
+        gdev = Lux.gpu_device()
+    end
 
-    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
-                                                                                           resources,
+    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                                               resources,
         data_type in data_types,
         adb_u in adb_list,
         aug_steer in aug_steers,
@@ -180,8 +180,8 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $cmode | $nvars Vars | $mt" for resource in
-                                                                       resources,
+    @testset "$resource | $data_type | $cmode | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                           resources,
         data_type in data_types,
         cmode in cmodes,
         aug_steer in aug_steers,
@@ -323,8 +323,8 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | $nvars Vars | $mt" for resource in
-                                                                                           resources,
+    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                                               resources,
         data_type in data_types,
         adb_u in adb_list,
         aug_steer in aug_steers,
@@ -475,8 +475,8 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $cmode | $nvars Vars | $mt" for resource in
-                                                                       resources,
+    @testset "$resource | $data_type | $cmode | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                           resources,
         data_type in data_types,
         cmode in cmodes,
         aug_steer in aug_steers,

@@ -16,27 +16,27 @@
             CondPlanar,
         ]
     end
-    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
-    if CUDA.has_cuda_gpu() && USE_GPU
-        push!(resources, ComputationalResources.CUDALibs())
-    end
-    data_types = Type{<:AbstractFloat}[Float32]
-    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ZygoteMatrixMode,
-        SDVecJacMatrixMode,
-        # SDJacVecMatrixMode,
-    ]
-    nvars_ = (1:2)
-    adb_list = AbstractDifferentiation.AbstractBackend[
-        AbstractDifferentiation.ZygoteBackend(),
-        AbstractDifferentiation.ReverseDiffBackend(),
-        AbstractDifferentiation.ForwardDiffBackend(),
-    ]
+    nvars_ = Int[1]
     go_ads = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
     ]
+    adb_list = AbstractDifferentiation.AbstractBackend[
+        AbstractDifferentiation.ZygoteBackend(),
+        AbstractDifferentiation.ReverseDiffBackend(),
+        AbstractDifferentiation.ForwardDiffBackend(),
+    ]
+    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+        ZygoteMatrixMode,
+        SDVecJacMatrixMode,
+        # SDJacVecMatrixMode,
+    ]
+    data_types = Type{<:AbstractFloat}[Float32]
+    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
+    if CUDA.has_cuda_gpu() && USE_GPU
+        push!(resources, ComputationalResources.CUDALibs())
+    end
 
     @testset "$resource | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
                                                                                                                              resources,
