@@ -16,7 +16,6 @@ jobs:
           version: '1'
           arch: x64
           show-versioninfo: true
-      - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
       - name: Install dependencies
         run: julia --color=yes -e 'using Pkg; Pkg.add(["PkgBenchmark", "BenchmarkCI"])'

@@ -15,7 +15,6 @@ jobs:
           version: '1'
           arch: x64
           show-versioninfo: true
-      - uses: julia-actions/cache@v1
       - name: Pkg.add("CompatHelper")
         run: julia --color=yes -e 'using Pkg; Pkg.add("CompatHelper")'
       - name: CompatHelper.main()
