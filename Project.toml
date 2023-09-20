@@ -47,7 +47,7 @@ CUDAExtICNF = "CUDA"
 [compat]
 ADTypes = "0.1, 0.2"
 AbstractDifferentiation = "0.5"
-CUDA = "4"
+CUDA = "4, 5"
 ChainRulesCore = "1"
 ComponentArrays = "0.14, 0.15"
 ComputationalResources = "0.3"
