@@ -1,12 +1,21 @@
 @testset "Fit Tests" begin
     if GROUP == "RNODE"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE]
-        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[]
     elseif GROUP == "FFJORD"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[FFJORD]
-        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondFFJORD]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[]
     elseif GROUP == "Planar"
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[Planar]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[]
+    elseif GROUP == "CondRNODE"
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondRNODE]
+    elseif GROUP == "CondFFJORD"
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[]
+        cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondFFJORD]
+    elseif GROUP == "CondPlanar"
+        mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[]
         cmts = Type{<:ContinuousNormalizingFlows.AbstractCondICNF}[CondPlanar]
     else
         mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE, FFJORD, Planar]
