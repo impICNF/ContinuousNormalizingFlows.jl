@@ -23,28 +23,6 @@ export inference, generate, loss
     prob
 end
 
-@views function inference(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
-    mode::Mode,
-    xs::AbstractVector{<:Real},
-    ps::Any,
-    st::Any,
-)
-    prob = inference_prob(icnf, mode, xs, ps, st)
-    n_aug = n_augment(icnf, mode)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, end]
-    z = fsol[begin:(end - n_aug - 1)]
-    Δlogp = fsol[(end - n_aug)]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    if iszero(n_aug)
-        (logp̂x,)
-    else
-        augs = fsol[(end - n_aug + 1):end]
-        (logp̂x, augs...)
-    end
-end
-
 @views function inference_prob(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
@@ -68,28 +46,6 @@ end
     prob
 end
 
-@views function inference(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
-    mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ps::Any,
-    st::Any,
-)
-    prob = inference_prob(icnf, mode, xs, ps, st)
-    n_aug = n_augment(icnf, mode)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[begin:(end - n_aug - 1), :]
-    Δlogp = fsol[(end - n_aug), :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    if iszero(n_aug)
-        (logp̂x,)
-    else
-        augs = fsol[(end - n_aug + 1):end, :]
-        (logp̂x, eachrow(augs)...)
-    end
-end
-
 @views function generate_prob(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
@@ -111,20 +67,6 @@ end
         icnf.sol_kwargs...,
     )
     prob
-end
-@views function generate(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
-    mode::Mode,
-    ps::Any,
-    st::Any,
-)
-    prob = generate_prob(icnf, mode, ps, st)
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, end]
-    z = fsol[begin:(end - n_aug_input - n_aug - 1)]
-    z
 end
 
 @views function generate_prob(
@@ -151,20 +93,33 @@ end
     prob
 end
 
-@views function generate(
+@inline function inference(
+    icnf::AbstractICNF,
+    mode::Mode,
+    xs::AbstractVecOrMat{<:Real},
+    ps::Any,
+    st::Any,
+)
+    inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ps, st))
+end
+
+@inline function generate(
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    mode::Mode,
+    ps::Any,
+    st::Any,
+)
+    generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st))
+end
+
+@inline function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Int,
 )
-    prob = generate_prob(icnf, mode, ps, st, n)
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
-    z
+    generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st, n))
 end
 
 @inline function loss(

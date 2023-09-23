@@ -138,3 +138,67 @@ end
 ) where {T <: AbstractFloat}
     convert.(T, rand(icnf.rng, cstm, dims...))
 end
+
+@views function inference_sol(
+    icnf::AbstractFlows{<:AbstractFloat, <:VectorMode},
+    mode::Mode,
+    prob::ODEProblem,
+)
+    n_aug = n_augment(icnf, mode)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    fsol = sol[:, end]
+    z = fsol[begin:(end - n_aug - 1)]
+    Δlogp = fsol[(end - n_aug)]
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    if iszero(n_aug)
+        (logp̂x,)
+    else
+        augs = fsol[(end - n_aug + 1):end]
+        (logp̂x, augs...)
+    end
+end
+
+@views function inference_sol(
+    icnf::AbstractFlows{<:AbstractFloat, <:MatrixMode},
+    mode::Mode,
+    prob::ODEProblem,
+)
+    n_aug = n_augment(icnf, mode)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    fsol = sol[:, :, end]
+    z = fsol[begin:(end - n_aug - 1), :]
+    Δlogp = fsol[(end - n_aug), :]
+    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    if iszero(n_aug)
+        (logp̂x,)
+    else
+        augs = fsol[(end - n_aug + 1):end, :]
+        (logp̂x, eachrow(augs)...)
+    end
+end
+
+@views function generate_sol(
+    icnf::AbstractFlows{<:AbstractFloat, <:VectorMode},
+    mode::Mode,
+    prob::ODEProblem,
+)
+    n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    fsol = sol[:, end]
+    z = fsol[begin:(end - n_aug_input - n_aug - 1)]
+    z
+end
+
+@views function generate_sol(
+    icnf::AbstractFlows{<:AbstractFloat, <:MatrixMode},
+    mode::Mode,
+    prob::ODEProblem,
+)
+    n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
+    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    fsol = sol[:, :, end]
+    z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
+    z
+end
