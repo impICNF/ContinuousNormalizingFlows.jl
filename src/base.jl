@@ -140,10 +140,10 @@ end
 end
 
 @views function inference_sol(
-    icnf::AbstractFlows{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractFlows{T, <:VectorMode},
     mode::Mode,
-    prob::ODEProblem,
-)
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, false},
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
     fsol = sol[:, end]
@@ -159,10 +159,10 @@ end
 end
 
 @views function inference_sol(
-    icnf::AbstractFlows{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractFlows{T, <:MatrixMode},
     mode::Mode,
-    prob::ODEProblem,
-)
+    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, false},
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
     fsol = sol[:, :, end]
@@ -178,10 +178,10 @@ end
 end
 
 @views function generate_sol(
-    icnf::AbstractFlows{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractFlows{T, <:VectorMode},
     mode::Mode,
-    prob::ODEProblem,
-)
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, false},
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
@@ -191,10 +191,10 @@ end
 end
 
 @views function generate_sol(
-    icnf::AbstractFlows{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractFlows{T, <:MatrixMode},
     mode::Mode,
-    prob::ODEProblem,
-)
+    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, false},
+) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
