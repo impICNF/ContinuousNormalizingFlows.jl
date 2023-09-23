@@ -67,6 +67,7 @@
         icnf =
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
+        icnf.sol_kwargs[:verbose] = true
         model = ICNFModel(icnf; n_epochs = 2, adtype = go_ad)
         mach = MLJBase.machine(model, df)
         @test !isnothing(MLJBase.fit!(mach))
@@ -95,6 +96,7 @@
         end
         icnf = construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
+        icnf.sol_kwargs[:verbose] = true
         model = ICNFModel(icnf; n_epochs = 2, adtype = go_ad)
         mach = MLJBase.machine(model, df)
         @test !isnothing(MLJBase.fit!(mach))
@@ -128,6 +130,7 @@
         icnf =
             construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
+        icnf.sol_kwargs[:verbose] = true
         model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))
@@ -160,6 +163,7 @@
         end
         icnf = construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
+        icnf.sol_kwargs[:verbose] = true
         model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))

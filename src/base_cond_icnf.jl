@@ -12,7 +12,7 @@ export inference, generate, loss
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -21,30 +21,6 @@ export inference, generate, loss
         ps;
         icnf.sol_kwargs...,
     )
-    prob
-end
-
-@views function inference(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
-    mode::Mode,
-    xs::AbstractVector{<:Real},
-    ys::AbstractVector{<:Real},
-    ps::Any,
-    st::Any,
-)
-    prob = inference_prob(icnf, mode, xs, ys, ps, st)
-    n_aug = n_augment(icnf, mode)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, end]
-    z = fsol[begin:(end - n_aug - 1)]
-    Δlogp = fsol[(end - n_aug)]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    if iszero(n_aug)
-        (logp̂x,)
-    else
-        augs = fsol[(end - n_aug + 1):end]
-        (logp̂x, augs...)
-    end
 end
 
 @views function inference_prob(
@@ -59,7 +35,7 @@ end
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -68,30 +44,6 @@ end
         ps;
         icnf.sol_kwargs...,
     )
-    prob
-end
-
-@views function inference(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
-    mode::Mode,
-    xs::AbstractMatrix{<:Real},
-    ys::AbstractMatrix{<:Real},
-    ps::Any,
-    st::Any,
-)
-    prob = inference_prob(icnf, mode, xs, ys, ps, st)
-    n_aug = n_augment(icnf, mode)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[begin:(end - n_aug - 1), :]
-    Δlogp = fsol[(end - n_aug), :]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    if iszero(n_aug)
-        (logp̂x,)
-    else
-        augs = fsol[(end - n_aug + 1):end, :]
-        (logp̂x, eachrow(augs)...)
-    end
 end
 
 @views function generate_prob(
@@ -106,7 +58,7 @@ end
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -115,23 +67,6 @@ end
         ps;
         icnf.sol_kwargs...,
     )
-    prob
-end
-
-@views function generate(
-    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
-    mode::Mode,
-    ys::AbstractVector{<:Real},
-    ps::Any,
-    st::Any,
-)
-    prob = generate_prob(icnf, mode, ys, ps, st)
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, end]
-    z = fsol[begin:(end - n_aug_input - n_aug - 1)]
-    z
 end
 
 @views function generate_prob(
@@ -147,7 +82,7 @@ end
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1, size(new_xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(new_xs, 2))
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -156,10 +91,30 @@ end
         ps;
         icnf.sol_kwargs...,
     )
-    prob
 end
 
-@views function generate(
+@inline function inference(
+    icnf::AbstractCondICNF,
+    mode::Mode,
+    xs::AbstractVecOrMat{<:Real},
+    ys::AbstractVecOrMat{<:Real},
+    ps::Any,
+    st::Any,
+)
+    inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ys, ps, st))
+end
+
+@inline function generate(
+    icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
+    mode::Mode,
+    ys::AbstractVector{<:Real},
+    ps::Any,
+    st::Any,
+)
+    generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st))
+end
+
+@inline function generate(
     icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
@@ -167,13 +122,7 @@ end
     st::Any,
     n::Int,
 )
-    prob = generate_prob(icnf, mode, ys, ps, st, n)
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
-    fsol = sol[:, :, end]
-    z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
-    z
+    generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st, n))
 end
 
 @inline function loss(
