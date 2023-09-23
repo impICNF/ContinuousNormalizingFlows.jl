@@ -12,7 +12,7 @@ export inference, generate, loss
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -21,7 +21,6 @@ export inference, generate, loss
         ps;
         icnf.sol_kwargs...,
     )
-    prob
 end
 
 @views function inference_prob(
@@ -36,7 +35,7 @@ end
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -45,7 +44,6 @@ end
         ps;
         icnf.sol_kwargs...,
     )
-    prob
 end
 
 @views function generate_prob(
@@ -60,7 +58,7 @@ end
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -69,7 +67,6 @@ end
         ps;
         icnf.sol_kwargs...,
     )
-    prob
 end
 
 @views function generate_prob(
@@ -85,7 +82,7 @@ end
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1, size(new_xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(new_xs, 2))
-    prob = ODEProblem{false, SciMLBase.FullSpecialize}(
+    ODEProblem{false, SciMLBase.FullSpecialize}(
         let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
             (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
         end,
@@ -94,7 +91,6 @@ end
         ps;
         icnf.sol_kwargs...,
     )
-    prob
 end
 
 @inline function inference(
