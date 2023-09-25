@@ -18,7 +18,6 @@ struct RNODE{
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
-    SOL_ARGS <: Tuple,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
     _FNN <: Function,
@@ -33,7 +32,6 @@ struct RNODE{
     steerdist::STEERDIST
     differentiation_backend::DIFFERENTIATION_BACKEND
     autodiff_backend::AUTODIFF_BACKEND
-    sol_args::SOL_ARGS
     sol_kwargs::SOL_KWARGS
     rng::RNG
     _fnn::_FNN
@@ -57,7 +55,6 @@ function construct(
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
-    sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff],
         :alg => VCABM(),
@@ -86,7 +83,6 @@ function construct(
         typeof(steerdist),
         typeof(differentiation_backend),
         typeof(autodiff_backend),
-        typeof(sol_args),
         typeof(sol_kwargs),
         typeof(rng),
         typeof(_fnn),
@@ -100,7 +96,6 @@ function construct(
         steerdist,
         differentiation_backend,
         autodiff_backend,
-        sol_args,
         sol_kwargs,
         rng,
         _fnn,
