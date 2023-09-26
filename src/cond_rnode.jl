@@ -54,9 +54,14 @@ function construct(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
     sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff],
+        :alg_hints => [:nonstiff, :memorybound],
+        :save_everystep => false,
         :alg => VCABM(),
-        :sensealg => InterpolatingAdjoint(; autodiff = true, autojacvec = ZygoteVJP()),
+        :sensealg => InterpolatingAdjoint(;
+            autodiff = true,
+            autojacvec = ZygoteVJP(),
+            checkpointing = true,
+        ),
         :reltol => sqrt(eps(one(Float32))),
         :abstol => eps(one(Float32)),
         :maxiters => typemax(Int32),
