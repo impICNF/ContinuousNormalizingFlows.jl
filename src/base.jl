@@ -17,9 +17,14 @@ function construct(
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
     sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff],
+        :alg_hints => [:nonstiff, :memorybound],
+        :save_everystep => false,
         :alg => VCABM(),
-        :sensealg => InterpolatingAdjoint(; autodiff = true, autojacvec = ZygoteVJP()),
+        :sensealg => InterpolatingAdjoint(;
+            autodiff = true,
+            autojacvec = ZygoteVJP(),
+            checkpointing = true,
+        ),
         :reltol => sqrt(eps(one(Float32))),
         :abstol => eps(one(Float32)),
         :maxiters => typemax(Int32),
@@ -142,7 +147,7 @@ end
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, false},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob)
+    sol = solve(prob; icnf.sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
@@ -161,7 +166,7 @@ end
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, false},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob)
+    sol = solve(prob; icnf.sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
@@ -181,7 +186,7 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob)
+    sol = solve(prob; icnf.sol_kwargs...)
     fsol = sol[:, end]
     z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
@@ -194,7 +199,7 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob)
+    sol = solve(prob; icnf.sol_kwargs...)
     fsol = sol[:, :, end]
     z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z

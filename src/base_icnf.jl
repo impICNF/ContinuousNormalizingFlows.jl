@@ -17,8 +17,7 @@ export inference, generate, loss
         end,
         cat(xs, zrs; dims = 1),
         steer_tspan(icnf, mode),
-        ps;
-        icnf.sol_kwargs...,
+        ps,
     )
 end
 
@@ -39,8 +38,7 @@ end
         end,
         cat(xs, zrs; dims = 1),
         steer_tspan(icnf, mode),
-        ps;
-        icnf.sol_kwargs...,
+        ps,
     )
 end
 
@@ -61,8 +59,7 @@ end
         end,
         cat(new_xs, zrs; dims = 1),
         reverse(steer_tspan(icnf, mode)),
-        ps;
-        icnf.sol_kwargs...,
+        ps,
     )
 end
 
@@ -84,8 +81,7 @@ end
         end,
         cat(new_xs, zrs; dims = 1),
         reverse(steer_tspan(icnf, mode)),
-        ps;
-        icnf.sol_kwargs...,
+        ps,
     )
 end
 
