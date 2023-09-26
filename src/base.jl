@@ -16,7 +16,6 @@ function construct(
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
-    sol_args::Tuple = (),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff],
         :alg => VCABM(),
@@ -43,7 +42,6 @@ function construct(
         typeof(steerdist),
         typeof(differentiation_backend),
         typeof(autodiff_backend),
-        typeof(sol_args),
         typeof(sol_kwargs),
         typeof(rng),
         typeof(_fnn),
@@ -57,7 +55,6 @@ function construct(
         steerdist,
         differentiation_backend,
         autodiff_backend,
-        sol_args,
         sol_kwargs,
         rng,
         _fnn,
@@ -145,7 +142,7 @@ end
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, false},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    sol = solve(prob)
     fsol = sol[:, end]
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
@@ -164,7 +161,7 @@ end
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, false},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
@@ -184,7 +181,7 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    sol = solve(prob)
     fsol = sol[:, end]
     z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
@@ -197,7 +194,7 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob, icnf.sol_args...; icnf.sol_kwargs...)
+    sol = solve(prob)
     fsol = sol[:, :, end]
     z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
