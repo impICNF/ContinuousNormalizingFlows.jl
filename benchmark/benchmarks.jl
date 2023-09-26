@@ -14,8 +14,8 @@ SUITE["main"]["Flux"]["AD-1-order"] = BenchmarkGroup(["gradient"])
 SUITE["main"]["Lux"]["direct"] = BenchmarkGroup(["direct"])
 SUITE["main"]["Lux"]["AD-1-order"] = BenchmarkGroup(["gradient"])
 
-nvars = 2^5
-n = 2^10
+nvars = 2^3
+n = 2^6
 r = rand(Float32, nvars, n)
 
 nn = FluxCompatLayer(Flux.f32(Flux.Dense(nvars => nvars, tanh)))
