@@ -56,7 +56,9 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         st = gdev(st)
     end
     optfunc = OptimizationFunction(
-        (ps_, θ, xs_, ys_) -> model.loss(model.m, TrainMode(), xs_, ys_, ps_, st),
+        let mm = model.m, md = TrainMode(), st = st
+            (ps_, θ, xs_, ys_) -> model.loss(mm, md, xs_, ys_, ps_, st)
+        end,
         model.adtype,
     )
     optprob = OptimizationProblem(optfunc, ps)
@@ -99,7 +101,9 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                     optprob_re,
                     opt,
                     data;
-                    callback = (ps_, l_) -> callback_f(ps_, l_, model.m, prgr, itr_n),
+                    callback = let mm = model.m, prgr = prgr, itr_n = itr_n
+                        (ps_, l_) -> callback_f(ps_, l_, mm, prgr, itr_n)
+                    end,
                 )
                 ProgressMeter.finish!(prgr)
 
@@ -144,8 +148,11 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
 
     if model.compute_mode <: VectorMode
         tst = @timed logp̂x = broadcast(
-            ((x, y),) -> first(inference(model.m, TestMode(), x, y, ps, st)),
-            zip(eachcol(xnew), eachcol(ynew)),
+            let mm = model.m, md = TestMode(), ps = ps, st = st
+                (x, y) -> first(inference(mm, md, x, y, ps, st))
+            end,
+            eachcol(xnew),
+            eachcol(ynew),
         )
     elseif model.compute_mode <: MatrixMode
         tst = @timed logp̂x = first(inference(model.m, TestMode(), xnew, ynew, ps, st))
@@ -218,7 +225,9 @@ function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
 end
 function Distributions._logpdf(d::CondICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
-        broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
+        broadcast(let d = d
+            x -> Distributions._logpdf(d, x)
+        end, eachcol(A))
     elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ys[:, begin:size(A, 2)], d.ps, d.st))
     else
@@ -236,7 +245,9 @@ function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, x::AbstractVect
 end
 function Distributions._rand!(rng::AbstractRNG, d::CondICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
-        A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
+        A .= hcat(broadcast(let rng = rng, d = d
+            x -> Distributions._rand!(rng, d, x)
+        end, eachcol(A))...)
     elseif d.m isa AbstractCondICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ys[:, begin:size(A, 2)], d.ps, d.st, size(A, 2))
     else

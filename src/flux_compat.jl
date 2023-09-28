@@ -9,7 +9,9 @@ end
 function FluxCompatLayer(l)
     p, re = Optimisers.destructure(l)
     p_ = copy(p)
-    return FluxCompatLayer(l, re, () -> p_)
+    return FluxCompatLayer(l, re, let p_ = p_
+        () -> p_
+    end)
 end
 
 function Lux.initialparameters(::AbstractRNG, l::FluxCompatLayer)
