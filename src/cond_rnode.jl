@@ -18,7 +18,6 @@ struct CondRNODE{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-    _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
@@ -32,7 +31,6 @@ struct CondRNODE{
     autodiff_backend::AUTODIFF_BACKEND
     sol_kwargs::SOL_KWARGS
     rng::RNG
-    _fnn::_FNN
     λ₁::T
     λ₂::T
 end
@@ -71,7 +69,6 @@ function construct(
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
-    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,
@@ -88,7 +85,6 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_kwargs),
         typeof(rng),
-        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -101,7 +97,6 @@ function construct(
         autodiff_backend,
         sol_kwargs,
         rng,
-        _fnn,
         λ₁,
         λ₂,
     )
@@ -122,7 +117,7 @@ end
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z,
     )
@@ -147,7 +142,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, back = Zygote.pullback(let ys = ys, p = p, st = st
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
     end, z)
     ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
@@ -168,10 +163,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = icnf._fnn(cat(z, ys; dims = 1), p, st)
+    ż = first(icnf.nn(cat(z, ys; dims = 1), p, st))
     Jf = VecJac(
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z;
         autodiff = icnf.autodiff_backend,
@@ -195,10 +190,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = icnf._fnn(cat(z, ys; dims = 1), p, st)
+    ż = first(icnf.nn(cat(z, ys; dims = 1), p, st))
     Jf = JacVec(
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z;
         autodiff = icnf.autodiff_backend,

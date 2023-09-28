@@ -53,7 +53,9 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         st = gdev(st)
     end
     optfunc = OptimizationFunction(
-        (ps_, θ, xs_) -> model.loss(model.m, TrainMode(), xs_, ps_, st),
+        let mm = model.m, md = TrainMode(), st = st
+            (ps_, θ, xs_) -> model.loss(mm, md, xs_, ps_, st)
+        end,
         model.adtype,
     )
     optprob = OptimizationProblem(optfunc, ps)
@@ -97,7 +99,9 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
                     optprob_re,
                     opt,
                     data;
-                    callback = (ps_, l_) -> callback_f(ps_, l_, model.m, prgr, itr_n),
+                    callback = let mm = model.m, prgr = prgr, itr_n = itr_n
+                        (ps_, l_) -> callback_f(ps_, l_, mm, prgr, itr_n)
+                    end,
                 )
                 ProgressMeter.finish!(prgr)
             else
@@ -138,7 +142,9 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
 
     if model.compute_mode <: VectorMode
         tst = @timed logp̂x = broadcast(
-            x -> first(inference(model.m, TestMode(), x, ps, st)),
+            let mm = model.m, md = TestMode(), ps = ps, st = st
+                x -> first(inference(model.m, TestMode(), x, ps, st))
+            end,
             eachcol(xnew),
         )
     elseif model.compute_mode <: MatrixMode
@@ -205,7 +211,9 @@ function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
 end
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        broadcast(x -> Distributions._logpdf(d, x), eachcol(A))
+        broadcast(let d = d
+            x -> Distributions._logpdf(d, x)
+        end, eachcol(A))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ps, d.st))
     else
@@ -223,7 +231,9 @@ function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        A .= hcat(broadcast(x -> Distributions._rand!(rng, d, x), eachcol(A))...)
+        A .= hcat(broadcast(let rng = rng, d = d
+            x -> Distributions._rand!(rng, d, x)
+        end, eachcol(A))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
     else
