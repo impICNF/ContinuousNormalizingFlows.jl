@@ -20,7 +20,6 @@ struct RNODE{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-    _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
@@ -34,7 +33,6 @@ struct RNODE{
     autodiff_backend::AUTODIFF_BACKEND
     sol_kwargs::SOL_KWARGS
     rng::RNG
-    _fnn::_FNN
     λ₁::T
     λ₂::T
 end
@@ -73,7 +71,6 @@ function construct(
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
-    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,
@@ -90,7 +87,6 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_kwargs),
         typeof(rng),
-        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -103,7 +99,6 @@ function construct(
         autodiff_backend,
         sol_kwargs,
         rng,
-        _fnn,
         λ₁,
         λ₂,
     )
@@ -123,7 +118,7 @@ end
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let p = p, st = st
-            x -> icnf._fnn(x, p, st)
+            x -> first(icnf.nn(x, p, st))
         end,
         z,
     )
@@ -147,7 +142,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, back = Zygote.pullback(let p = p, st = st
-        x -> icnf._fnn(x, p, st)
+        x -> first(icnf.nn(x, p, st))
     end, z)
     ϵJ = only(back(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
@@ -167,9 +162,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = icnf._fnn(z, p, st)
+    ż = first(icnf.nn(z, p, st))
     Jf = VecJac(let p = p, st = st
-        x -> icnf._fnn(x, p, st)
+        x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
@@ -189,9 +184,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = icnf._fnn(z, p, st)
+    ż = first(icnf.nn(z, p, st))
     Jf = JacVec(let p = p, st = st
-        x -> icnf._fnn(x, p, st)
+        x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     l̇ = sum(ϵ .* Jϵ; dims = 1)

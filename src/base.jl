@@ -32,7 +32,6 @@ function construct(
     rng::AbstractRNG = Random.default_rng(),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
-    _fnn(x, ps, st) = first(nn(x, ps, st))
 
     aicnf{
         data_type,
@@ -49,7 +48,6 @@ function construct(
         typeof(autodiff_backend),
         typeof(sol_kwargs),
         typeof(rng),
-        typeof(_fnn),
     }(
         nn,
         nvars,
@@ -62,7 +60,6 @@ function construct(
         autodiff_backend,
         sol_kwargs,
         rng,
-        _fnn,
     )
 end
 

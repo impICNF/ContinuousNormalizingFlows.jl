@@ -18,7 +18,6 @@ struct CondFFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-    _FNN <: Function,
 } <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
@@ -32,7 +31,6 @@ struct CondFFJORD{
     autodiff_backend::AUTODIFF_BACKEND
     sol_kwargs::SOL_KWARGS
     rng::RNG
-    _fnn::_FNN
 end
 
 @views function augmented_f(
@@ -50,7 +48,7 @@ end
     v_pb = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z,
     )
@@ -73,7 +71,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(let ys = ys, p = p, st = st
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
     end, z)
     ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -92,10 +90,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
+    mz = first(icnf.nn(cat(z, ys; dims = 1), p, st))
     Jf = VecJac(
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z;
         autodiff = icnf.autodiff_backend,
@@ -117,10 +115,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(cat(z, ys; dims = 1), p, st)
+    mz = first(icnf.nn(cat(z, ys; dims = 1), p, st))
     Jf = JacVec(
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z;
         autodiff = icnf.autodiff_backend,

@@ -158,7 +158,7 @@ end
     mz, J = AbstractDifferentiation.value_and_jacobian(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
-            x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z,
     )
@@ -179,7 +179,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, J = jacobian_batched(icnf, let ys = ys, p = p, st = st
-        x -> icnf._fnn(cat(x, ys; dims = 1), p, st)
+        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
     end, z)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     cat(mz, -trace_J; dims = 1)

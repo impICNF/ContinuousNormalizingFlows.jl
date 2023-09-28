@@ -20,7 +20,6 @@ struct Planar{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-    _FNN <: Function,
 } <: AbstractICNF{T, CM, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
@@ -34,7 +33,6 @@ struct Planar{
     autodiff_backend::AUTODIFF_BACKEND
     sol_kwargs::SOL_KWARGS
     rng::RNG
-    _fnn::_FNN
 end
 
 @views function augmented_f(
@@ -48,7 +46,7 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz = icnf._fnn(z, p, st)
+    mz = first(icnf.nn(z, p, st))
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -75,7 +73,7 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz = icnf._fnn(z, p, st)
+    mz = first(icnf.nn(z, p, st))
     trace_J =
         p.u ⋅ transpose(
             only(
@@ -103,7 +101,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, back = Zygote.pullback(let p = p, st = st
-        x -> icnf._fnn(x, p, st)
+        x -> first(icnf.nn(x, p, st))
     end, z)
     ϵJ = only(back(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -121,9 +119,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(z, p, st)
+    mz = first(icnf.nn(z, p, st))
     Jf = VecJac(let p = p, st = st
-        x -> icnf._fnn(x, p, st)
+        x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -141,9 +139,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz = icnf._fnn(z, p, st)
+    mz = first(icnf.nn(z, p, st))
     Jf = JacVec(let p = p, st = st
-        x -> icnf._fnn(x, p, st)
+        x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
