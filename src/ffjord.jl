@@ -8,6 +8,7 @@ Implementation of FFJORD from
 struct FFJORD{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
@@ -20,7 +21,7 @@ struct FFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS

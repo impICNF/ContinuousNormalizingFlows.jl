@@ -6,6 +6,7 @@ Implementation of FFJORD (Conditional Version)
 struct CondFFJORD{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
@@ -18,7 +19,7 @@ struct CondFFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractCondICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS

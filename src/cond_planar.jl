@@ -6,6 +6,7 @@ Implementation of Planar (Conditional Version)
 struct CondPlanar{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: PlanarLayer,
@@ -18,7 +19,7 @@ struct CondPlanar{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractCondICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractCondICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS

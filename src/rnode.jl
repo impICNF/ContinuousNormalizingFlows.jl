@@ -8,6 +8,7 @@ Implementation of RNODE from
 struct RNODE{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
@@ -20,7 +21,7 @@ struct RNODE{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS
@@ -44,6 +45,7 @@ function construct(
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVectorMode,
+    inplace::Bool = false,
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
@@ -75,6 +77,7 @@ function construct(
     aicnf{
         data_type,
         compute_mode,
+        inplace,
         !iszero(naugmented),
         !iszero(steer_rate),
         typeof(nn),

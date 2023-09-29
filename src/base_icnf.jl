@@ -1,19 +1,28 @@
 export inference, generate, loss
 
 @views function inference_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode, INPLACE},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::Any,
-)
+) where {INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    ODEProblem{false, SciMLBase.FullSpecialize}(
-        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        if INPLACE
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (du, u, p, t) -> begin
+                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
+                    nothing
+                end
+            end
+        else
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            end
         end,
         cat(xs, zrs; dims = 1),
         steer_tspan(icnf, mode),
@@ -22,19 +31,28 @@ export inference, generate, loss
 end
 
 @views function inference_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode, INPLACE},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::Any,
-)
+) where {INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug_input + n_aug + 1, size(xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
-    ODEProblem{false, SciMLBase.FullSpecialize}(
-        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        if INPLACE
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (du, u, p, t) -> begin
+                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
+                    nothing
+                end
+            end
+        else
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            end
         end,
         cat(xs, zrs; dims = 1),
         steer_tspan(icnf, mode),
@@ -43,19 +61,28 @@ end
 end
 
 @views function generate_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode, INPLACE},
     mode::Mode,
     ps::Any,
     st::Any,
-)
+) where {INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1)
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    ODEProblem{false, SciMLBase.FullSpecialize}(
-        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        if INPLACE
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (du, u, p, t) -> begin
+                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
+                    nothing
+                end
+            end
+        else
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            end
         end,
         cat(new_xs, zrs; dims = 1),
         reverse(steer_tspan(icnf, mode)),
@@ -64,20 +91,29 @@ end
 end
 
 @views function generate_prob(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode, INPLACE},
     mode::Mode,
     ps::Any,
     st::Any,
     n::Int,
-)
+) where {INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
     zrs = zeros_T_AT(icnf.resource, icnf, n_aug + 1, size(new_xs, 2))
     ϵ = randn_T_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(new_xs, 2))
-    ODEProblem{false, SciMLBase.FullSpecialize}(
-        let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-            (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        if INPLACE
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (du, u, p, t) -> begin
+                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
+                    nothing
+                end
+            end
+        else
+            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            end
         end,
         cat(new_xs, zrs; dims = 1),
         reverse(steer_tspan(icnf, mode)),
