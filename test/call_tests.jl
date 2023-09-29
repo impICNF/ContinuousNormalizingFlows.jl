@@ -34,7 +34,12 @@
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
-    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    acmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+        ZygoteVectorMode,
+        ADVecJacVectorMode,
+        # ADJacVecVectorMode,
+    ]
+    mcmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ZygoteMatrixMode,
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
@@ -46,10 +51,10 @@
         gdev = Lux.gpu_device()
     end
 
-    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | aug & steer = $aug_steer | inplace = $inplace | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                                    resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                                                       resources,
         data_type in data_types,
-        adb_u in adb_list,
+        compute_mode in acmodes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -76,20 +81,11 @@
                 nvars,
                 nvars;
                 data_type,
+                compute_mode,
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                differentiation_backend = adb_u,
-            ) :
-            construct(
-                mt,
-                nn,
-                nvars;
-                data_type,
-                inplace,
-                resource,
-                differentiation_backend = adb_u,
-            )
+            ) : construct(mt, nn, nvars; data_type, compute_mode, inplace, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         ps, st = Lux.setup(icnf.rng, icnf)
@@ -201,10 +197,10 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $cmode | aug & steer = $aug_steer | inplace = $inplace | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                                                       resources,
         data_type in data_types,
-        cmode in cmodes,
+        compute_mode in mcmodes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -231,11 +227,11 @@
                 nvars,
                 nvars;
                 data_type,
+                compute_mode,
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                compute_mode = cmode,
-            ) : construct(mt, nn, nvars; data_type, inplace, resource, compute_mode = cmode)
+            ) : construct(mt, nn, nvars; data_type, compute_mode, inplace, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         ps, st = Lux.setup(icnf.rng, icnf)
@@ -347,10 +343,10 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $(typeof(adb_u).name.name) | aug & steer = $aug_steer | inplace = $inplace | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                                    resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                                                       resources,
         data_type in data_types,
-        adb_u in adb_list,
+        compute_mode in acmodes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -383,20 +379,11 @@
                 nvars,
                 nvars;
                 data_type,
+                compute_mode,
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                differentiation_backend = adb_u,
-            ) :
-            construct(
-                mt,
-                nn,
-                nvars;
-                data_type,
-                inplace,
-                resource,
-                differentiation_backend = adb_u,
-            )
+            ) : construct(mt, nn, nvars; data_type, compute_mode, inplace, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         ps, st = Lux.setup(icnf.rng, icnf)
@@ -510,10 +497,10 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $cmode | aug & steer = $aug_steer | inplace = $inplace | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
+                                                                                                                                       resources,
         data_type in data_types,
-        cmode in cmodes,
+        compute_mode in mcmodes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -546,11 +533,11 @@
                 nvars,
                 nvars;
                 data_type,
+                compute_mode,
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                compute_mode = cmode,
-            ) : construct(mt, nn, nvars; data_type, inplace, resource, compute_mode = cmode)
+            ) : construct(mt, nn, nvars; data_type, compute_mode, inplace, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         ps, st = Lux.setup(icnf.rng, icnf)

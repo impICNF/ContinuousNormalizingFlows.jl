@@ -94,6 +94,26 @@ end
     u::Any,
     p::Any,
     t::Any,
+    icnf::CondPlanar{T, <:ZygoteVectorMode},
+    mode::TrainMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    mz, back = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
+    trace_J = ϵJ ⋅ ϵ
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::CondPlanar{T, <:ZygoteMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},

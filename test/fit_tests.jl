@@ -31,12 +31,12 @@
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
     ]
-    adb_list = AbstractDifferentiation.AbstractBackend[
-        AbstractDifferentiation.ZygoteBackend(),
-        AbstractDifferentiation.ReverseDiffBackend(),
-        AbstractDifferentiation.ForwardDiffBackend(),
+    acmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+        ZygoteVectorMode,
+        ADVecJacVectorMode,
+        # ADJacVecVectorMode,
     ]
-    cmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    mcmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ZygoteMatrixMode,
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
@@ -47,10 +47,10 @@
         push!(resources, ComputationalResources.CUDALibs())
     end
 
-    @testset "$resource | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                                                             resources,
+    @testset "$resource | $data_type | $go_ad for fitting | $nvars Vars | $mt" for resource in
+                                                                                   resources,
         data_type in data_types,
-        adb_u in adb_list,
+        compute_mode in acmodes,
         go_ad in go_ads,
         nvars in nvars_,
         mt in mts
@@ -64,8 +64,7 @@
         else
             nn = Lux.Dense(nvars => nvars, tanh)
         end
-        icnf =
-            construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
+        icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         model = ICNFModel(icnf; n_epochs = 2, adtype = go_ad)
@@ -80,7 +79,7 @@
     @testset "$resource | $data_type | $cmode | $go_ad for fitting | $nvars Vars | $mt" for resource in
                                                                                             resources,
         data_type in data_types,
-        cmode in cmodes,
+        compute_mode in mcmodes,
         go_ad in go_ads,
         nvars in nvars_,
         mt in mts
@@ -94,7 +93,7 @@
         else
             nn = Lux.Dense(nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
+        icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         model = ICNFModel(icnf; n_epochs = 2, adtype = go_ad)
@@ -106,10 +105,10 @@
         @test !isnothing(ICNFDist(mach, TrainMode()))
         @test !isnothing(ICNFDist(mach, TestMode()))
     end
-    @testset "$resource | $data_type | $(typeof(adb_u).name.name) for internal | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                                                             resources,
+    @testset "$resource | $data_type | $go_ad for fitting | $nvars Vars | $mt" for resource in
+                                                                                   resources,
         data_type in data_types,
-        adb_u in adb_list,
+        compute_mode in acmodes,
         go_ad in go_ads,
         nvars in nvars_,
         mt in cmts
@@ -127,8 +126,7 @@
         else
             nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
-        icnf =
-            construct(mt, nn, nvars; data_type, resource, differentiation_backend = adb_u)
+        icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)
@@ -143,7 +141,7 @@
     @testset "$resource | $data_type | $cmode | $go_ad for fitting | $nvars Vars | $mt" for resource in
                                                                                             resources,
         data_type in data_types,
-        cmode in cmodes,
+        compute_mode in mcmodes,
         go_ad in go_ads,
         nvars in nvars_,
         mt in cmts
@@ -161,7 +159,7 @@
         else
             nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
-        icnf = construct(mt, nn, nvars; data_type, resource, compute_mode = cmode)
+        icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)

@@ -6,7 +6,7 @@ function construct(
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::Type{<:ComputeMode} = ADVectorMode,
+    compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
     inplace::Bool = false,
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
@@ -16,7 +16,8 @@ function construct(
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
+    autodiff_backend::ADTypes.AbstractADType = compute_mode <: SDJacVecMatrixMode ?
+                                               AutoForwardDiff() : AutoZygote(),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff, :memorybound],
         :save_everystep => false,

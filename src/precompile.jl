@@ -9,8 +9,14 @@
             Type{<:AbstractCondICNF}[]
         cmodes =
             fllprcmpltn ?
-            Type{<:ComputeMode}[ADVectorMode, ZygoteMatrixMode, SDVecJacMatrixMode] :
-            Type{<:ComputeMode}[ZygoteMatrixMode]
+            Type{<:ComputeMode}[
+                ADVecJacVectorMode,
+                ADJacVecVectorMode,
+                SDVecJacMatrixMode,
+                SDJacVecMatrixMode,
+                ZygoteVectorMode,
+                ZygoteMatrixMode,
+            ] : Type{<:ComputeMode}[ZygoteMatrixMode]
         omodes = Mode[TrainMode(), TestMode()]
         nvars = 1
         r = rand(Float32, nvars)

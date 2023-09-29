@@ -196,6 +196,24 @@ end
     u::Any,
     p::Any,
     t::Any,
+    icnf::AbstractICNF{T, <:ZygoteVectorMode},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    mz, J = Zygote.withjacobian(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    trace_J = tr(only(J))
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
     icnf::AbstractICNF{T, <:MatrixMode},
     mode::TestMode,
     ϵ::AbstractMatrix{T},
