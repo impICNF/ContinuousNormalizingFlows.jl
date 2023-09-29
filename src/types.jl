@@ -2,9 +2,10 @@ export TestMode,
     TrainMode,
     ADVecJacVectorMode,
     ADJacVecVectorMode,
-    ZygoteMatrixMode,
     SDVecJacMatrixMode,
-    SDJacVecMatrixMode
+    SDJacVecMatrixMode,
+    ZygoteVectorMode,
+    ZygoteMatrixMode
 
 abstract type Mode end
 struct TestMode <: Mode end
