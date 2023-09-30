@@ -12,9 +12,9 @@
             Type{<:ComputeMode}[
                 ADVecJacVectorMode,
                 ADJacVecVectorMode,
+                ZygoteVectorMode,
                 SDVecJacMatrixMode,
                 SDJacVecMatrixMode,
-                ZygoteVectorMode,
                 ZygoteMatrixMode,
             ] : Type{<:ComputeMode}[ZygoteMatrixMode]
         omodes = Mode[TrainMode(), TestMode()]

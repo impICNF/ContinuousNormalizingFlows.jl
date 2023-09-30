@@ -26,23 +26,29 @@
         ]
     end
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
-    nvars_ = Int[1]
-    inplaces = Bool[false, true]
-    aug_steers = Bool[false, true]
+    if GROUP == "All"
+        nvars_ = Int[1, 2]
+        inplaces = Bool[false, true]
+        aug_steers = Bool[false, true]
+    else
+        nvars_ = Int[1]
+        inplaces = Bool[false]
+        aug_steers = Bool[true]
+    end
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
     acmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ZygoteVectorMode,
         ADVecJacVectorMode,
         # ADJacVecVectorMode,
+        ZygoteVectorMode,
     ]
     mcmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ZygoteMatrixMode,
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
+        ZygoteMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]

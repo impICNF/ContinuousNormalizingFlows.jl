@@ -25,21 +25,25 @@
             CondPlanar,
         ]
     end
-    nvars_ = Int[1]
+    if GROUP == "All"
+        nvars_ = Int[1, 2]
+    else
+        nvars_ = Int[1]
+    end
     go_ads = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
     ]
     acmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ZygoteVectorMode,
         ADVecJacVectorMode,
         # ADJacVecVectorMode,
+        ZygoteVectorMode,
     ]
     mcmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ZygoteMatrixMode,
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
+        ZygoteMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
