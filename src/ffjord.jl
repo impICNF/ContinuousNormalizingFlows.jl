@@ -107,25 +107,6 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{T, <:ZygoteMatrixMode},
-    mode::TrainMode,
-    ϵ::AbstractMatrix{T},
-    st::Any,
-) where {T <: AbstractFloat}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
-    end, z)
-    ϵJ = only(back(ϵ))
-    trace_J = sum(ϵJ .* ϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
-end
-
-@views function augmented_f(
-    u::Any,
-    p::Any,
-    t::Any,
     icnf::FFJORD{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ϵ::AbstractMatrix{T},
@@ -159,5 +140,24 @@ end
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::FFJORD{T, <:ZygoteMatrixMode},
+    mode::TrainMode,
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    mz, back = Zygote.pullback(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
+    trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
