@@ -14,10 +14,7 @@ export inference, generate, loss
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
@@ -44,10 +41,7 @@ end
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
@@ -74,10 +68,7 @@ end
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
@@ -105,10 +96,7 @@ end
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ϵ = ϵ, st = st
@@ -168,6 +156,20 @@ end
     st::Any,
 )
     -mean(first(inference(icnf, mode, xs, ps, st)))
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractICNF{T},
+    mode::Mode,
+    ϵ::AbstractVecOrMat{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
+    nothing
 end
 
 @views function augmented_f(
