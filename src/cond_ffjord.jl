@@ -179,7 +179,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondFFJORD{T, <:ZygoteMatrixMode, true},
+    icnf::CondFFJORD{T, <:ZygoteMatrixModeInplace, true},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},

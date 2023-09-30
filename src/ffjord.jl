@@ -167,7 +167,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{T, <:ZygoteMatrixMode, true},
+    icnf::FFJORD{T, <:ZygoteMatrixModeInplace, true},
     mode::TrainMode,
     ϵ::AbstractMatrix{T},
     st::Any,

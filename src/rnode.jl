@@ -251,7 +251,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::RNODE{T, <:ZygoteMatrixMode, true},
+    icnf::RNODE{T, <:ZygoteMatrixModeInplace, true},
     mode::TrainMode,
     ϵ::AbstractMatrix{T},
     st::Any,

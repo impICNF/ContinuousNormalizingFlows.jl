@@ -263,7 +263,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{T, <:ZygoteMatrixMode, true},
+    icnf::CondRNODE{T, <:ZygoteMatrixModeInplace, true},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},

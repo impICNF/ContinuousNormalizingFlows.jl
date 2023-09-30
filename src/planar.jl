@@ -173,7 +173,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{T, <:ZygoteMatrixMode, true},
+    icnf::Planar{T, <:ZygoteMatrixModeInplace, true},
     mode::TrainMode,
     ϵ::AbstractMatrix{T},
     st::Any,

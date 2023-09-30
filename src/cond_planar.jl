@@ -185,7 +185,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondPlanar{T, <:ZygoteMatrixMode, true},
+    icnf::CondPlanar{T, <:ZygoteMatrixModeInplace, true},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
