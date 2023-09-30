@@ -246,6 +246,28 @@ end
     cat(ż, -l̇, Ė, ṅ; dims = 1)
 end
 
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::RNODE{T, <:ZygoteMatrixMode, true},
+    mode::TrainMode,
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż, back = Zygote.pullback(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -sum(ϵJ .* ϵ; dims = 1)
+    du[(end - n_aug + 1), :] .= transpose(norm.(eachcol(ż)))
+    du[(end - n_aug + 2), :] .= transpose(norm.(eachcol(ϵJ)))
+end
+
 @inline function loss(
     icnf::RNODE{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
