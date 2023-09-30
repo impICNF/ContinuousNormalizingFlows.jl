@@ -186,28 +186,6 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::CondRNODE{T, <:ZygoteMatrixMode},
-    mode::TrainMode,
-    ys::AbstractMatrix{<:Real},
-    ϵ::AbstractMatrix{T},
-    st::Any,
-) where {T <: AbstractFloat}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1), :]
-    ż, back = Zygote.pullback(let ys = ys, p = p, st = st
-        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
-    end, z)
-    ϵJ = only(back(ϵ))
-    l̇ = sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(norm.(eachcol(ż)))
-    ṅ = transpose(norm.(eachcol(ϵJ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
-end
-
-@views function augmented_f(
-    u::Any,
-    p::Any,
-    t::Any,
     icnf::CondRNODE{T, <:SDVecJacMatrixMode},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
@@ -256,6 +234,51 @@ end
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))
     cat(ż, -l̇, Ė, ṅ; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::CondRNODE{T, <:ZygoteMatrixMode},
+    mode::TrainMode,
+    ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż, back = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
+    l̇ = sum(ϵJ .* ϵ; dims = 1)
+    Ė = transpose(norm.(eachcol(ż)))
+    ṅ = transpose(norm.(eachcol(ϵJ)))
+    cat(ż, -l̇, Ė, ṅ; dims = 1)
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::CondRNODE{T, <:ZygoteMatrixModeInplace, true},
+    mode::TrainMode,
+    ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż, back = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
+    du[(end - n_aug + 1), :] .= norm.(eachcol(ż))
+    du[(end - n_aug + 2), :] .= norm.(eachcol(ϵJ))
 end
 
 @inline function loss(

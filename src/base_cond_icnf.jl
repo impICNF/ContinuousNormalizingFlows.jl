@@ -15,10 +15,7 @@ export inference, generate, loss
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ys, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
@@ -46,10 +43,7 @@ end
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ys, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
@@ -77,10 +71,7 @@ end
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ys, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
@@ -109,10 +100,7 @@ end
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         if INPLACE
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
-                (du, u, p, t) -> begin
-                    du .= augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
-                    nothing
-                end
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ys, ϵ, st)
             end
         else
             let icnf = icnf, mode = mode, ys = ys, ϵ = ϵ, st = st
@@ -177,6 +165,21 @@ end
     st::Any,
 )
     -mean(first(inference(icnf, mode, xs, ys, ps, st)))
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T},
+    mode::Mode,
+    ys::AbstractVecOrMat{<:Real},
+    ϵ::AbstractVecOrMat{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    du .= augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
+    nothing
 end
 
 @views function augmented_f(
