@@ -263,9 +263,9 @@ end
     end, z)
     ϵJ = only(back(ϵ))
     du[begin:(end - n_aug - 1), :] .= ż
-    du[(end - n_aug), :] .= -transpose(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= transpose(norm.(eachcol(ż)))
-    du[(end - n_aug + 2), :] .= transpose(norm.(eachcol(ϵJ)))
+    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
+    du[(end - n_aug + 1), :] .= norm.(eachcol(ż))
+    du[(end - n_aug + 2), :] .= norm.(eachcol(ϵJ))
 end
 
 @inline function loss(
