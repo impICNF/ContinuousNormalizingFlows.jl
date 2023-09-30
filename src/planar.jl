@@ -185,5 +185,5 @@ end
     end, z)
     ϵJ = only(back(ϵ))
     du[begin:(end - n_aug - 1), :] .= mz
-    du[(end - n_aug), :] .= -sum(ϵJ .* ϵ; dims = 1)
+    du[(end - n_aug), :] .= -transpose(sum(ϵJ .* ϵ; dims = 1))
 end
