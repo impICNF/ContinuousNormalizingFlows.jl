@@ -8,6 +8,7 @@ Implementation of FFJORD from
 struct FFJORD{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
@@ -20,7 +21,7 @@ struct FFJORD{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS
@@ -39,7 +40,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::FFJORD{T, <:ADVectorMode},
+    icnf::FFJORD{T, <:ADVecJacVectorMode},
     mode::TrainMode,
     ϵ::AbstractVector{T},
     st::Any,
@@ -55,6 +56,49 @@ end
     )
     mz, ϵJ = v_pb(ϵ)
     ϵJ = only(ϵJ)
+    trace_J = ϵJ ⋅ ϵ
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::FFJORD{T, <:ADJacVecVectorMode},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    v_pb = AbstractDifferentiation.value_and_pushforward_function(
+        icnf.differentiation_backend,
+        let p = p, st = st
+            x -> first(icnf.nn(x, p, st))
+        end,
+        z,
+    )
+    mz, Jϵ = v_pb(ϵ)
+    Jϵ = only(Jϵ)
+    trace_J = ϵ ⋅ Jϵ
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::FFJORD{T, <:ZygoteVectorMode},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    mz, back = Zygote.pullback(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
     trace_J = ϵJ ⋅ ϵ
     cat(mz, -trace_J; dims = 1)
 end

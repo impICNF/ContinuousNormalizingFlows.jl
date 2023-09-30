@@ -8,6 +8,7 @@ Implementation of Planar Flows from
 struct Planar{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: PlanarLayer,
@@ -20,7 +21,7 @@ struct Planar{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS
@@ -86,6 +87,25 @@ end
                 ),
             ),
         )
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::Planar{T, <:ZygoteVectorMode},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    mz, back = Zygote.pullback(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
+    trace_J = ϵJ ⋅ ϵ
     cat(mz, -trace_J; dims = 1)
 end
 

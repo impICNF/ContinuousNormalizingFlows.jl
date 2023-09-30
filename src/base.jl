@@ -6,7 +6,8 @@ function construct(
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::Type{<:ComputeMode} = ADVectorMode,
+    compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
+    inplace::Bool = false,
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
@@ -15,7 +16,8 @@ function construct(
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
+    autodiff_backend::ADTypes.AbstractADType = compute_mode <: SDJacVecMatrixMode ?
+                                               AutoForwardDiff() : AutoZygote(),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff, :memorybound],
         :save_everystep => false,
@@ -36,6 +38,7 @@ function construct(
     aicnf{
         data_type,
         compute_mode,
+        inplace,
         !iszero(naugmented),
         !iszero(steer_rate),
         typeof(nn),
@@ -82,7 +85,9 @@ function Base.show(io::IO, icnf::AbstractFlows)
     )
 end
 
-@inline function n_augment_input(icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, true})
+@inline function n_augment_input(
+    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, INPLACE, true},
+) where {INPLACE}
     icnf.naugmented
 end
 
@@ -91,9 +96,9 @@ end
 end
 
 @inline function steer_tspan(
-    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, AUGMENTED, true},
+    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, INPLACE, AUGMENTED, true},
     ::TrainMode,
-) where {AUGMENTED}
+) where {INPLACE, AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
     r = rand_cstm_AT(icnf.resource, icnf, icnf.steerdist)
@@ -139,10 +144,10 @@ end
 end
 
 @views function inference_sol(
-    icnf::AbstractFlows{T, <:VectorMode},
+    icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, false},
-) where {T <: AbstractFloat}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
     fsol = sol[:, end]
@@ -158,10 +163,10 @@ end
 end
 
 @views function inference_sol(
-    icnf::AbstractFlows{T, <:MatrixMode},
+    icnf::AbstractFlows{T, <:MatrixMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, false},
-) where {T <: AbstractFloat}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
     fsol = sol[:, :, end]
@@ -177,10 +182,10 @@ end
 end
 
 @views function generate_sol(
-    icnf::AbstractFlows{T, <:VectorMode},
+    icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, false},
-) where {T <: AbstractFloat}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
@@ -190,10 +195,10 @@ end
 end
 
 @views function generate_sol(
-    icnf::AbstractFlows{T, <:MatrixMode},
+    icnf::AbstractFlows{T, <:MatrixMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, false},
-) where {T <: AbstractFloat}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)

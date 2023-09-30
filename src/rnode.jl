@@ -8,6 +8,7 @@ Implementation of RNODE from
 struct RNODE{
     T <: AbstractFloat,
     CM <: ComputeMode,
+    INPLACE,
     AUGMENTED,
     STEER,
     NN <: LuxCore.AbstractExplicitLayer,
@@ -20,7 +21,7 @@ struct RNODE{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: Dict,
     RNG <: AbstractRNG,
-} <: AbstractICNF{T, CM, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS
@@ -43,7 +44,8 @@ function construct(
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::Type{<:ComputeMode} = ADVectorMode,
+    compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
+    inplace::Bool = false,
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
@@ -52,7 +54,8 @@ function construct(
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
+    autodiff_backend::ADTypes.AbstractADType = compute_mode <: SDJacVecMatrixMode ?
+                                               AutoForwardDiff() : AutoZygote(),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff, :memorybound],
         :save_everystep => false,
@@ -75,6 +78,7 @@ function construct(
     aicnf{
         data_type,
         compute_mode,
+        inplace,
         !iszero(naugmented),
         !iszero(steer_rate),
         typeof(nn),
@@ -108,7 +112,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::RNODE{T, <:ADVectorMode},
+    icnf::RNODE{T, <:ADVecJacVectorMode},
     mode::TrainMode,
     ϵ::AbstractVector{T},
     st::Any,
@@ -124,6 +128,53 @@ end
     )
     ż, ϵJ = v_pb(ϵ)
     ϵJ = only(ϵJ)
+    l̇ = ϵJ ⋅ ϵ
+    Ė = norm(ż)
+    ṅ = norm(ϵJ)
+    cat(ż, -l̇, Ė, ṅ; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::RNODE{T, <:ADJacVecVectorMode},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    v_pb = AbstractDifferentiation.value_and_pushforward_function(
+        icnf.differentiation_backend,
+        let p = p, st = st
+            x -> first(icnf.nn(x, p, st))
+        end,
+        z,
+    )
+    ż, Jϵ = v_pb(ϵ)
+    Jϵ = only(Jϵ)
+    l̇ = ϵ ⋅ Jϵ
+    Ė = norm(ż)
+    ṅ = norm(Jϵ)
+    cat(ż, -l̇, Ė, ṅ; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::RNODE{T, <:ZygoteVectorMode},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, back = Zygote.pullback(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    ϵJ = only(back(ϵ))
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
