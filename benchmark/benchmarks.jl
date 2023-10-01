@@ -17,7 +17,7 @@ SUITE["main"]["inplace"]["AD-1-order"] = BenchmarkGroup(["gradient"])
 nvars = 2^3
 n = 2^6
 r = rand(Float32, nvars, n)
-nn = Lux.Dense(nvars => nvars; use_bias = false)
+nn = Lux.Dense(nvars => nvars, tanh)
 
 icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode)
 icnf.sol_kwargs[:sensealg] = ForwardDiffSensitivity()

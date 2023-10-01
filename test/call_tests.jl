@@ -73,13 +73,11 @@
         r_arr = hcat(r)
 
         if mt <: Planar
-            nn =
-                aug_steer ? PlanarLayer(nvars * 2; use_bias = false) :
-                PlanarLayer(nvars; use_bias = false)
+            nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2; use_bias = false) :
-                Lux.Dense(nvars => nvars; use_bias = false)
+                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
+                Lux.Dense(nvars => nvars, tanh)
         end
         icnf =
             aug_steer ?
@@ -221,13 +219,11 @@
         r_arr = hcat(r)
 
         if mt <: Planar
-            nn =
-                aug_steer ? PlanarLayer(nvars * 2; use_bias = false) :
-                PlanarLayer(nvars; use_bias = false)
+            nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2; use_bias = false) :
-                Lux.Dense(nvars => nvars; use_bias = false)
+                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
+                Lux.Dense(nvars => nvars, tanh)
         end
         icnf =
             aug_steer ?
@@ -374,12 +370,12 @@
 
         if mt <: CondPlanar
             nn =
-                aug_steer ? PlanarLayer(nvars * 2; use_bias = false, n_cond = nvars) :
-                PlanarLayer(nvars; use_bias = false, n_cond = nvars)
+                aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
+                PlanarLayer(nvars, tanh; n_cond = nvars)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2; use_bias = false) :
-                Lux.Dense(nvars * 2 => nvars; use_bias = false)
+                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
+                Lux.Dense(nvars * 2 => nvars, tanh)
         end
         icnf =
             aug_steer ?
@@ -528,12 +524,12 @@
 
         if mt <: CondPlanar
             nn =
-                aug_steer ? PlanarLayer(nvars * 2; use_bias = false, n_cond = nvars) :
-                PlanarLayer(nvars; use_bias = false, n_cond = nvars)
+                aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
+                PlanarLayer(nvars, tanh; n_cond = nvars)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2; use_bias = false) :
-                Lux.Dense(nvars * 2 => nvars; use_bias = false)
+                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
+                Lux.Dense(nvars * 2 => nvars, tanh)
         end
         icnf =
             aug_steer ?

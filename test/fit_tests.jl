@@ -65,9 +65,9 @@
         r = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
-            nn = PlanarLayer(nvars; use_bias = false)
+            nn = PlanarLayer(nvars, tanh)
         else
-            nn = Lux.Dense(nvars => nvars; use_bias = false)
+            nn = Lux.Dense(nvars => nvars, tanh)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
@@ -94,9 +94,9 @@
         r = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
-            nn = PlanarLayer(nvars; use_bias = false)
+            nn = PlanarLayer(nvars, tanh)
         else
-            nn = Lux.Dense(nvars => nvars; use_bias = false)
+            nn = Lux.Dense(nvars => nvars, tanh)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
@@ -127,9 +127,9 @@
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars; use_bias = false, n_cond = nvars)
+            nn = PlanarLayer(nvars, tanh; n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars; use_bias = false)
+            nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
@@ -160,9 +160,9 @@
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars; use_bias = false, n_cond = nvars)
+            nn = PlanarLayer(nvars, tanh; n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars; use_bias = false)
+            nn = Lux.Dense(2 * nvars => nvars, tanh)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()

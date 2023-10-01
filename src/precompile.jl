@@ -26,9 +26,9 @@
 
         for compute_mode in compute_modes, omode in omodes, mt in mts
             if mt <: Planar
-                nn = PlanarLayer(nvars; use_bias = false)
+                nn = PlanarLayer(nvars, tanh)
             else
-                nn = Lux.Dense(nvars => nvars; use_bias = false)
+                nn = Lux.Dense(nvars => nvars, tanh)
             end
             icnf = construct(mt, nn, nvars; compute_mode)
             ps, st = Lux.setup(icnf.rng, icnf)
@@ -41,9 +41,9 @@
         end
         for compute_mode in compute_modes, omode in omodes, mt in cmts
             if mt <: CondPlanar
-                nn = PlanarLayer(nvars; use_bias = false, n_cond = nvars)
+                nn = PlanarLayer(nvars, tanh; n_cond = nvars)
             else
-                nn = Lux.Dense(2 * nvars => nvars; use_bias = false)
+                nn = Lux.Dense(2 * nvars => nvars, tanh)
             end
             icnf = construct(mt, nn, nvars; compute_mode)
             ps, st = Lux.setup(icnf.rng, icnf)
