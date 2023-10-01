@@ -112,7 +112,7 @@
 
         diff_loss(x) = loss(icnf, omode, r, x, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / ps" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -155,7 +155,7 @@
 
         diff2_loss(x) = loss(icnf, omode, x, ps, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / x" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -260,7 +260,7 @@
 
         diff_loss(x) = loss(icnf, omode, r_arr, x, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / ps" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -303,7 +303,7 @@
 
         diff2_loss(x) = loss(icnf, omode, hcat(x), ps, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / x" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -414,7 +414,7 @@
 
         diff_loss(x) = loss(icnf, omode, r, r2, x, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / ps" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -457,7 +457,7 @@
 
         diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / x" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -568,7 +568,7 @@
 
         diff_loss(x) = loss(icnf, omode, r_arr, r2_arr, x, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / ps" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -611,7 +611,7 @@
 
         diff2_loss(x) = loss(icnf, omode, hcat(x), r2_arr, ps, st)
 
-        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss / x" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
