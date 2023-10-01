@@ -1,4 +1,5 @@
-using ContinuousNormalizingFlows, BenchmarkTools, Flux, Lux, PkgBenchmark, Zygote
+using ContinuousNormalizingFlows,
+    BenchmarkTools, ComponentArrays, Flux, Lux, PkgBenchmark, SciMLSensitivity, Zygote
 
 SUITE = BenchmarkGroup()
 
@@ -16,10 +17,13 @@ SUITE["main"]["inplace"]["AD-1-order"] = BenchmarkGroup(["gradient"])
 nvars = 2^3
 n = 2^6
 r = rand(Float32, nvars, n)
+nn = Lux.Dense(nvars => nvars; use_bias = false)
 
-nn = FluxCompatLayer(Flux.f32(Flux.Dense(nvars => nvars, tanh)))
 icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode)
+icnf.sol_kwargs[:sensealg] = ForwardDiffSensitivity()
+icnf.sol_kwargs[:verbose] = true
 ps, st = Lux.setup(icnf.rng, icnf)
+ps = ComponentArray(ps)
 
 loss(icnf, TrainMode(), r, ps, st)
 loss(icnf, TestMode(), r, ps, st)
@@ -36,21 +40,21 @@ SUITE["main"]["no_inplace"]["AD-1-order"]["train"] =
 SUITE["main"]["no_inplace"]["AD-1-order"]["test"] =
     @benchmarkable Zygote.gradient(loss, icnf, TestMode(), r, ps, st)
 
-nn2 = FluxCompatLayer(Flux.f32(Flux.Dense(nvars => nvars, tanh)))
-icnf2 = construct(RNODE, nn2, nvars; compute_mode = ZygoteMatrixMode, inplace = true)
-ps2, st2 = Lux.setup(icnf2.rng, icnf2)
+icnf2 = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode, inplace = true)
+icnf2.sol_kwargs[:sensealg] = ForwardDiffSensitivity()
+icnf2.sol_kwargs[:verbose] = true
 
-loss(icnf2, TrainMode(), r, ps2, st2)
-loss(icnf2, TestMode(), r, ps2, st2)
-Zygote.gradient(loss, icnf2, TrainMode(), r, ps2, st2)
-Zygote.gradient(loss, icnf2, TestMode(), r, ps2, st2)
+loss(icnf2, TrainMode(), r, ps, st)
+loss(icnf2, TestMode(), r, ps, st)
+Zygote.gradient(loss, icnf2, TrainMode(), r, ps, st)
+Zygote.gradient(loss, icnf2, TestMode(), r, ps, st)
 GC.gc()
 
 SUITE["main"]["inplace"]["direct"]["train"] =
-    @benchmarkable loss(icnf2, TrainMode(), r, ps2, st2)
+    @benchmarkable loss(icnf2, TrainMode(), r, ps, st)
 SUITE["main"]["inplace"]["direct"]["test"] =
-    @benchmarkable loss(icnf2, TestMode(), r, ps2, st2)
+    @benchmarkable loss(icnf2, TestMode(), r, ps, st)
 SUITE["main"]["inplace"]["AD-1-order"]["train"] =
-    @benchmarkable Zygote.gradient(loss, icnf2, TrainMode(), r, ps2, st2)
+    @benchmarkable Zygote.gradient(loss, icnf2, TrainMode(), r, ps, st)
 SUITE["main"]["inplace"]["AD-1-order"]["test"] =
-    @benchmarkable Zygote.gradient(loss, icnf2, TestMode(), r, ps2, st2)
+    @benchmarkable Zygote.gradient(loss, icnf2, TestMode(), r, ps, st)

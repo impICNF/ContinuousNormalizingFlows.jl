@@ -30,17 +30,18 @@
     else
         nvars_ = Int[1]
     end
-    go_ads = ADTypes.AbstractADType[
+    n_epochs = 2
+    adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
     ]
-    acmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    a_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
         # ADJacVecVectorMode,
         ZygoteVectorMode,
     ]
-    mcmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    m_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
         ZygoteMatrixMode,
@@ -51,11 +52,11 @@
         push!(resources, ComputationalResources.CUDALibs())
     end
 
-    @testset "$resource | $data_type | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                   resources,
+    @testset "$resource | $data_type | $adtype | nvars = $nvars | $mt" for resource in
+                                                                           resources,
         data_type in data_types,
-        compute_mode in acmodes,
-        go_ad in go_ads,
+        compute_mode in a_compute_modes,
+        adtype in adtypes,
         nvars in nvars_,
         mt in mts
 
@@ -64,14 +65,14 @@
         r = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
-            nn = PlanarLayer(nvars, tanh)
+            nn = PlanarLayer(nvars; use_bias = false)
         else
-            nn = Lux.Dense(nvars => nvars, tanh)
+            nn = Lux.Dense(nvars => nvars; use_bias = false)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
-        model = ICNFModel(icnf; n_epochs = 2, adtype = go_ad)
+        model = ICNFModel(icnf; n_epochs, adtype)
         mach = MLJBase.machine(model, df)
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, df))
@@ -80,11 +81,11 @@
         @test !isnothing(ICNFDist(mach, TrainMode()))
         @test !isnothing(ICNFDist(mach, TestMode()))
     end
-    @testset "$resource | $data_type | $cmode | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                            resources,
+    @testset "$resource | $data_type | $compute_mode | $adtype | nvars = $nvars | $mt" for resource in
+                                                                                           resources,
         data_type in data_types,
-        compute_mode in mcmodes,
-        go_ad in go_ads,
+        compute_mode in m_compute_modes,
+        adtype in adtypes,
         nvars in nvars_,
         mt in mts
 
@@ -93,14 +94,14 @@
         r = convert.(data_type, rand(data_dist, nvars, 1))
         df = DataFrames.DataFrame(transpose(r), :auto)
         if mt <: Planar
-            nn = PlanarLayer(nvars, tanh)
+            nn = PlanarLayer(nvars; use_bias = false)
         else
-            nn = Lux.Dense(nvars => nvars, tanh)
+            nn = Lux.Dense(nvars => nvars; use_bias = false)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
-        model = ICNFModel(icnf; n_epochs = 2, adtype = go_ad)
+        model = ICNFModel(icnf; n_epochs, adtype)
         mach = MLJBase.machine(model, df)
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, df))
@@ -109,11 +110,11 @@
         @test !isnothing(ICNFDist(mach, TrainMode()))
         @test !isnothing(ICNFDist(mach, TestMode()))
     end
-    @testset "$resource | $data_type | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                   resources,
+    @testset "$resource | $data_type | $adtype | nvars = $nvars | $mt" for resource in
+                                                                           resources,
         data_type in data_types,
-        compute_mode in acmodes,
-        go_ad in go_ads,
+        compute_mode in a_compute_modes,
+        adtype in adtypes,
         nvars in nvars_,
         mt in cmts
 
@@ -126,14 +127,14 @@
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; n_cond = nvars)
+            nn = PlanarLayer(nvars; use_bias = false, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars, tanh)
+            nn = Lux.Dense(2 * nvars => nvars; use_bias = false)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
-        model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)
+        model = CondICNFModel(icnf; n_epochs, adtype)
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, (df, df2)))
@@ -142,11 +143,11 @@
         @test !isnothing(CondICNFDist(mach, TrainMode(), r2))
         @test !isnothing(CondICNFDist(mach, TestMode(), r2))
     end
-    @testset "$resource | $data_type | $cmode | $go_ad for fitting | $nvars Vars | $mt" for resource in
-                                                                                            resources,
+    @testset "$resource | $data_type | $compute_mode | $adtype | nvars = $nvars | $mt" for resource in
+                                                                                           resources,
         data_type in data_types,
-        compute_mode in mcmodes,
-        go_ad in go_ads,
+        compute_mode in m_compute_modes,
+        adtype in adtypes,
         nvars in nvars_,
         mt in cmts
 
@@ -159,14 +160,14 @@
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
         if mt <: CondPlanar
-            nn = PlanarLayer(nvars, tanh; n_cond = nvars)
+            nn = PlanarLayer(nvars; use_bias = false, n_cond = nvars)
         else
-            nn = Lux.Dense(2 * nvars => nvars, tanh)
+            nn = Lux.Dense(2 * nvars => nvars; use_bias = false)
         end
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
-        model = CondICNFModel(icnf; n_epochs = 2, adtype = go_ad)
+        model = CondICNFModel(icnf; n_epochs, adtype)
         mach = MLJBase.machine(model, (df, df2))
         @test !isnothing(MLJBase.fit!(mach))
         @test !isnothing(MLJBase.transform(mach, (df, df2)))

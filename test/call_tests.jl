@@ -40,12 +40,12 @@
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
-    acmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    a_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
         # ADJacVecVectorMode,
         ZygoteVectorMode,
     ]
-    mcmodes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    m_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
         ZygoteMatrixMode,
@@ -57,10 +57,10 @@
         gdev = Lux.gpu_device()
     end
 
-    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                       resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
+                                                                                                                                          resources,
         data_type in data_types,
-        compute_mode in acmodes,
+        compute_mode in a_compute_modes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -73,11 +73,13 @@
         r_arr = hcat(r)
 
         if mt <: Planar
-            nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
+            nn =
+                aug_steer ? PlanarLayer(nvars * 2; use_bias = false) :
+                PlanarLayer(nvars; use_bias = false)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
-                Lux.Dense(nvars => nvars, tanh)
+                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2; use_bias = false) :
+                Lux.Dense(nvars => nvars; use_bias = false)
         end
         icnf =
             aug_steer ?
@@ -110,7 +112,7 @@
 
         diff_loss(x) = loss(icnf, omode, r, x, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -153,7 +155,7 @@
 
         diff2_loss(x) = loss(icnf, omode, x, ps, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -203,10 +205,10 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                       resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
+                                                                                                                                          resources,
         data_type in data_types,
-        compute_mode in mcmodes,
+        compute_mode in m_compute_modes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -219,11 +221,13 @@
         r_arr = hcat(r)
 
         if mt <: Planar
-            nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
+            nn =
+                aug_steer ? PlanarLayer(nvars * 2; use_bias = false) :
+                PlanarLayer(nvars; use_bias = false)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
-                Lux.Dense(nvars => nvars, tanh)
+                aug_steer ? Lux.Dense(nvars * 2 => nvars * 2; use_bias = false) :
+                Lux.Dense(nvars => nvars; use_bias = false)
         end
         icnf =
             aug_steer ?
@@ -256,7 +260,7 @@
 
         diff_loss(x) = loss(icnf, omode, r_arr, x, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -299,7 +303,7 @@
 
         diff2_loss(x) = loss(icnf, omode, hcat(x), ps, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -349,10 +353,10 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                       resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
+                                                                                                                                          resources,
         data_type in data_types,
-        compute_mode in acmodes,
+        compute_mode in a_compute_modes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -370,12 +374,12 @@
 
         if mt <: CondPlanar
             nn =
-                aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
-                PlanarLayer(nvars, tanh; n_cond = nvars)
+                aug_steer ? PlanarLayer(nvars * 2; use_bias = false, n_cond = nvars) :
+                PlanarLayer(nvars; use_bias = false, n_cond = nvars)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
-                Lux.Dense(nvars * 2 => nvars, tanh)
+                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2; use_bias = false) :
+                Lux.Dense(nvars * 2 => nvars; use_bias = false)
         end
         icnf =
             aug_steer ?
@@ -410,7 +414,7 @@
 
         diff_loss(x) = loss(icnf, omode, r, r2, x, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -453,7 +457,7 @@
 
         diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
@@ -503,10 +507,10 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
-    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | $nvars Vars | $omode | $mt" for resource in
-                                                                                                                                       resources,
+    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
+                                                                                                                                          resources,
         data_type in data_types,
-        compute_mode in mcmodes,
+        compute_mode in m_compute_modes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -524,12 +528,12 @@
 
         if mt <: CondPlanar
             nn =
-                aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
-                PlanarLayer(nvars, tanh; n_cond = nvars)
+                aug_steer ? PlanarLayer(nvars * 2; use_bias = false, n_cond = nvars) :
+                PlanarLayer(nvars; use_bias = false, n_cond = nvars)
         else
             nn =
-                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
-                Lux.Dense(nvars * 2 => nvars, tanh)
+                aug_steer ? Lux.Dense(nvars * 3 => nvars * 2; use_bias = false) :
+                Lux.Dense(nvars * 2 => nvars; use_bias = false)
         end
         icnf =
             aug_steer ?
@@ -564,7 +568,7 @@
 
         diff_loss(x) = loss(icnf, omode, r_arr, r2_arr, x, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
@@ -607,7 +611,7 @@
 
         diff2_loss(x) = loss(icnf, omode, hcat(x), r2_arr, ps, st)
 
-        @testset "Using $(typeof(adb).name.name) For Loss" for adb in adb_list
+        @testset "$(typeof(adb).name.name) / Loss" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
