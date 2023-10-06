@@ -186,4 +186,5 @@ end
     ϵJ = only(back(ϵ))
     du[begin:(end - n_aug - 1), :] .= mz
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
+    nothing
 end
