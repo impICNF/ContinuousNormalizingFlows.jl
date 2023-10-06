@@ -31,21 +31,21 @@ A clear and concise description of what you expected to happen.
 
   - Output of `versioninfo()`
 
-  ```julia
+```julia
 
-  ```
+```
 
   - Output of `using Pkg; Pkg.status()`
 
-  ```julia
+```julia
 
-  ```
+```
 
   - Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
 
-  ```julia
+```julia
 
-  ```
+```
 
 **Additional context**
 
