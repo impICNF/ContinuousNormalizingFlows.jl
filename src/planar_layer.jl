@@ -62,7 +62,7 @@ end
     ps.u * m.activation.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
 
-@inline function (m::PlanarLayer{true, cond, typeof(identity)})(
+@inline function (::PlanarLayer{true, cond, typeof(identity)})(
     z::AbstractVector,
     ps::Any,
     st::Any,
@@ -70,7 +70,7 @@ end
     ps.u * ((ps.w ⋅ z) + only(ps.b)), st
 end
 
-@inline function (m::PlanarLayer{true, cond, typeof(identity)})(
+@inline function (::PlanarLayer{true, cond, typeof(identity)})(
     z::AbstractMatrix,
     ps::Any,
     st::Any,
@@ -86,7 +86,7 @@ end
     ps.u * m.activation.(transpose(ps.w) * z), st
 end
 
-@inline function (m::PlanarLayer{false, cond, typeof(identity)})(
+@inline function (::PlanarLayer{false, cond, typeof(identity)})(
     z::AbstractVector,
     ps::Any,
     st::Any,
@@ -94,7 +94,7 @@ end
     ps.u * (ps.w ⋅ z), st
 end
 
-@inline function (m::PlanarLayer{false, cond, typeof(identity)})(
+@inline function (::PlanarLayer{false, cond, typeof(identity)})(
     z::AbstractMatrix,
     ps::Any,
     st::Any,
@@ -111,7 +111,7 @@ end
 end
 
 @inline function pl_h(
-    m::PlanarLayer{true, cond, typeof(identity)},
+    ::PlanarLayer{true, cond, typeof(identity)},
     z::AbstractVector,
     ps::Any,
     st::Any,
@@ -120,7 +120,7 @@ end
 end
 
 @inline function pl_h(
-    m::PlanarLayer{true, cond, typeof(identity)},
+    ::PlanarLayer{true, cond, typeof(identity)},
     z::AbstractMatrix,
     ps::Any,
     st::Any,
@@ -137,7 +137,7 @@ end
 end
 
 @inline function pl_h(
-    m::PlanarLayer{false, cond, typeof(identity)},
+    ::PlanarLayer{false, cond, typeof(identity)},
     z::AbstractVector,
     ps::Any,
     st::Any,
@@ -146,7 +146,7 @@ end
 end
 
 @inline function pl_h(
-    m::PlanarLayer{false, cond, typeof(identity)},
+    ::PlanarLayer{false, cond, typeof(identity)},
     z::AbstractMatrix,
     ps::Any,
     st::Any,

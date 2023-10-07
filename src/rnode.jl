@@ -266,6 +266,7 @@ end
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= norm.(eachcol(ż))
     du[(end - n_aug + 2), :] .= norm.(eachcol(ϵJ))
+    nothing
 end
 
 @inline function loss(

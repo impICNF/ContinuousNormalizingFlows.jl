@@ -8,34 +8,45 @@ assignees: ''
 ---
 
 **Describe the bug**
+
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-
- 1. Go to '...'
- 2. Click on '....'
- 3. Scroll down to '....'
- 4. See error
-
 **Expected behavior**
+
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Error & Stacktrace**
 
-**Desktop (please complete the following information):**
+```julia
 
-  - OS: [e.g. iOS]
-  - Browser [e.g. chrome, safari]
-  - Version [e.g. 22]
+```
 
-**Smartphone (please complete the following information):**
+**Minimal Reproducible Example**
 
-  - Device: [e.g. iPhone6]
-  - OS: [e.g. iOS8.1]
-  - Browser [e.g. stock browser, safari]
-  - Version [e.g. 22]
+```julia
+
+```
+
+**Environment (please complete the following information):**
+
+  - Output of `versioninfo()`
+
+```julia
+
+```
+
+  - Output of `using Pkg; Pkg.status()`
+
+```julia
+
+```
+
+  - Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
+
+```julia
+
+```
 
 **Additional context**
+
 Add any other context about the problem here.
