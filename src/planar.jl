@@ -95,17 +95,36 @@ end
     p::Any,
     t::Any,
     icnf::Planar{T, <:ZygoteVectorMode},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    mz = first(icnf.nn(z, p, st))
+    trace_J =
+        p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
+            x -> first(pl_h(icnf.nn, x, p, st))
+        end, z)))
+    cat(mz, -trace_J; dims = 1)
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::Planar{T, <:ZygoteVectorMode},
     mode::TrainMode,
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz, VJ = Zygote.pullback(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
-    end, z)
-    ϵJ = only(VJ(ϵ))
-    trace_J = ϵJ ⋅ ϵ
+    mz = first(icnf.nn(z, p, st))
+    trace_J =
+        p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
+            x -> first(pl_h(icnf.nn, x, p, st))
+        end, z)))
     cat(mz, -trace_J; dims = 1)
 end
 
