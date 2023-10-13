@@ -46,15 +46,14 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    v_pb = AbstractDifferentiation.value_and_pullback_function(
+    mz, VJ = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
             x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z,
     )
-    mz, ϵJ = v_pb(ϵ)
-    ϵJ = only(ϵJ)
+    ϵJ = only(VJ(ϵ))
     trace_J = ϵJ ⋅ ϵ
     cat(mz, -trace_J; dims = 1)
 end
@@ -71,15 +70,14 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    v_pb = AbstractDifferentiation.value_and_pushforward_function(
+    mz, JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
             x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
         end,
         z,
     )
-    mz, Jϵ = v_pb(ϵ)
-    Jϵ = only(Jϵ)
+    Jϵ = only(JV(ϵ))
     trace_J = ϵ ⋅ Jϵ
     cat(mz, -trace_J; dims = 1)
 end
@@ -96,10 +94,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz, back = Zygote.pullback(let ys = ys, p = p, st = st
+    mz, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
     end, z)
-    ϵJ = only(back(ϵ))
+    ϵJ = only(VJ(ϵ))
     trace_J = ϵJ ⋅ ϵ
     cat(mz, -trace_J; dims = 1)
 end
@@ -166,10 +164,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(let ys = ys, p = p, st = st
+    mz, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
     end, z)
-    ϵJ = only(back(ϵ))
+    ϵJ = only(VJ(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
@@ -187,10 +185,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(let ys = ys, p = p, st = st
+    mz, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
     end, z)
-    ϵJ = only(back(ϵ))
+    ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1), :] .= mz
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     nothing

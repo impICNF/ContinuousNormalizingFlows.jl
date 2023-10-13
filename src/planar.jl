@@ -101,10 +101,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz, back = Zygote.pullback(let p = p, st = st
+    mz, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = only(back(ϵ))
+    ϵJ = only(VJ(ϵ))
     trace_J = ϵJ ⋅ ϵ
     cat(mz, -trace_J; dims = 1)
 end
@@ -160,10 +160,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(let p = p, st = st
+    mz, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = only(back(ϵ))
+    ϵJ = only(VJ(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
     cat(mz, -trace_J; dims = 1)
 end
@@ -180,10 +180,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, back = Zygote.pullback(let p = p, st = st
+    mz, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = only(back(ϵ))
+    ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1), :] .= mz
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     nothing
