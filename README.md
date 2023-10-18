@@ -1,8 +1,8 @@
 # ContinuousNormalizingFlows.jl
 
-[![deps](https://juliahub.com/docs/ContinuousNormalizingFlows/deps.svg)](https://juliahub.com/ui/Packages/ContinuousNormalizingFlows/iP1wo?t=2)
-[![version](https://juliahub.com/docs/ContinuousNormalizingFlows/version.svg)](https://juliahub.com/ui/Packages/ContinuousNormalizingFlows/iP1wo)
-[![pkgeval](https://juliahub.com/docs/ContinuousNormalizingFlows/pkgeval.svg)](https://juliahub.com/ui/Packages/ContinuousNormalizingFlows/iP1wo)
+[![deps](https://juliahub.com/docs/General/ContinuousNormalizingFlows/stable/deps.svg)](https://juliahub.com/ui/Packages/General/ContinuousNormalizingFlows?t=2)
+[![version](https://juliahub.com/docs/General/ContinuousNormalizingFlows/stable/version.svg)](https://juliahub.com/ui/Packages/General/ContinuousNormalizingFlows)
+[![pkgeval](https://juliahub.com/docs/General/ContinuousNormalizingFlows/stable/pkgeval.svg)](https://juliahub.com/ui/Packages/General/ContinuousNormalizingFlows)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://impICNF.github.io/ContinuousNormalizingFlows.jl/stable)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://impICNF.github.io/ContinuousNormalizingFlows.jl/dev)
 [![Build Status](https://github.com/impICNF/ContinuousNormalizingFlows.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/impICNF/ContinuousNormalizingFlows.jl/actions/workflows/CI.yml?query=branch%3Amain)
@@ -37,9 +37,17 @@ nn = FluxCompatLayer(
     Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh)),
 ) # use Flux
 # nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
-icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode) # process data in batches
-# icnf = construct(RNODE, nn, nvars; tspan = (0.0f0, 10.0f0)) # have bigger time span
-# icnf = construct(RNODE, nn, nvars; resource = CUDALibs()) # process data by GPU
+# icnf = construct(RNODE, nn, nvars) # use defaults
+icnf = construct(
+    RNODE,
+    nn,
+    nvars, # number of variables
+    nvars; # number of augmented dimensions
+    compute_mode = ZygoteMatrixMode, # process data in batches
+    tspan = (0.0f0, 9.0f0), # have bigger time span
+    steer_rate = 0.1f0, # add random noise to end of the time span
+    # resource = CUDALibs(), # process data by GPU
+)
 
 # Data
 using Distributions
@@ -48,11 +56,16 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase #, ForwardDiff, ADTypes
+using DataFrames, MLJBase #, ForwardDiff, ADTypes, Optimisers
 df = DataFrame(transpose(r), :auto)
-model = ICNFModel(icnf; n_epochs = 100) # have less epochs
-# model = ICNFModel(icnf; batch_size = 512) # have bigger batchs
-# model = ICNFModel(icnf; adtype = AutoForwardDiff()) # use ForwardDiff
+# model = ICNFModel(icnf) # use defaults
+model = ICNFModel(
+    icnf;
+    batch_size = 256, # have bigger batchs
+    # n_epochs = 100, # have less epochs
+    # optimizers = [Optimisers.Adam()], # use a different optimizer
+    # adtype = AutoForwardDiff(), # use ForwardDiff
+)
 mach = machine(model, df)
 fit!(mach)
 ps, st = fitted_params(mach)
