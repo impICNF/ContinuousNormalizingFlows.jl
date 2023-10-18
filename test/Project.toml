@@ -25,3 +25,8 @@ cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
 [compat]
 DataFrames = "1"
+Flux = "0.14"
+JET = "0.8"
+SciMLBase = "2"
+Lux = "0.5"
+ADTypes = "0.2"
