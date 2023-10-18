@@ -24,6 +24,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
 [compat]
+Distributions = "0.25"
 ComponentArrays = "0.15"
 SciMLSensitivity = "7"
 LuxCUDA = "0.3"
