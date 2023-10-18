@@ -21,4 +21,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia --color=yes -e 'using CompatHelper; CompatHelper.main()'
+        run: julia --color=yes -e 'using CompatHelper; CompatHelper.main(; subdirs=["", "docs", "test", "benchmark"])'
