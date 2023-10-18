@@ -38,12 +38,12 @@
     ]
     a_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
-        # ADJacVecVectorMode,
+        ADJacVecVectorMode,
         ZygoteVectorMode,
     ]
     m_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         SDVecJacMatrixMode,
-        # SDJacVecMatrixMode,
+        SDJacVecMatrixMode,
         ZygoteMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
