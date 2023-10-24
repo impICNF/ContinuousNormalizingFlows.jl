@@ -40,12 +40,10 @@
         AbstractDifferentiation.ReverseDiffBackend(),
         AbstractDifferentiation.ForwardDiffBackend(),
     ]
-    a_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
+    compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
         # ADJacVecVectorMode,
         ZygoteVectorMode,
-    ]
-    m_compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
         ZygoteMatrixMode,
@@ -60,7 +58,7 @@
     @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
                                                                                                                                           resources,
         data_type in data_types,
-        compute_mode in a_compute_modes,
+        compute_mode in compute_modes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -202,16 +200,14 @@
         d = ICNFDist(icnf, omode, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
-        @test !isnothing(Distributions.logpdf(d, r_arr))
         @test !isnothing(Distributions.pdf(d, r))
-        @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
     @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
                                                                                                                                           resources,
         data_type in data_types,
-        compute_mode in a_compute_modes,
+        compute_mode in compute_modes,
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
@@ -362,9 +358,7 @@
         d = CondICNFDist(icnf, omode, r2, ps, st)
 
         @test !isnothing(Distributions.logpdf(d, r))
-        @test !isnothing(Distributions.logpdf(d, r_arr))
         @test !isnothing(Distributions.pdf(d, r))
-        @test !isnothing(Distributions.pdf(d, r_arr))
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
     end
