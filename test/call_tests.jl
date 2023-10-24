@@ -127,8 +127,8 @@
 
             @test !isnothing(loss(icnf, omode, r, r2, ps, st))
 
-            diff_loss(x) = loss(icnf, omode, r, r2, x, st)
-            diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
+            diff_loss = x -> loss(icnf, omode, r, r2, x, st)
+            diff2_loss = x -> loss(icnf, omode, x, r2, ps, st)
         else
             @test !isnothing(inference(icnf, omode, r, ps, st))
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
@@ -139,8 +139,8 @@
 
             @test !isnothing(loss(icnf, omode, r, ps, st))
 
-            diff_loss(x) = loss(icnf, omode, r, x, st)
-            diff2_loss(x) = loss(icnf, omode, x, ps, st)
+            diff_loss = x -> loss(icnf, omode, r, x, st)
+            diff2_loss = x -> loss(icnf, omode, x, ps, st)
         end
 
         @testset "$(typeof(adb).name.name) / Loss / ps" for adb in adb_list
