@@ -26,16 +26,12 @@
         data_type = Float32
 
         for compute_mode in compute_modes, omode in omodes, mt in mts
-            data_dist = Distributions.Beta{data_type}(
-                convert(Tuple{data_type, data_type}, (2, 4))...,
-            )
+            data_dist = Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
             r = convert.(data_type, rand(data_dist, nvars))
             if compute_mode <: MatrixMode
                 r = hcat(r)
             end
-            data_dist2 = Distributions.Beta{data_type}(
-                convert(Tuple{data_type, data_type}, (4, 2))...,
-            )
+            data_dist2 = Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
             r2 = convert.(data_type, rand(data_dist2, nvars))
             if compute_mode <: MatrixMode
                 r2 = hcat(r2)
