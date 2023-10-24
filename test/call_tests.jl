@@ -64,17 +64,17 @@
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         r = convert.(data_type, rand(data_dist, nvars))
-        if compute_mode <: MatrixMode
+        if compute_mode <: ContinuousNormalizingFlows.MatrixMode
             r = hcat(r)
         end
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
         r2 = convert.(data_type, rand(data_dist2, nvars))
-        if compute_mode <: MatrixMode
+        if compute_mode <: ContinuousNormalizingFlows.MatrixMode
             r2 = hcat(r2)
         end
 
-        if mt <: AbstractCondICNF
+        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             if mt <: CondPlanar
                 nn =
                     aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
@@ -117,9 +117,9 @@
             st = gdev(st)
         end
 
-        if mt <: AbstractCondICNF
+        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             @test !isnothing(inference(icnf, omode, r, r2, ps, st))
-            if compute_mode <: MatrixMode
+            if compute_mode <: ContinuousNormalizingFlows.MatrixMode
                 @test !isnothing(generate(icnf, omode, r2, ps, st, 1))
             else
                 @test !isnothing(generate(icnf, omode, r2, ps, st))
@@ -131,7 +131,7 @@
             diff2_loss(x) = loss(icnf, omode, x, r2, ps, st)
         else
             @test !isnothing(inference(icnf, omode, r, ps, st))
-            if compute_mode <: MatrixMode
+            if compute_mode <: ContinuousNormalizingFlows.MatrixMode
                 @test !isnothing(generate(icnf, omode, ps, st, 1))
             else
                 @test !isnothing(generate(icnf, omode, ps, st))
@@ -225,7 +225,7 @@
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
         # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
 
-        if mt <: AbstractCondICNF
+        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             d = CondICNFDist(icnf, omode, r2, ps, st)
         else
             d = ICNFDist(icnf, omode, ps, st)

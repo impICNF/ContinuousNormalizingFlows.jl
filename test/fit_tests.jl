@@ -63,7 +63,7 @@
         r2 = convert.(data_type, rand(data_dist, nvars, 1))
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
 
-        if mt <: AbstractCondICNF
+        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             if mt <: CondPlanar
                 nn = PlanarLayer(nvars, tanh; n_cond = nvars)
             else
@@ -79,7 +79,7 @@
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
-        if mt <: AbstractCondICNF
+        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
             @test !isnothing(MLJBase.fit!(mach))
