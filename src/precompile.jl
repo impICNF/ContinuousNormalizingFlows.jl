@@ -36,6 +36,7 @@
             if compute_mode <: MatrixMode
                 r2 = hcat(r2)
             end
+
             if mt <: AbstractCondICNF
                 if mt <: CondPlanar
                     nn = PlanarLayer(nvars, tanh; n_cond = nvars)

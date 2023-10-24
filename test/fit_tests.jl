@@ -1,18 +1,18 @@
 @testset "Fit Tests" begin
-    if GROUP == "RNODE"
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[RNODE]
+    mts = if GROUP == "RNODE"
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[RNODE]
     elseif GROUP == "FFJORD"
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[FFJORD]
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[FFJORD]
     elseif GROUP == "Planar"
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[Planar]
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[Planar]
     elseif GROUP == "CondRNODE"
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondRNODE]
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondRNODE]
     elseif GROUP == "CondFFJORD"
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondFFJORD]
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondFFJORD]
     elseif GROUP == "CondPlanar"
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondPlanar]
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondPlanar]
     else
-        mts = Type{<:ContinuousNormalizingFlows.AbstractFlows}[
+        Type{<:ContinuousNormalizingFlows.AbstractFlows}[
             RNODE,
             FFJORD,
             Planar,
