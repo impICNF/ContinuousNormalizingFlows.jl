@@ -57,7 +57,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     end
     optfunc = OptimizationFunction(
         let mm = model.m, md = TrainMode(), st = st
-            (ps_, θ, xs_, ys_) -> model.loss(mm, md, xs_, ys_, ps_, st)
+            (u, p, xs_, ys_) -> model.loss(mm, md, xs_, ys_, u, st)
         end,
         model.adtype,
     )
