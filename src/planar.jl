@@ -47,14 +47,14 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz = first(icnf.nn(z, p, st))
+    mz = icnf.nn(z, p, st)[begin]
     trace_J =
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
                     icnf.differentiation_backend,
                     let p = p, st = st
-                        x -> first(pl_h(icnf.nn, x, p, st))
+                        x -> pl_h(icnf.nn, x, p, st)[begin]
                     end,
                     z,
                 ),
@@ -74,14 +74,14 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz = first(icnf.nn(z, p, st))
+    mz = icnf.nn(z, p, st)[begin]
     trace_J =
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
                     icnf.differentiation_backend,
                     let p = p, st = st
-                        x -> first(pl_h(icnf.nn, x, p, st))
+                        x -> pl_h(icnf.nn, x, p, st)[begin]
                     end,
                     z,
                 ),
@@ -101,10 +101,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz = first(icnf.nn(z, p, st))
+    mz = icnf.nn(z, p, st)[begin]
     trace_J =
         p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
-            x -> first(pl_h(icnf.nn, x, p, st))
+            x -> pl_h(icnf.nn, x, p, st)[begin]
         end, z)))
     cat(mz, -trace_J; dims = 1)
 end
@@ -120,10 +120,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz = first(icnf.nn(z, p, st))
+    mz = icnf.nn(z, p, st)[begin]
     trace_J =
         p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
-            x -> first(pl_h(icnf.nn, x, p, st))
+            x -> pl_h(icnf.nn, x, p, st)[begin]
         end, z)))
     cat(mz, -trace_J; dims = 1)
 end
@@ -139,9 +139,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz = first(icnf.nn(z, p, st))
+    mz = icnf.nn(z, p, st)[begin]
     Jf = VecJac(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
+        x -> icnf.nn(x, p, st)[begin]
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -159,9 +159,9 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz = first(icnf.nn(z, p, st))
+    mz = icnf.nn(z, p, st)[begin]
     Jf = JacVec(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
+        x -> icnf.nn(x, p, st)[begin]
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
@@ -180,7 +180,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, VJ = Zygote.pullback(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
+        x -> icnf.nn(x, p, st)[begin]
     end, z)
     ϵJ = only(VJ(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
@@ -200,7 +200,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, VJ = Zygote.pullback(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
+        x -> icnf.nn(x, p, st)[begin]
     end, z)
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1), :] .= mz

@@ -143,12 +143,12 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     if model.compute_mode <: VectorMode
         tst = @timed logp̂x = broadcast(
             let mm = model.m, md = TestMode(), ps = ps, st = st
-                x -> first(inference(model.m, TestMode(), x, ps, st))
+                x -> inference(model.m, TestMode(), x, ps, st)[begin]
             end,
             eachcol(xnew),
         )
     elseif model.compute_mode <: MatrixMode
-        tst = @timed logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
+        tst = @timed logp̂x = inference(model.m, TestMode(), xnew, ps, st)[begin]
     else
         error("Not Implemented")
     end
@@ -198,13 +198,13 @@ function Base.length(d::ICNFDist)
     d.m.nvars
 end
 function Base.eltype(d::ICNFDist)
-    typeof(d.m).parameters[1]
+    typeof(d.m).parameters[begin]
 end
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        first(inference(d.m, d.mode, x, d.ps, d.st))
+        inference(d.m, d.mode, x, d.ps, d.st)[begin]
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        first(Distributions._logpdf(d, hcat(x)))
+        Distributions._logpdf(d, hcat(x))[begin]
     else
         error("Not Implemented")
     end
@@ -215,7 +215,7 @@ function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
             x -> Distributions._logpdf(d, x)
         end, eachcol(A))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        first(inference(d.m, d.mode, A, d.ps, d.st))
+        inference(d.m, d.mode, A, d.ps, d.st)[begin]
     else
         error("Not Implemented")
     end

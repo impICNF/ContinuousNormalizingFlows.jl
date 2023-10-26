@@ -145,7 +145,7 @@ end
     ps::Any,
     st::Any,
 )
-    -first(inference(icnf, mode, xs, ps, st))
+    -inference(icnf, mode, xs, ps, st)[begin]
 end
 
 @inline function loss(
@@ -155,7 +155,7 @@ end
     ps::Any,
     st::Any,
 )
-    -mean(first(inference(icnf, mode, xs, ps, st)))
+    -mean(inference(icnf, mode, xs, ps, st)[begin])
 end
 
 @views function augmented_f(
@@ -186,7 +186,7 @@ end
     mz, J = AbstractDifferentiation.value_and_jacobian(
         icnf.differentiation_backend,
         let p = p, st = st
-            x -> first(icnf.nn(x, p, st))
+            x -> icnf.nn(x, p, st)[begin]
         end,
         z,
     )
@@ -206,7 +206,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz, J = Zygote.withjacobian(let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
+        x -> icnf.nn(x, p, st)[begin]
     end, z)
     trace_J = tr(only(J))
     cat(mz, -trace_J; dims = 1)
@@ -224,12 +224,12 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, J = jacobian_batched(icnf, let p = p, st = st
-        x -> first(icnf.nn(x, p, st))
+        x -> icnf.nn(x, p, st)[begin]
     end, z)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
     cat(mz, -trace_J; dims = 1)
 end
 
 @inline function (icnf::AbstractICNF)(xs::Any, ps::Any, st::Any)
-    first(inference(icnf, TrainMode(), xs, ps, st))
+    inference(icnf, TrainMode(), xs, ps, st)[begin]
 end
