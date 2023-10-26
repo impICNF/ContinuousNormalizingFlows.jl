@@ -37,7 +37,7 @@
         ADJacVecVectorMode,
         ZygoteVectorMode,
         SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
+        # SDJacVecMatrixMode,
         ZygoteMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
