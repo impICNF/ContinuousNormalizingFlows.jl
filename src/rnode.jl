@@ -144,14 +144,15 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, JV = AbstractDifferentiation.value_and_pushforward_function(
+    ż_JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let p = p, st = st
             x -> first(icnf.nn(x, p, st))
         end,
         z,
     )
-    Jϵ = only(JV(ϵ))
+    ż, Jϵ = ż_JV(ϵ)
+    Jϵ = only(Jϵ)
     l̇ = ϵ ⋅ Jϵ
     Ė = norm(ż)
     ṅ = norm(Jϵ)

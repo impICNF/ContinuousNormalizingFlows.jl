@@ -70,14 +70,15 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz, JV = AbstractDifferentiation.value_and_pushforward_function(
+    mz_JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
             x -> first(icnf.nn(vcat(x, ys), p, st))
         end,
         z,
     )
-    Jϵ = only(JV(ϵ))
+    mz, Jϵ = mz_JV(ϵ)
+    Jϵ = only(Jϵ)
     trace_J = ϵ ⋅ Jϵ
     vcat(mz, -trace_J)
 end

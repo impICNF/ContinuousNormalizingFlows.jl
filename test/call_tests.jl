@@ -38,7 +38,7 @@
     ]
     compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
-        # ADJacVecVectorMode,
+        ADJacVecVectorMode,
         ZygoteVectorMode,
         SDVecJacMatrixMode,
         # SDJacVecMatrixMode,
