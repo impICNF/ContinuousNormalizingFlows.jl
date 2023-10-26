@@ -22,7 +22,7 @@ export inference, generate, loss
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
             end
         end,
-        cat(xs, zrs; dims = 1),
+        vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
     )
@@ -50,7 +50,7 @@ end
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
             end
         end,
-        cat(xs, zrs; dims = 1),
+        vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
     )
@@ -78,7 +78,7 @@ end
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
             end
         end,
-        cat(new_xs, zrs; dims = 1),
+        vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
     )
@@ -107,7 +107,7 @@ end
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
             end
         end,
-        cat(new_xs, zrs; dims = 1),
+        vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
     )
@@ -197,12 +197,12 @@ end
     mz, J = AbstractDifferentiation.value_and_jacobian(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
-            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+            x -> first(icnf.nn(vcat(x, ys), p, st))
         end,
         z,
     )
     trace_J = tr(only(J))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -218,10 +218,10 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     mz, J = Zygote.withjacobian(let ys = ys, p = p, st = st
-        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+        x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
     trace_J = tr(only(J))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -237,10 +237,10 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     mz, J = jacobian_batched(icnf, let ys = ys, p = p, st = st
-        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+        x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @inline function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)
