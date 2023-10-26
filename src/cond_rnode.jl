@@ -121,7 +121,7 @@ end
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
-            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+            x -> first(icnf.nn(vcat(x, ys), p, st))
         end,
         z,
     )
@@ -129,7 +129,7 @@ end
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -147,7 +147,7 @@ end
     ż, JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let ys = ys, p = p, st = st
-            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+            x -> first(icnf.nn(vcat(x, ys), p, st))
         end,
         z,
     )
@@ -155,7 +155,7 @@ end
     l̇ = ϵ ⋅ Jϵ
     Ė = norm(ż)
     ṅ = norm(Jϵ)
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -171,13 +171,13 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
-        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+        x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
     ϵJ = only(VJ(ϵ))
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -192,10 +192,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = first(icnf.nn(cat(z, ys; dims = 1), p, st))
+    ż = first(icnf.nn(vcat(z, ys), p, st))
     Jf = VecJac(
         let ys = ys, p = p, st = st
-            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+            x -> first(icnf.nn(vcat(x, ys), p, st))
         end,
         z;
         autodiff = icnf.autodiff_backend,
@@ -204,7 +204,7 @@ end
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -219,10 +219,10 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = first(icnf.nn(cat(z, ys; dims = 1), p, st))
+    ż = first(icnf.nn(vcat(z, ys), p, st))
     Jf = JacVec(
         let ys = ys, p = p, st = st
-            x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+            x -> first(icnf.nn(vcat(x, ys), p, st))
         end,
         z;
         autodiff = icnf.autodiff_backend,
@@ -231,7 +231,7 @@ end
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -247,13 +247,13 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
-        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+        x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
     ϵJ = only(VJ(ϵ))
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -270,7 +270,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
-        x -> first(icnf.nn(cat(x, ys; dims = 1), p, st))
+        x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1), :] .= ż

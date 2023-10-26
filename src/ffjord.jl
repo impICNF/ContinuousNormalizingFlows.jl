@@ -56,7 +56,7 @@ end
     )
     ϵJ = only(VJ(ϵ))
     trace_J = ϵJ ⋅ ϵ
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -79,7 +79,7 @@ end
     )
     Jϵ = only(JV(ϵ))
     trace_J = ϵ ⋅ Jϵ
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -98,7 +98,7 @@ end
     end, z)
     ϵJ = only(VJ(ϵ))
     trace_J = ϵJ ⋅ ϵ
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -118,7 +118,7 @@ end
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -138,7 +138,7 @@ end
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -157,7 +157,7 @@ end
     end, z)
     ϵJ = only(VJ(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
