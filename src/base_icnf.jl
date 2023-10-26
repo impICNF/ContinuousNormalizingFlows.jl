@@ -21,7 +21,7 @@ export inference, generate, loss
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
             end
         end,
-        cat(xs, zrs; dims = 1),
+        vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
     )
@@ -48,7 +48,7 @@ end
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
             end
         end,
-        cat(xs, zrs; dims = 1),
+        vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
     )
@@ -75,7 +75,7 @@ end
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
             end
         end,
-        cat(new_xs, zrs; dims = 1),
+        vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
     )
@@ -103,7 +103,7 @@ end
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
             end
         end,
-        cat(new_xs, zrs; dims = 1),
+        vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
     )
@@ -191,7 +191,7 @@ end
         z,
     )
     trace_J = tr(only(J))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -209,7 +209,7 @@ end
         x -> first(icnf.nn(x, p, st))
     end, z)
     trace_J = tr(only(J))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -227,7 +227,7 @@ end
         x -> first(icnf.nn(x, p, st))
     end, z)
     trace_J = transpose(tr.(eachslice(J; dims = 3)))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @inline function (icnf::AbstractICNF)(xs::Any, ps::Any, st::Any)

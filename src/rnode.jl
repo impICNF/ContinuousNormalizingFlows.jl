@@ -130,7 +130,7 @@ end
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -155,7 +155,7 @@ end
     l̇ = ϵ ⋅ Jϵ
     Ė = norm(ż)
     ṅ = norm(Jϵ)
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -176,7 +176,7 @@ end
     l̇ = ϵJ ⋅ ϵ
     Ė = norm(ż)
     ṅ = norm(ϵJ)
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -198,7 +198,7 @@ end
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -220,7 +220,7 @@ end
     l̇ = sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(Jϵ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(
@@ -241,7 +241,7 @@ end
     l̇ = sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(norm.(eachcol(ż)))
     ṅ = transpose(norm.(eachcol(ϵJ)))
-    cat(ż, -l̇, Ė, ṅ; dims = 1)
+    vcat(ż, -l̇, Ė, ṅ)
 end
 
 @views function augmented_f(

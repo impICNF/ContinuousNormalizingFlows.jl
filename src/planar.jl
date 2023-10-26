@@ -60,7 +60,7 @@ end
                 ),
             ),
         )
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -87,7 +87,7 @@ end
                 ),
             ),
         )
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -106,7 +106,7 @@ end
         p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
             x -> first(pl_h(icnf.nn, x, p, st))
         end, z)))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -125,7 +125,7 @@ end
         p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
             x -> first(pl_h(icnf.nn, x, p, st))
         end, z)))
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -145,7 +145,7 @@ end
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -165,7 +165,7 @@ end
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     trace_J = sum(ϵ .* Jϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
@@ -184,7 +184,7 @@ end
     end, z)
     ϵJ = only(VJ(ϵ))
     trace_J = sum(ϵJ .* ϵ; dims = 1)
-    cat(mz, -trace_J; dims = 1)
+    vcat(mz, -trace_J)
 end
 
 @views function augmented_f(
