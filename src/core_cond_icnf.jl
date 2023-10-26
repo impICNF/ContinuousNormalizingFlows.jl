@@ -212,7 +212,7 @@ function Base.length(d::CondICNFDist)
     d.m.nvars
 end
 function Base.eltype(d::CondICNFDist)
-    typeof(d.m).parameters[1]
+    first(typeof(d.m).parameters)
 end
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractCondICNF{<:AbstractFloat, <:VectorMode}
