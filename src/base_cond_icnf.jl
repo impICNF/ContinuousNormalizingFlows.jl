@@ -113,7 +113,7 @@ end
     )
 end
 
-@inline function inference(
+@inline @views function inference(
     icnf::AbstractCondICNF,
     mode::Mode,
     xs::AbstractVecOrMat{<:Real},
@@ -124,7 +124,7 @@ end
     inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ys, ps, st))
 end
 
-@inline function generate(
+@inline @views function generate(
     icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ys::AbstractVector{<:Real},
@@ -134,7 +134,7 @@ end
     generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st))
 end
 
-@inline function generate(
+@inline @views function generate(
     icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
@@ -145,7 +145,7 @@ end
     generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st, n))
 end
 
-@inline function loss(
+@inline @views function loss(
     icnf::AbstractCondICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -156,7 +156,7 @@ end
     -inference(icnf, mode, xs, ys, ps, st)[begin]
 end
 
-@inline function loss(
+@inline @views function loss(
     icnf::AbstractCondICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -243,7 +243,7 @@ end
     cat(mz, -trace_J; dims = 1)
 end
 
-@inline function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)
+@inline @views function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)
     xs, ys = xs_ys
     inference(icnf, TrainMode(), xs, ys, ps, st)[begin]
 end

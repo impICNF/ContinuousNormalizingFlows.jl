@@ -280,7 +280,7 @@ end
     nothing
 end
 
-@inline function loss(
+@inline @views function loss(
     icnf::CondRNODE{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
@@ -292,7 +292,7 @@ end
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
-@inline function loss(
+@inline @views function loss(
     icnf::CondRNODE{<:AbstractFloat, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
