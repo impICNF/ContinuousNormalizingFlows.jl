@@ -28,8 +28,8 @@ end
     cstm::Any,
     dims...,
 )
-    isempty(dims) ? ContinuousNormalizingFlows.rand_cstm_AT(CPU1(), icnf, cstm, dims...) :
-    convert(CuArray, ContinuousNormalizingFlows.rand_cstm_AT(CPU1(), icnf, cstm, dims...))
+    rcm = ContinuousNormalizingFlows.rand_cstm_AT(CPU1(), icnf, cstm, dims...)
+    ifelse(isempty(dims), rcm, convert(CuArray, rcm))
 end
 
 @non_differentiable CUDA.zeros(::Any...)

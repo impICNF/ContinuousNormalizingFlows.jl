@@ -54,8 +54,11 @@ function construct(
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = compute_mode <: SDJacVecMatrixMode ?
-                                               AutoForwardDiff() : AutoZygote(),
+    autodiff_backend::ADTypes.AbstractADType = ifelse(
+        compute_mode <: SDJacVecMatrixMode,
+        AutoForwardDiff(),
+        AutoZygote(),
+    ),
     sol_kwargs::Dict = Dict(
         :alg_hints => [:nonstiff, :memorybound],
         :save_everystep => false,

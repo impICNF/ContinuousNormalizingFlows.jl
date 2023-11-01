@@ -21,11 +21,7 @@
             CondPlanar,
         ]
     end
-    if GROUP == "All"
-        nvars_ = Int[1, 2]
-    else
-        nvars_ = Int[1]
-    end
+    nvars_ = ifelse(GROUP == "All", Int[1, 2], Int[1])
     n_epochs = 2
     adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
@@ -63,19 +59,31 @@
         r2 = convert.(data_type, rand(data_dist, nvars, 1))
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
 
-        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
-            if mt <: CondPlanar
-                nn = PlanarLayer(nvars, tanh; n_cond = nvars)
-            else
-                nn = Lux.Dense(2 * nvars => nvars, tanh)
-            end
-        else
-            if mt <: Planar
-                nn = PlanarLayer(nvars, tanh)
-            else
-                nn = Lux.Dense(nvars => nvars, tanh)
-            end
-        end
+        nn = ifelse(
+            mt <: ContinuousNormalizingFlows.AbstractCondICNF,
+            ifelse(
+                mt <: CondPlanar,
+                ifelse(
+                    aug_steer,
+                    PlanarLayer(nvars * 2, tanh; n_cond = nvars),
+                    PlanarLayer(nvars, tanh; n_cond = nvars),
+                ),
+                ifelse(
+                    aug_steer,
+                    Lux.Dense(nvars * 3 => nvars * 2, tanh),
+                    Lux.Dense(nvars * 2 => nvars, tanh),
+                ),
+            ),
+            ifelse(
+                mt <: Planar,
+                ifelse(aug_steer, PlanarLayer(nvars * 2, tanh), PlanarLayer(nvars, tanh)),
+                ifelse(
+                    aug_steer,
+                    Lux.Dense(nvars * 2 => nvars * 2, tanh),
+                    Lux.Dense(nvars => nvars, tanh),
+                ),
+            ),
+        )
         icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
