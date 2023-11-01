@@ -22,6 +22,8 @@
         ]
     end
     nvars_ = ifelse(GROUP == "All", Int[1, 2], Int[1])
+    inplaces = ifelse(GROUP == "All", Bool[false, true], Bool[false])
+    aug_steers = ifelse(GROUP == "All", Bool[false, true], Bool[true])
     n_epochs = 2
     adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
@@ -42,11 +44,13 @@
         push!(resources, ComputationalResources.CUDALibs())
     end
 
-    @testset "$resource | $data_type | $adtype | nvars = $nvars | $mt" for resource in
-                                                                           resources,
+    @testset "$resource | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for resource in
+                                                                                                                                           resources,
         data_type in data_types,
         compute_mode in compute_modes,
         adtype in adtypes,
+        inplace in inplaces,
+        aug_steer in aug_steers,
         nvars in nvars_,
         mt in mts
 
@@ -84,7 +88,21 @@
                 ),
             ),
         )
-        icnf = construct(mt, nn, nvars; data_type, compute_mode, resource)
+        icnf = ifelse(
+            aug_steer,
+            construct(
+                mt,
+                nn,
+                nvars,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+                steer_rate = convert(data_type, 0.1),
+            ),
+            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+        )
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
