@@ -19,9 +19,6 @@
             Type{<:ComputeMode}[ZygoteMatrixMode],
         )
         omodes = Mode[TrainMode(), TestMode()]
-        nvars_ = Int[1]
-        inplaces = Bool[false]
-        aug_steers = Bool[true]
         nvars_ = ifelse(fllprcmpltn, Int[1, 2], Int[1])
         inplaces = ifelse(fllprcmpltn, Bool[false, true], Bool[false])
         aug_steers = ifelse(fllprcmpltn, Bool[false, true], Bool[true])
