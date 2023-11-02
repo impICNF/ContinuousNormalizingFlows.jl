@@ -22,15 +22,9 @@
         ]
     end
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
-    if GROUP == "All"
-        nvars_ = Int[1, 2]
-        inplaces = Bool[false, true]
-        aug_steers = Bool[false, true]
-    else
-        nvars_ = Int[1]
-        inplaces = Bool[false]
-        aug_steers = Bool[true]
-    end
+    nvars_ = ifelse(GROUP == "All", Int[1, 2], Int[1])
+    inplaces = ifelse(GROUP == "All", Bool[false, true], Bool[false])
+    aug_steers = ifelse(GROUP == "All", Bool[false, true], Bool[true])
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),
@@ -74,27 +68,33 @@
             r2 = hcat(r2)
         end
 
-        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
-            if mt <: CondPlanar
-                nn =
-                    aug_steer ? PlanarLayer(nvars * 2, tanh; n_cond = nvars) :
-                    PlanarLayer(nvars, tanh; n_cond = nvars)
-            else
-                nn =
-                    aug_steer ? Lux.Dense(nvars * 3 => nvars * 2, tanh) :
-                    Lux.Dense(nvars * 2 => nvars, tanh)
-            end
-        else
-            if mt <: Planar
-                nn = aug_steer ? PlanarLayer(nvars * 2, tanh) : PlanarLayer(nvars, tanh)
-            else
-                nn =
-                    aug_steer ? Lux.Dense(nvars * 2 => nvars * 2, tanh) :
-                    Lux.Dense(nvars => nvars, tanh)
-            end
-        end
-        icnf =
-            aug_steer ?
+        nn = ifelse(
+            mt <: ContinuousNormalizingFlows.AbstractCondICNF,
+            ifelse(
+                mt <: CondPlanar,
+                ifelse(
+                    aug_steer,
+                    PlanarLayer(nvars * 2, tanh; n_cond = nvars),
+                    PlanarLayer(nvars, tanh; n_cond = nvars),
+                ),
+                ifelse(
+                    aug_steer,
+                    Lux.Dense(nvars * 3 => nvars * 2, tanh),
+                    Lux.Dense(nvars * 2 => nvars, tanh),
+                ),
+            ),
+            ifelse(
+                mt <: Planar,
+                ifelse(aug_steer, PlanarLayer(nvars * 2, tanh), PlanarLayer(nvars, tanh)),
+                ifelse(
+                    aug_steer,
+                    Lux.Dense(nvars * 2 => nvars * 2, tanh),
+                    Lux.Dense(nvars => nvars, tanh),
+                ),
+            ),
+        )
+        icnf = ifelse(
+            aug_steer,
             construct(
                 mt,
                 nn,
@@ -105,7 +105,9 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-            ) : construct(mt, nn, nvars; data_type, compute_mode, inplace, resource)
+            ),
+            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+        )
         icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
         icnf.sol_kwargs[:verbose] = true
         ps, st = Lux.setup(icnf.rng, icnf)

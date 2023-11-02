@@ -22,7 +22,7 @@ function PlanarLayer(
     allow_fast_activation::Bool = true,
     n_cond::Int = 0,
 )
-    activation = allow_fast_activation ? NNlib.fast_act(activation) : activation
+    activation = ifelse(allow_fast_activation, NNlib.fast_act(activation), activation)
     PlanarLayer{
         use_bias,
         !iszero(n_cond),
@@ -42,15 +42,23 @@ function LuxCore.initialparameters(
     rng::AbstractRNG,
     layer::PlanarLayer{use_bias, cond},
 ) where {use_bias, cond}
-    use_bias ?
-    (
-        u = layer.init_weight(rng, layer.nvars),
-        w = layer.init_weight(rng, cond ? (layer.nvars + layer.n_cond) : layer.nvars),
-        b = layer.init_bias(rng, 1),
-    ) :
-    (
-        u = layer.init_weight(rng, layer.nvars),
-        w = layer.init_weight(rng, cond ? (layer.nvars + layer.n_cond) : layer.nvars),
+    ifelse(
+        use_bias,
+        (
+            u = layer.init_weight(rng, layer.nvars),
+            w = layer.init_weight(
+                rng,
+                ifelse(cond, (layer.nvars + layer.n_cond), layer.nvars),
+            ),
+            b = layer.init_bias(rng, 1),
+        ),
+        (
+            u = layer.init_weight(rng, layer.nvars),
+            w = layer.init_weight(
+                rng,
+                ifelse(cond, (layer.nvars + layer.n_cond), layer.nvars),
+            ),
+        ),
     )
 end
 
