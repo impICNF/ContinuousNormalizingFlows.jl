@@ -35,7 +35,8 @@ GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
 
 @testset "Overall" begin
-    if GROUP == "All" || GROUP in ["RNODE", "FFJORD", "Planar"]
+    if GROUP == "All" ||
+       GROUP in ["RNODE", "FFJORD", "Planar", "CondRNODE", "CondFFJORD", "CondPlanar"]
         CUDA.allowscalar() do
             include("smoke_tests.jl")
         end
