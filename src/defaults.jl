@@ -23,12 +23,12 @@ sol_kwargs_low = (
     alg_hints = [:nonstiff, :memorybound],
     save_everystep = false,
     alg = VCABM(),
-    sensealg = BacksolveAdjoint(;
+    sensealg = InterpolatingAdjoint(;
         autodiff = true,
         autojacvec = ZygoteVJP(),
         checkpointing = true,
     ),
-    reltol = sqrt(eps(one(Float32))),
+    reltol = sqrt(sqrt(eps(one(Float32)))),
     abstol = eps(one(Float32)),
     maxiters = typemax(Int32),
 )
