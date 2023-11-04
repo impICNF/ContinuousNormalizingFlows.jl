@@ -21,18 +21,18 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff, :memorybound],
-        :save_everystep => false,
-        :alg => VCABM(),
-        :sensealg => InterpolatingAdjoint(;
+    sol_kwargs::NamedTuple = (
+        alg_hints = [:nonstiff, :memorybound],
+        save_everystep = false,
+        alg = VCABM(),
+        sensealg = InterpolatingAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
             checkpointing = true,
         ),
-        :reltol => sqrt(eps(one(Float32))),
-        :abstol => eps(one(Float32)),
-        :maxiters => typemax(Int32),
+        reltol = sqrt(eps(one(Float32))),
+        abstol = eps(one(Float32)),
+        maxiters = typemax(Int32),
     ),
     rng::AbstractRNG = Random.default_rng(),
 )

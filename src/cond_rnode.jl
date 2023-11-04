@@ -17,7 +17,7 @@ struct CondRNODE{
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
-    SOL_KWARGS <: Dict,
+    SOL_KWARGS <: NamedTuple,
     RNG <: AbstractRNG,
 } <: AbstractCondICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
@@ -57,18 +57,18 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff, :memorybound],
-        :save_everystep => false,
-        :alg => VCABM(),
-        :sensealg => InterpolatingAdjoint(;
+    sol_kwargs::NamedTuple = (
+        alg_hints = [:nonstiff, :memorybound],
+        save_everystep = false,
+        alg = VCABM(),
+        sensealg = InterpolatingAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
             checkpointing = true,
         ),
-        :reltol => sqrt(eps(one(Float32))),
-        :abstol => eps(one(Float32)),
-        :maxiters => typemax(Int32),
+        reltol = sqrt(eps(one(Float32))),
+        abstol = eps(one(Float32)),
+        maxiters = typemax(Int32),
     ),
     rng::AbstractRNG = Random.default_rng(),
     λ₁::AbstractFloat = convert(data_type, 1e-2),
