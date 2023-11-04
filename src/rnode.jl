@@ -19,7 +19,7 @@ struct RNODE{
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
-    SOL_KWARGS <: Dict,
+    SOL_KWARGS <: NamedTuple,
     RNG <: AbstractRNG,
 } <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN
@@ -59,19 +59,7 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff, :memorybound],
-        :save_everystep => false,
-        :alg => VCABM(),
-        :sensealg => InterpolatingAdjoint(;
-            autodiff = true,
-            autojacvec = ZygoteVJP(),
-            checkpointing = true,
-        ),
-        :reltol => sqrt(eps(one(Float32))),
-        :abstol => eps(one(Float32)),
-        :maxiters => typemax(Int32),
-    ),
+    sol_kwargs::NamedTuple = sol_kwargs_medium,
     rng::AbstractRNG = Random.default_rng(),
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),
@@ -278,7 +266,7 @@ end
     ps::Any,
     st::Any,
 )
-    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ps, st)
+    logp̂x, (Ė, ṅ) = inference(icnf, mode, xs, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
@@ -289,7 +277,7 @@ end
     ps::Any,
     st::Any,
 )
-    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ps, st)
+    logp̂x, (Ė, ṅ) = inference(icnf, mode, xs, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end
 

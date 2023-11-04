@@ -19,7 +19,7 @@ struct FFJORD{
     STEERDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
-    SOL_KWARGS <: Dict,
+    SOL_KWARGS <: NamedTuple,
     RNG <: AbstractRNG,
 } <: AbstractICNF{T, CM, INPLACE, AUGMENTED, STEER}
     nn::NN

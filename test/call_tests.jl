@@ -105,11 +105,25 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
+                sol_kwargs = merge(
+                    ContinuousNormalizingFlows.sol_kwargs_medium,
+                    (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
+                ),
             ),
-            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+            construct(
+                mt,
+                nn,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+                sol_kwargs = merge(
+                    ContinuousNormalizingFlows.sol_kwargs_medium,
+                    (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
+                ),
+            ),
         )
-        icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
-        icnf.sol_kwargs[:verbose] = true
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         if resource isa ComputationalResources.CUDALibs

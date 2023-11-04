@@ -35,6 +35,7 @@ using AbstractDifferentiation,
     Statistics,
     Zygote
 
+include("defaults.jl")
 include("types.jl")
 
 include("planar_layer.jl")

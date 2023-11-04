@@ -19,9 +19,16 @@ n = 2^6
 r = rand(Float32, nvars, n)
 nn = Lux.Dense(nvars => nvars, tanh)
 
-icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode)
-icnf.sol_kwargs[:sensealg] = ForwardDiffSensitivity()
-icnf.sol_kwargs[:verbose] = true
+icnf = construct(
+    RNODE,
+    nn,
+    nvars;
+    compute_mode = ZygoteMatrixMode,
+    sol_kwargs = merge(
+        ContinuousNormalizingFlows.sol_kwargs_medium,
+        (sensealg = ForwardDiffSensitivity(),),
+    ),
+)
 ps, st = Lux.setup(icnf.rng, icnf)
 ps = ComponentArray(ps)
 
@@ -40,9 +47,17 @@ SUITE["main"]["no_inplace"]["AD-1-order"]["train"] =
 SUITE["main"]["no_inplace"]["AD-1-order"]["test"] =
     @benchmarkable Zygote.gradient(loss, icnf, TestMode(), r, ps, st)
 
-icnf2 = construct(RNODE, nn, nvars; compute_mode = ZygoteMatrixMode, inplace = true)
-icnf2.sol_kwargs[:sensealg] = ForwardDiffSensitivity()
-icnf2.sol_kwargs[:verbose] = true
+icnf2 = construct(
+    RNODE,
+    nn,
+    nvars;
+    compute_mode = ZygoteMatrixMode,
+    inplace = true,
+    sol_kwargs = merge(
+        ContinuousNormalizingFlows.sol_kwargs_medium,
+        (sensealg = ForwardDiffSensitivity(),),
+    ),
+)
 
 loss(icnf2, TrainMode(), r, ps, st)
 loss(icnf2, TestMode(), r, ps, st)

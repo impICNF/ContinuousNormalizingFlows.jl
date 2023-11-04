@@ -21,19 +21,7 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::Dict = Dict(
-        :alg_hints => [:nonstiff, :memorybound],
-        :save_everystep => false,
-        :alg => VCABM(),
-        :sensealg => InterpolatingAdjoint(;
-            autodiff = true,
-            autojacvec = ZygoteVJP(),
-            checkpointing = true,
-        ),
-        :reltol => sqrt(eps(one(Float32))),
-        :abstol => eps(one(Float32)),
-        :maxiters => typemax(Int32),
-    ),
+    sol_kwargs::NamedTuple = sol_kwargs_medium,
     rng::AbstractRNG = Random.default_rng(),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
@@ -158,7 +146,7 @@ end
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
     augs = fsol[(end - n_aug + 1):end]
-    (logp̂x, augs...)
+    (logp̂x, augs)
 end
 
 @views function inference_sol(
@@ -173,7 +161,7 @@ end
     Δlogp = fsol[(end - n_aug), :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
     augs = fsol[(end - n_aug + 1):end, :]
-    (logp̂x, eachrow(augs)...)
+    (logp̂x, eachrow(augs))
 end
 
 @views function generate_sol(
