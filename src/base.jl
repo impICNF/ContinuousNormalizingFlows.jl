@@ -157,12 +157,8 @@ end
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    if iszero(n_aug)
-        (logp̂x,)
-    else
-        augs = fsol[(end - n_aug + 1):end]
-        (logp̂x, augs...)
-    end
+    augs = fsol[(end - n_aug + 1):end]
+    (logp̂x, augs...)
 end
 
 @views function inference_sol(
@@ -176,12 +172,8 @@ end
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    if iszero(n_aug)
-        (logp̂x,)
-    else
-        augs = fsol[(end - n_aug + 1):end, :]
-        (logp̂x, eachrow(augs)...)
-    end
+    augs = fsol[(end - n_aug + 1):end, :]
+    (logp̂x, eachrow(augs)...)
 end
 
 @views function generate_sol(
