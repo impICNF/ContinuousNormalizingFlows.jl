@@ -107,7 +107,7 @@
                             autodiff = true,
                             autojacvec = true,
                             checkpointing = true,
-                        )
+                        ),
                     ),
                 ),
             ),
@@ -126,7 +126,7 @@
                             autodiff = true,
                             autojacvec = true,
                             checkpointing = true,
-                        )
+                        ),
                     ),
                 ),
             ),

@@ -31,7 +31,7 @@ icnf = construct(
                 autodiff = true,
                 autojacvec = true,
                 checkpointing = true,
-            )
+            ),
         ),
     ),
 )
@@ -66,7 +66,7 @@ icnf2 = construct(
                 autodiff = true,
                 autojacvec = true,
                 checkpointing = true,
-            )
+            ),
         ),
     ),
 )
