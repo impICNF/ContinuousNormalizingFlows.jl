@@ -100,11 +100,37 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
+                sol_kwargs = merge(
+                    ContinuousNormalizingFlows.sol_kwargs_medium,
+                    (
+                        sensealg = InterpolatingAdjoint(;
+                            autodiff = true,
+                            autojacvec = true,
+                            checkpointing = true,
+                        )
+                    ),
+                ),
             ),
-            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+            construct(
+                mt,
+                nn,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+                sol_kwargs = merge(
+                    ContinuousNormalizingFlows.sol_kwargs_medium,
+                    (
+                        sensealg = InterpolatingAdjoint(;
+                            autodiff = true,
+                            autojacvec = true,
+                            checkpointing = true,
+                        )
+                    ),
+                ),
+            ),
         )
-        icnf.sol_kwargs[:sensealg] = SciMLSensitivity.ForwardDiffSensitivity()
-        icnf.sol_kwargs[:verbose] = true
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))

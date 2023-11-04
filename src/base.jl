@@ -21,19 +21,7 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::NamedTuple = (
-        alg_hints = [:nonstiff, :memorybound],
-        save_everystep = false,
-        alg = VCABM(),
-        sensealg = InterpolatingAdjoint(;
-            autodiff = true,
-            autojacvec = ZygoteVJP(),
-            checkpointing = true,
-        ),
-        reltol = sqrt(eps(one(Float32))),
-        abstol = eps(one(Float32)),
-        maxiters = typemax(Int32),
-    ),
+    sol_kwargs::NamedTuple = sol_kwargs_medium,
     rng::AbstractRNG = Random.default_rng(),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
