@@ -26,13 +26,7 @@ icnf = construct(
     compute_mode = ZygoteMatrixMode,
     sol_kwargs = merge(
         ContinuousNormalizingFlows.sol_kwargs_medium,
-        (
-            sensealg = InterpolatingAdjoint(;
-                autodiff = true,
-                autojacvec = true,
-                checkpointing = true,
-            ),
-        ),
+        (sensealg = ForwardDiffSensitivity(),),
     ),
 )
 ps, st = Lux.setup(icnf.rng, icnf)
@@ -61,13 +55,7 @@ icnf2 = construct(
     inplace = true,
     sol_kwargs = merge(
         ContinuousNormalizingFlows.sol_kwargs_medium,
-        (
-            sensealg = InterpolatingAdjoint(;
-                autodiff = true,
-                autojacvec = true,
-                checkpointing = true,
-            ),
-        ),
+        (sensealg = ForwardDiffSensitivity(),),
     ),
 )
 

@@ -107,13 +107,7 @@
                 steer_rate = convert(data_type, 0.1),
                 sol_kwargs = merge(
                     ContinuousNormalizingFlows.sol_kwargs_medium,
-                    (
-                        sensealg = InterpolatingAdjoint(;
-                            autodiff = true,
-                            autojacvec = true,
-                            checkpointing = true,
-                        ),
-                    ),
+                    (sensealg = ForwardDiffSensitivity(),),
                 ),
             ),
             construct(
@@ -126,13 +120,7 @@
                 resource,
                 sol_kwargs = merge(
                     ContinuousNormalizingFlows.sol_kwargs_medium,
-                    (
-                        sensealg = InterpolatingAdjoint(;
-                            autodiff = true,
-                            autojacvec = true,
-                            checkpointing = true,
-                        ),
-                    ),
+                    (sensealg = ForwardDiffSensitivity(),),
                 ),
             ),
         )
