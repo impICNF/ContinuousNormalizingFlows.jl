@@ -280,7 +280,7 @@ end
     ps::Any,
     st::Any,
 )
-    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
+    logp̂x, (Ė, ṅ) = inference(icnf, mode, xs, ys, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ
 end
 
@@ -292,7 +292,7 @@ end
     ps::Any,
     st::Any,
 )
-    logp̂x, Ė, ṅ = inference(icnf, mode, xs, ys, ps, st)
+    logp̂x, (Ė, ṅ) = inference(icnf, mode, xs, ys, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ)
 end
 
