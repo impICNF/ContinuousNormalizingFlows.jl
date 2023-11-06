@@ -22,7 +22,7 @@ function construct(
         AutoZygote(),
     ),
     sol_kwargs::NamedTuple = sol_kwargs_medium,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = rng_AT(resource),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
@@ -87,12 +87,12 @@ end
 end
 
 @inline function steer_tspan(
-    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, INPLACE, AUGMENTED, true},
+    icnf::AbstractFlows{T, <:ComputeMode, INPLACE, AUGMENTED, true},
     ::TrainMode,
-) where {INPLACE, AUGMENTED}
+) where {T <: AbstractFloat, INPLACE, AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
-    r = rand_cstm_AT(icnf.resource, icnf, icnf.steerdist)
+    r = convert(T, rand(icnf.rng, icnf.steerdist))
     t₁_new = muladd(Δt, r, t₁)
     (t₀, t₁_new)
 end
@@ -101,28 +101,16 @@ end
     icnf.tspan
 end
 
+@inline function rng_AT(::AbstractResource)
+    Random.default_rng()
+end
+
 @inline function zeros_T_AT(
     ::AbstractResource,
     ::AbstractFlows{T},
     dims...,
 ) where {T <: AbstractFloat}
     zeros(T, dims...)
-end
-
-@inline function rand_T_AT(
-    ::AbstractResource,
-    icnf::AbstractFlows{T},
-    dims...,
-) where {T <: AbstractFloat}
-    rand(icnf.rng, T, dims...)
-end
-
-@inline function randn_T_AT(
-    ::AbstractResource,
-    icnf::AbstractFlows{T},
-    dims...,
-) where {T <: AbstractFloat}
-    randn(icnf.rng, T, dims...)
 end
 
 @inline function rand_cstm_AT(
