@@ -60,7 +60,7 @@ function construct(
         AutoZygote(),
     ),
     sol_kwargs::NamedTuple = sol_kwargs_medium,
-    rng::AbstractRNG = Random.default_rng(),
+    rng::AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
