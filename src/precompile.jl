@@ -19,18 +19,12 @@
             Type{<:ComputeMode}[ZygoteMatrixMode],
         )
         omodes = Mode[TrainMode(), TestMode()]
-        nvars_ = ifelse(fllprcmpltn, Int[1, 2], Int[1])
-        inplaces = ifelse(fllprcmpltn, Bool[false, true], Bool[false])
-        aug_steers = ifelse(fllprcmpltn, Bool[false, true], Bool[true])
+        nvars = 1
+        inplace = false
+        aug_steer = true
         data_type = Float32
 
-        for compute_mode in compute_modes,
-            inplace in inplaces,
-            aug_steer in aug_steers,
-            nvars in nvars_,
-            omode in omodes,
-            mt in mts
-
+        for compute_mode in compute_modes, omode in omodes, mt in mts
             data_dist = Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
             r = convert.(data_type, rand(data_dist, nvars))
             if compute_mode <: MatrixMode
