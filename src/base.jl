@@ -21,7 +21,7 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::NamedTuple = sol_kwargs_medium,
+    sol_kwargs::NamedTuple = sol_kwargs_defaults.medium,
     rng::AbstractRNG = rng_AT(resource),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)

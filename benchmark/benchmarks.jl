@@ -25,7 +25,7 @@ icnf = construct(
     nvars;
     compute_mode = ZygoteMatrixMode,
     sol_kwargs = merge(
-        ContinuousNormalizingFlows.sol_kwargs_medium,
+        ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
         (sensealg = ForwardDiffSensitivity(),),
     ),
 )
@@ -54,7 +54,7 @@ icnf2 = construct(
     compute_mode = ZygoteMatrixMode,
     inplace = true,
     sol_kwargs = merge(
-        ContinuousNormalizingFlows.sol_kwargs_medium,
+        ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
         (sensealg = ForwardDiffSensitivity(),),
     ),
 )

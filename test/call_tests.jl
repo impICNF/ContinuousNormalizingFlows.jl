@@ -106,7 +106,7 @@
                 resource,
                 steer_rate = convert(data_type, 0.1),
                 sol_kwargs = merge(
-                    ContinuousNormalizingFlows.sol_kwargs_medium,
+                    ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
                     (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
                 ),
             ),
@@ -119,7 +119,7 @@
                 inplace,
                 resource,
                 sol_kwargs = merge(
-                    ContinuousNormalizingFlows.sol_kwargs_medium,
+                    ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
                     (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
                 ),
             ),
