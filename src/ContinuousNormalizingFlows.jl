@@ -24,8 +24,6 @@ using AbstractDifferentiation,
     OptimizationOptimisers,
     OrdinaryDiffEq,
     PackageExtensionCompat,
-    PrecompileTools,
-    Preferences,
     ProgressMeter,
     Random,
     ScientificTypes,
@@ -58,10 +56,6 @@ include("cond_ffjord.jl")
 include("cond_planar.jl")
 
 include("utils.jl")
-
-@static if isdefined(Base, :get_extension)
-    include("precompile.jl")
-end
 
 function __init__()
     @require_extensions
