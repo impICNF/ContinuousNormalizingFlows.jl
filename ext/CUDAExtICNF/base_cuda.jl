@@ -1,4 +1,4 @@
-@inline function rng_AT(::CUDALibs)
+@inline function ContinuousNormalizingFlows.rng_AT(::CUDALibs)
     CURAND.default_rng()
 end
 
