@@ -148,11 +148,15 @@
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps)) broken =
-                omode isa TestMode && adb isa AbstractDifferentiation.ZygoteBackend
+                omode isa TestMode &&
+                adb isa
+                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps)) broken =
-                omode isa TestMode && adb isa AbstractDifferentiation.ZygoteBackend
+                omode isa TestMode &&
+                adb isa
+                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps)) broken =
-            #     omode isa TestMode && adb isa AbstractDifferentiation.ZygoteBackend
+            #     omode isa TestMode && adb isa AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
         end
 
         @test !isnothing(Zygote.gradient(diff_loss, ps)) broken = omode isa TestMode
@@ -192,11 +196,15 @@
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
-                omode isa TestMode && adb isa AbstractDifferentiation.ZygoteBackend
+                omode isa TestMode &&
+                adb isa
+                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r)) broken =
-                omode isa TestMode && adb isa AbstractDifferentiation.ZygoteBackend
+                omode isa TestMode &&
+                adb isa
+                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) broken =
-            #     omode isa TestMode && adb isa AbstractDifferentiation.ZygoteBackend
+            #     omode isa TestMode && adb isa AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
         end
 
         @test !isnothing(Zygote.gradient(diff2_loss, r)) broken = omode isa TestMode
