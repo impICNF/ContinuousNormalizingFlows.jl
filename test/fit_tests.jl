@@ -101,15 +101,7 @@
                 resource,
                 steer_rate = convert(data_type, 0.1),
             ),
-            construct(
-                mt,
-                nn,
-                nvars;
-                data_type,
-                compute_mode,
-                inplace,
-                resource,
-            ),
+            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
         )
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             model = CondICNFModel(icnf; n_epochs, adtype)
