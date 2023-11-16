@@ -32,9 +32,8 @@ nvars = 1
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Lux #, Flux, CUDA, ComputationalResources
-nn = Lux.Chain(Lux.Dense(nvars => 4 * nvars, tanh), Lux.Dense(4 * nvars => nvars, tanh)) # use Lux
-# nn = FluxLayer(Flux.Chain(Flux.Dense(nvars => 4 * nvars, tanh), Flux.Dense(4 * nvars => nvars, tanh))) # use Flux
+using ContinuousNormalizingFlows, Lux #, CUDA, ComputationalResources
+nn = Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh))
 # icnf = construct(RNODE, nn, nvars) # use defaults
 icnf = construct(
     RNODE,
