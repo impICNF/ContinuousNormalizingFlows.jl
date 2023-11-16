@@ -9,7 +9,6 @@ using CUDA: CUDA
 using cuDNN: cuDNN
 using DataFrames: DataFrames
 using Distributions: Distributions
-using Flux: Flux
 using ForwardDiff: ForwardDiff
 using JET: JET
 using Logging: Logging
@@ -18,7 +17,6 @@ using LuxCUDA: LuxCUDA
 using MLJBase: MLJBase
 using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase
-using SciMLSensitivity: SciMLSensitivity
 using TruncatedStacktraces: TruncatedStacktraces
 using Zygote: Zygote
 
@@ -28,8 +26,6 @@ debuglogger = Logging.ConsoleLogger(Logging.Debug)
 Logging.global_logger(debuglogger)
 
 TruncatedStacktraces.VERBOSE[] = true
-
-include("core.jl")
 
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"

@@ -100,10 +100,6 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                sol_kwargs = merge(
-                    ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
-                    (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
-                ),
             ),
             construct(
                 mt,
@@ -113,10 +109,6 @@
                 compute_mode,
                 inplace,
                 resource,
-                sol_kwargs = merge(
-                    ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
-                    (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
-                ),
             ),
         )
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF

@@ -45,9 +45,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     x = collect(transpose(MLJModelInterface.matrix(X)))
     y = collect(transpose(MLJModelInterface.matrix(Y)))
     ps, st = LuxCore.setup(model.m.rng, model.m)
-    if !(model.m isa FluxCompatLayer)
-        ps = ComponentArray(ps)
-    end
+    ps = ComponentArray(ps)
     if model.m.resource isa CUDALibs
         gdev = gpu_device()
         x = gdev(x)
