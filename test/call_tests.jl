@@ -150,18 +150,27 @@
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps)) broken =
                 omode isa TestMode &&
                 compute_mode <: ContinuousNormalizingFlows.VectorMode &&
-                adb isa
-                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
+                (
+                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
+                        <:Zygote.ZygoteRuleConfig,
+                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
+                )
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps)) broken =
                 omode isa TestMode &&
                 compute_mode <: ContinuousNormalizingFlows.VectorMode &&
-                adb isa
-                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
+                (
+                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
+                        <:Zygote.ZygoteRuleConfig,
+                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
+                )
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps)) broken =
             #     omode isa TestMode &&
             #     compute_mode <: ContinuousNormalizingFlows.VectorMode &&
-            #     adb isa
-            #     AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
+            #     (
+            #         adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
+            #             <:Zygote.ZygoteRuleConfig,
+            #         } || adb isa AbstractDifferentiation.ReverseDiffBackend
+            #     )
         end
 
         @test !isnothing(Zygote.gradient(diff_loss, ps)) broken =
@@ -204,9 +213,12 @@
         # @test !isnothing(Zygote.hessian_reverse(diff_loss4, ps)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
 
-        @test !isnothing(ReverseDiff.gradient(diff_loss, ps))
-        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps))
-        # @test !isnothing(ReverseDiff.hessian(diff_loss, ps))
+        @test !isnothing(ReverseDiff.gradient(diff_loss, ps)) broken =
+            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps)) broken =
+            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        # @test !isnothing(ReverseDiff.hessian(diff_loss, ps)) broken =
+        #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
 
         @test !isnothing(ForwardDiff.gradient(diff_loss, ps))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
@@ -219,18 +231,27 @@
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
                 omode isa TestMode &&
                 compute_mode <: ContinuousNormalizingFlows.VectorMode &&
-                adb isa
-                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
+                (
+                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
+                        <:Zygote.ZygoteRuleConfig,
+                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
+                )
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r)) broken =
                 omode isa TestMode &&
                 compute_mode <: ContinuousNormalizingFlows.VectorMode &&
-                adb isa
-                AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
+                (
+                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
+                        <:Zygote.ZygoteRuleConfig,
+                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
+                )
             # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) broken =
             #     omode isa TestMode &&
             #     compute_mode <: ContinuousNormalizingFlows.VectorMode &&
-            #     adb isa
-            #     AbstractDifferentiation.ReverseRuleConfigBackend{<:Zygote.ZygoteRuleConfig}
+            #     (
+            #         adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
+            #             <:Zygote.ZygoteRuleConfig,
+            #         } || adb isa AbstractDifferentiation.ReverseDiffBackend
+            #     )
         end
 
         @test !isnothing(Zygote.gradient(diff2_loss, r)) broken =
@@ -255,10 +276,8 @@
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
         diff2_loss3 = x -> Zygote.forwarddiff(diff2_loss, x)
-        @test !isnothing(Zygote.gradient(diff2_loss3, r)) broken =
-            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
-        @test !isnothing(Zygote.jacobian(diff2_loss3, r)) broken =
-            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        @test !isnothing(Zygote.gradient(diff2_loss3, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss3, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss3, r)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
         # @test !isnothing(Zygote.hessian(diff2_loss3, r)) broken =
@@ -266,10 +285,8 @@
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
         diff2_loss4 = x -> Zygote.forwarddiff(diff2_loss2, x)
-        @test !isnothing(Zygote.gradient(diff2_loss4, r)) broken =
-            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
-        @test !isnothing(Zygote.jacobian(diff2_loss4, r)) broken =
-            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        @test !isnothing(Zygote.gradient(diff2_loss4, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss4, r))
         # @test !isnothing(Zygote.diaghessian(diff2_loss4, r)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
         # @test !isnothing(Zygote.hessian(diff2_loss4, r)) broken =
@@ -277,9 +294,12 @@
         # @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
 
-        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
-        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
-        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r))
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r)) broken =
+            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r)) broken =
+            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r)) broken =
+        #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
 
         @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
