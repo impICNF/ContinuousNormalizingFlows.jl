@@ -215,8 +215,7 @@
 
         @test !isnothing(ReverseDiff.gradient(diff_loss, ps)) broken =
             omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
-        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps)) broken =
-            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps))
         # @test !isnothing(ReverseDiff.hessian(diff_loss, ps)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
 
@@ -296,8 +295,7 @@
 
         @test !isnothing(ReverseDiff.gradient(diff2_loss, r)) broken =
             omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
-        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r)) broken =
-            omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
+        @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
         # @test !isnothing(ReverseDiff.hessian(diff2_loss, r)) broken =
         #     omode isa TestMode && compute_mode <: ContinuousNormalizingFlows.VectorMode
 
