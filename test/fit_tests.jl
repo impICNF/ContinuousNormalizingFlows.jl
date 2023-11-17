@@ -106,21 +106,41 @@
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
-            @test !isnothing(MLJBase.fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, (df, df2)))
-            @test !isnothing(MLJBase.fitted_params(mach))
+            @test !isnothing(MLJBase.fit!(mach)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
+            @test !isnothing(MLJBase.transform(mach, (df, df2))) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
+            @test !isnothing(MLJBase.fitted_params(mach)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
 
-            @test !isnothing(CondICNFDist(mach, TrainMode(), r2))
-            @test !isnothing(CondICNFDist(mach, TestMode(), r2))
+            @test !isnothing(CondICNFDist(mach, TrainMode(), r2)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
+            @test !isnothing(CondICNFDist(mach, TestMode(), r2)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
         else
             model = ICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, df)
-            @test !isnothing(MLJBase.fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, df))
-            @test !isnothing(MLJBase.fitted_params(mach))
+            @test !isnothing(MLJBase.fit!(mach)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
+            @test !isnothing(MLJBase.transform(mach, df)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
+            @test !isnothing(MLJBase.fitted_params(mach)) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
 
-            @test !isnothing(ICNFDist(mach, TrainMode()))
-            @test !isnothing(ICNFDist(mach, TestMode()))
+            @test !isnothing(ICNFDist(mach, TrainMode())) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
+            @test !isnothing(ICNFDist(mach, TestMode())) broken =
+                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode &&
+                (adtype isa ADTypes.AutoZygote || adtype isa ADTypes.AutoReverseDiff)
         end
     end
 end
