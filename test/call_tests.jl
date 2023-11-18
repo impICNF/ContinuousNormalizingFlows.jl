@@ -105,8 +105,18 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
+                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
             ),
-            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+            construct(
+                mt,
+                nn,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
+            ),
         )
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -147,68 +157,20 @@
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
             )
-            @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps)) broken =
-                (
-                    (
-                        compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                            omode isa TestMode &&
-                            compute_mode <: ContinuousNormalizingFlows.VectorMode
-                        )
-                    ) && !(mt <: Planar)
-                ) && (
-                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
-                        <:Zygote.ZygoteRuleConfig,
-                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
-                )
-            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps)) broken =
-                (
-                    (
-                        compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                            omode isa TestMode &&
-                            compute_mode <: ContinuousNormalizingFlows.VectorMode
-                        )
-                    ) && !(mt <: Planar)
-                ) && (
-                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
-                        <:Zygote.ZygoteRuleConfig,
-                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
-                )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
             @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps)) skip =
                 true
         end
 
-        @test !isnothing(Zygote.gradient(diff_loss, ps)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
-        @test !isnothing(Zygote.jacobian(diff_loss, ps)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
+        @test !isnothing(Zygote.gradient(diff_loss, ps))
+        @test !isnothing(Zygote.jacobian(diff_loss, ps))
         @test !isnothing(Zygote.diaghessian(diff_loss, ps)) skip = true
         @test !isnothing(Zygote.hessian(diff_loss, ps)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff_loss, ps)) skip = true
         diff_loss2 = x -> Zygote.checkpointed(diff_loss, x)
-        @test !isnothing(Zygote.gradient(diff_loss2, ps)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
-        @test !isnothing(Zygote.jacobian(diff_loss2, ps)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
+        @test !isnothing(Zygote.gradient(diff_loss2, ps))
+        @test !isnothing(Zygote.jacobian(diff_loss2, ps))
         @test !isnothing(Zygote.diaghessian(diff_loss2, ps)) skip = true
         @test !isnothing(Zygote.hessian(diff_loss2, ps)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff_loss2, ps)) skip = true
@@ -225,13 +187,7 @@
         @test !isnothing(Zygote.hessian(diff_loss4, ps)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff_loss4, ps)) skip = true
 
-        @test !isnothing(ReverseDiff.gradient(diff_loss, ps)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
+        @test !isnothing(ReverseDiff.gradient(diff_loss, ps))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps))
         @test !isnothing(ReverseDiff.hessian(diff_loss, ps)) skip = true
 
@@ -243,68 +199,20 @@
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
-            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
-                (
-                    (
-                        compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                            omode isa TestMode &&
-                            compute_mode <: ContinuousNormalizingFlows.VectorMode
-                        )
-                    ) && !(mt <: Planar)
-                ) && (
-                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
-                        <:Zygote.ZygoteRuleConfig,
-                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
-                )
-            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r)) broken =
-                (
-                    (
-                        compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                            omode isa TestMode &&
-                            compute_mode <: ContinuousNormalizingFlows.VectorMode
-                        )
-                    ) && !(mt <: Planar)
-                ) && (
-                    adb isa AbstractDifferentiation.ReverseRuleConfigBackend{
-                        <:Zygote.ZygoteRuleConfig,
-                    } || adb isa AbstractDifferentiation.ReverseDiffBackend
-                )
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
             @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) skip =
                 true
         end
 
-        @test !isnothing(Zygote.gradient(diff2_loss, r)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
-        @test !isnothing(Zygote.jacobian(diff2_loss, r)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
+        @test !isnothing(Zygote.gradient(diff2_loss, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss, r))
         @test !isnothing(Zygote.diaghessian(diff2_loss, r)) skip = true
         @test !isnothing(Zygote.hessian(diff2_loss, r)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff2_loss, r)) skip = true
         diff2_loss2 = x -> Zygote.checkpointed(diff2_loss, x)
-        @test !isnothing(Zygote.gradient(diff2_loss2, r)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
-        @test !isnothing(Zygote.jacobian(diff2_loss2, r)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
+        @test !isnothing(Zygote.gradient(diff2_loss2, r))
+        @test !isnothing(Zygote.jacobian(diff2_loss2, r))
         @test !isnothing(Zygote.diaghessian(diff2_loss2, r)) skip = true
         @test !isnothing(Zygote.hessian(diff2_loss2, r)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r)) skip = true
@@ -321,13 +229,7 @@
         @test !isnothing(Zygote.hessian(diff2_loss4, r)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r)) skip = true
 
-        @test !isnothing(ReverseDiff.gradient(diff2_loss, r)) broken =
-            (
-                compute_mode <: ContinuousNormalizingFlows.ADJacVecVectorMode || (
-                    omode isa TestMode &&
-                    compute_mode <: ContinuousNormalizingFlows.VectorMode
-                )
-            ) && !(mt <: Planar)
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
         @test !isnothing(ReverseDiff.hessian(diff2_loss, r)) skip = true
 

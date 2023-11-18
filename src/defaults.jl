@@ -20,6 +20,14 @@ const sol_kwargs_defaults = (
         abstol = eps(one(Float32)),
         maxiters = typemax(Int32),
     ),
+    medium_noad = (
+        alg_hints = [:nonstiff, :memorybound],
+        save_everystep = false,
+        alg = VCABM(),
+        reltol = sqrt(eps(one(Float32))),
+        abstol = eps(one(Float32)),
+        maxiters = typemax(Int32),
+    ),
     low = (
         alg_hints = [:nonstiff, :memorybound],
         save_everystep = false,
