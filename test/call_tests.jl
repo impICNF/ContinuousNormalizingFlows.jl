@@ -105,10 +105,7 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                sol_kwargs = merge(
-                    ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
-                    (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
-                ),
+                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
             ),
             construct(
                 mt,
@@ -118,10 +115,7 @@
                 compute_mode,
                 inplace,
                 resource,
-                sol_kwargs = merge(
-                    ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
-                    (sensealg = SciMLSensitivity.ForwardDiffSensitivity(),),
-                ),
+                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
             ),
         )
         ps, st = Lux.setup(icnf.rng, icnf)
@@ -165,40 +159,41 @@
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
-            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps))
+            @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps)) skip =
+                true
         end
 
         @test !isnothing(Zygote.gradient(diff_loss, ps))
         @test !isnothing(Zygote.jacobian(diff_loss, ps))
-        # @test !isnothing(Zygote.diaghessian(diff_loss, ps))
-        # @test !isnothing(Zygote.hessian(diff_loss, ps))
-        # @test !isnothing(Zygote.hessian_reverse(diff_loss, ps))
+        @test !isnothing(Zygote.diaghessian(diff_loss, ps)) skip = true
+        @test !isnothing(Zygote.hessian(diff_loss, ps)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff_loss, ps)) skip = true
         diff_loss2 = x -> Zygote.checkpointed(diff_loss, x)
         @test !isnothing(Zygote.gradient(diff_loss2, ps))
         @test !isnothing(Zygote.jacobian(diff_loss2, ps))
-        # @test !isnothing(Zygote.diaghessian(diff_loss2, ps))
-        # @test !isnothing(Zygote.hessian(diff_loss2, ps))
-        # @test !isnothing(Zygote.hessian_reverse(diff_loss2, ps))
-        # diff_loss3 = x -> Zygote.forwarddiff(diff_loss, x)
-        # @test !isnothing(Zygote.gradient(diff_loss3, ps))
-        # @test !isnothing(Zygote.jacobian(diff_loss3, ps))
-        # @test !isnothing(Zygote.diaghessian(diff_loss3, ps))
-        # @test !isnothing(Zygote.hessian(diff_loss3, ps))
-        # @test !isnothing(Zygote.hessian_reverse(diff_loss3, ps))
-        # diff_loss4 = x -> Zygote.forwarddiff(diff_loss2, x)
-        # @test !isnothing(Zygote.gradient(diff_loss4, ps))
-        # @test !isnothing(Zygote.jacobian(diff_loss4, ps))
-        # @test !isnothing(Zygote.diaghessian(diff_loss4, ps))
-        # @test !isnothing(Zygote.hessian(diff_loss4, ps))
-        # @test !isnothing(Zygote.hessian_reverse(diff_loss4, ps))
+        @test !isnothing(Zygote.diaghessian(diff_loss2, ps)) skip = true
+        @test !isnothing(Zygote.hessian(diff_loss2, ps)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff_loss2, ps)) skip = true
+        diff_loss3 = x -> Zygote.forwarddiff(diff_loss, x)
+        @test !isnothing(Zygote.gradient(diff_loss3, ps)) broken = true
+        @test !isnothing(Zygote.jacobian(diff_loss3, ps)) broken = true
+        @test !isnothing(Zygote.diaghessian(diff_loss3, ps)) skip = true
+        @test !isnothing(Zygote.hessian(diff_loss3, ps)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff_loss3, ps)) skip = true
+        diff_loss4 = x -> Zygote.forwarddiff(diff_loss2, x)
+        @test !isnothing(Zygote.gradient(diff_loss4, ps)) broken = true
+        @test !isnothing(Zygote.jacobian(diff_loss4, ps)) broken = true
+        @test !isnothing(Zygote.diaghessian(diff_loss4, ps)) skip = true
+        @test !isnothing(Zygote.hessian(diff_loss4, ps)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff_loss4, ps)) skip = true
 
         @test !isnothing(ReverseDiff.gradient(diff_loss, ps))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff_loss, ps))
-        # @test !isnothing(ReverseDiff.hessian(diff_loss, ps))
+        @test !isnothing(ReverseDiff.hessian(diff_loss, ps)) skip = true
 
         @test !isnothing(ForwardDiff.gradient(diff_loss, ps))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff_loss, ps))
-        # @test !isnothing(ForwardDiff.hessian(diff_loss, ps))
+        @test !isnothing(ForwardDiff.hessian(diff_loss, ps)) skip = true
 
         @testset "$(typeof(adb).name.name) / Loss / x" for adb in adb_list
             @test_throws MethodError !isnothing(
@@ -206,40 +201,41 @@
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
-            # @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) skip =
+                true
         end
 
         @test !isnothing(Zygote.gradient(diff2_loss, r))
         @test !isnothing(Zygote.jacobian(diff2_loss, r))
-        # @test !isnothing(Zygote.diaghessian(diff2_loss, r))
-        # @test !isnothing(Zygote.hessian(diff2_loss, r))
-        # @test !isnothing(Zygote.hessian_reverse(diff2_loss, r))
+        @test !isnothing(Zygote.diaghessian(diff2_loss, r)) skip = true
+        @test !isnothing(Zygote.hessian(diff2_loss, r)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff2_loss, r)) skip = true
         diff2_loss2 = x -> Zygote.checkpointed(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss2, r))
         @test !isnothing(Zygote.jacobian(diff2_loss2, r))
-        # @test !isnothing(Zygote.diaghessian(diff2_loss2, r))
-        # @test !isnothing(Zygote.hessian(diff2_loss2, r))
-        # @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r))
+        @test !isnothing(Zygote.diaghessian(diff2_loss2, r)) skip = true
+        @test !isnothing(Zygote.hessian(diff2_loss2, r)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff2_loss2, r)) skip = true
         diff2_loss3 = x -> Zygote.forwarddiff(diff2_loss, x)
         @test !isnothing(Zygote.gradient(diff2_loss3, r))
         @test !isnothing(Zygote.jacobian(diff2_loss3, r))
-        # @test !isnothing(Zygote.diaghessian(diff2_loss3, r))
-        # @test !isnothing(Zygote.hessian(diff2_loss3, r))
-        # @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r))
+        @test !isnothing(Zygote.diaghessian(diff2_loss3, r)) skip = true
+        @test !isnothing(Zygote.hessian(diff2_loss3, r)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff2_loss3, r)) skip = true
         diff2_loss4 = x -> Zygote.forwarddiff(diff2_loss2, x)
         @test !isnothing(Zygote.gradient(diff2_loss4, r))
         @test !isnothing(Zygote.jacobian(diff2_loss4, r))
-        # @test !isnothing(Zygote.diaghessian(diff2_loss4, r))
-        # @test !isnothing(Zygote.hessian(diff2_loss4, r))
-        # @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r))
+        @test !isnothing(Zygote.diaghessian(diff2_loss4, r)) skip = true
+        @test !isnothing(Zygote.hessian(diff2_loss4, r)) skip = true
+        @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r)) skip = true
 
         @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
-        # @test !isnothing(ReverseDiff.hessian(diff2_loss, r))
+        @test !isnothing(ReverseDiff.hessian(diff2_loss, r)) skip = true
 
         @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
-        # @test !isnothing(ForwardDiff.hessian(diff2_loss, r))
+        @test !isnothing(ForwardDiff.hessian(diff2_loss, r)) skip = true
 
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             d = CondICNFDist(icnf, omode, r2, ps, st)
