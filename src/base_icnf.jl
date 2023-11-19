@@ -64,10 +64,10 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist)
+    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input)
+    new_xs = oftype(ϵ, rand(icnf.rng, icnf.basedist))
     zrs = similar(new_xs, n_aug + 1)
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -93,10 +93,10 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = rand_cstm_AT(icnf.resource, icnf, icnf.basedist, n)
-    zrs = similar(new_xs, n_aug + 1, size(new_xs, 2))
+    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input, n)
+    new_xs = oftype(ϵ, rand(icnf.rng, icnf.basedist, n))
+    zrs = similar(new_xs, n_aug + 1, n)
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input, size(new_xs, 2))
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,

@@ -105,15 +105,6 @@ end
     Random.default_rng()
 end
 
-@inline function rand_cstm_AT(
-    ::AbstractResource,
-    icnf::AbstractFlows{T},
-    cstm::Any,
-    dims...,
-) where {T <: AbstractFloat}
-    convert.(T, rand(icnf.rng, cstm, dims...))
-end
-
 @views function inference_sol(
     icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
