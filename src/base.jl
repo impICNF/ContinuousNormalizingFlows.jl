@@ -105,14 +105,6 @@ end
     Random.default_rng()
 end
 
-@inline function zeros_T_AT(
-    ::AbstractResource,
-    ::AbstractFlows{T},
-    dims...,
-) where {T <: AbstractFloat}
-    zeros(T, dims...)
-end
-
 @inline function rand_cstm_AT(
     ::AbstractResource,
     icnf::AbstractFlows{T},
