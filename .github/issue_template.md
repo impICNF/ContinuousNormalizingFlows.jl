@@ -1,15 +1,6 @@
----
-name: Bug Report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+**Describe the issue**
 
----
-
-**Describe the bug**
-
-A clear and concise description of what the bug is.
+A clear and concise description of what the issue is.
 
 **Expected behavior**
 
