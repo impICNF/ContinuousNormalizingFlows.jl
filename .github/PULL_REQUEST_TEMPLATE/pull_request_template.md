@@ -17,9 +17,9 @@ How did you fix the problem?
 
 **Checklist**
 
-- [ ] Needed tests
-- [ ] Needed docs
-- [ ] None of the tests are failing
+  - [ ] Needed tests
+  - [ ] Needed docs
+  - [ ] None of the tests are failing
 
 **Additional context**
 
