@@ -1,12 +1,3 @@
----
-name: Pull Request
-about: Create a PR to help us fixing the problems
-title: ''
-labels: ''
-assignees: ''
-
----
-
 **Related Issues**
 
 Mention related issues.
