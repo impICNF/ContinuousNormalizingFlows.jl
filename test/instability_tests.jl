@@ -1,5 +1,3 @@
 @testset "Instability" begin
-    JET.report_package("ContinuousNormalizingFlows")
-
-    @test true
+    JET.test_package("ContinuousNormalizingFlows")
 end
