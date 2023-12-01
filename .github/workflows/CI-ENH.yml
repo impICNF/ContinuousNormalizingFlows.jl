@@ -1,4 +1,4 @@
-name: CI
+name: CI-ENH
 on:
   schedule:
     - cron: '0 0 * * 0'
