@@ -28,9 +28,6 @@ jobs:
           - CondFFJORD
           - CondPlanar
         version:
-          # - '1.6'
-          # - '1.7'
-          # - '1.8'
           # - '1.9'
           - '1'
           # - '~1.10.0-0'
