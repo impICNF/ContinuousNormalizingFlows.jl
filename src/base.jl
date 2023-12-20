@@ -112,11 +112,10 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol.u[:, end]
-    z = fsol[begin:(end - n_aug - 1)]
-    Δlogp = fsol[(end - n_aug)]
+    z = sol.u[begin:(end - n_aug - 1), end]
+    Δlogp = sol.u[(end - n_aug), end]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    augs = fsol[(end - n_aug + 1):end]
+    augs = sol.u[(end - n_aug + 1):end, end]
     (logp̂x, augs)
 end
 
@@ -127,11 +126,10 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol.u[:, :, end]
-    z = fsol[begin:(end - n_aug - 1), :]
-    Δlogp = fsol[(end - n_aug), :]
+    z = sol.u[begin:(end - n_aug - 1), :, end]
+    Δlogp = sol.u[(end - n_aug), :, end]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
-    augs = fsol[(end - n_aug + 1):end, :]
+    augs = sol.u[(end - n_aug + 1):end, :, end]
     (logp̂x, eachrow(augs))
 end
 
@@ -143,8 +141,7 @@ end
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol.u[:, end]
-    z = fsol[begin:(end - n_aug_input - n_aug - 1)]
+    z = sol.u[begin:(end - n_aug_input - n_aug - 1), end]
     z
 end
 
@@ -156,7 +153,6 @@ end
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol.u[:, :, end]
-    z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
+    z = sol.u[begin:(end - n_aug_input - n_aug - 1), :, end]
     z
 end
