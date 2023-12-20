@@ -112,7 +112,7 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = last(sol.u)
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
@@ -127,7 +127,7 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = last(sol.u)
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
@@ -143,7 +143,7 @@ end
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = last(sol.u)
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
 end
@@ -156,7 +156,19 @@ end
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = last(sol.u)
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
+end
+
+function get_fsol(sol::ODESolution)
+    last(sol.u)
+end
+
+function get_fsol(sol::AbstractArray{<:Real, 2})
+    sol[:, end]
+end
+
+function get_fsol(sol::AbstractArray{<:Real, 3})
+    sol[:, :, end]
 end
