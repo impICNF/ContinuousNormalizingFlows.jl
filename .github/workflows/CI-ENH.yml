@@ -24,9 +24,8 @@ jobs:
           - Quality
           - Instability
         version:
-          # - '1.9'
           - '1'
-          - '~1.10.0-0'
+          - '1.9'
           - 'nightly'
         os:
           - ubuntu-latest
