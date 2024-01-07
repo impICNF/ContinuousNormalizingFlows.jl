@@ -22,7 +22,6 @@ using AbstractDifferentiation,
     Optimization,
     OptimizationOptimisers,
     OrdinaryDiffEq,
-    PackageExtensionCompat,
     ProgressMeter,
     Random,
     ScientificTypes,
@@ -45,19 +44,13 @@ include("core.jl")
 include("core_icnf.jl")
 include("core_cond_icnf.jl")
 
-include("rnode.jl")
 include("ffjord.jl")
 include("planar.jl")
 
-include("cond_rnode.jl")
 include("cond_ffjord.jl")
 include("cond_planar.jl")
 
 include("utils.jl")
-
-function __init__()
-    @require_extensions
-end
 
 """
 Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Julia
