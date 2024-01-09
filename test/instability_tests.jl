@@ -1,5 +1,5 @@
 @testset "Instability" begin
-    JET.test_package("ContinuousNormalizingFlows")
+    JET.test_package("ContinuousNormalizingFlows"; mode = :sound)
 
     n = 3
     nvars = 7
@@ -9,6 +9,6 @@
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
     loss(icnf, TrainMode(), r, ps, st)
-    JET.@test_call loss(icnf, TrainMode(), r, ps, st)
-    JET.@test_opt loss(icnf, TrainMode(), r, ps, st)
+    JET.@test_call mode = :sound loss(icnf, TrainMode(), r, ps, st)
+    JET.@test_opt mode = :sound loss(icnf, TrainMode(), r, ps, st)
 end
