@@ -156,13 +156,13 @@ end
         z,
     )
     ϵJ = only(VJ(ϵ))
-    l̇ = ϵJ ⋅ ϵ
+    l̇ = -(ϵJ ⋅ ϵ)
     if icnf isa RNODE
         Ė = norm(ż)
         ṅ = norm(ϵJ)
-        vcat(ż, -l̇, Ė, ṅ)
+        vcat(ż, l̇, Ė, ṅ)
     else
-        vcat(ż, -l̇)
+        vcat(ż, l̇)
     end
 end
 
@@ -186,13 +186,13 @@ end
     )
     ż, Jϵ = ż_JV(ϵ)
     Jϵ = only(Jϵ)
-    l̇ = ϵ ⋅ Jϵ
+    l̇ = -(ϵ ⋅ Jϵ)
     if icnf isa RNODE
         Ė = norm(ż)
         ṅ = norm(Jϵ)
-        vcat(ż, -l̇, Ė, ṅ)
+        vcat(ż, l̇, Ė, ṅ)
     else
-        vcat(ż, -l̇)
+        vcat(ż, l̇)
     end
 end
 
@@ -211,13 +211,13 @@ end
         x -> first(icnf.nn(x, p, st))
     end, z)
     ϵJ = only(VJ(ϵ))
-    l̇ = ϵJ ⋅ ϵ
+    l̇ = -(ϵJ ⋅ ϵ)
     if icnf isa RNODE
         Ė = norm(ż)
         ṅ = norm(ϵJ)
-        vcat(ż, -l̇, Ė, ṅ)
+        vcat(ż, l̇, Ė, ṅ)
     else
-        vcat(ż, -l̇)
+        vcat(ż, l̇)
     end
 end
 
@@ -237,13 +237,13 @@ end
         x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
-    l̇ = sum(ϵJ .* ϵ; dims = 1)
+    l̇ = -sum(ϵJ .* ϵ; dims = 1)
     if icnf isa RNODE
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
-        vcat(ż, -l̇, Ė, ṅ)
+        vcat(ż, l̇, Ė, ṅ)
     else
-        vcat(ż, -l̇)
+        vcat(ż, l̇)
     end
 end
 
@@ -263,13 +263,13 @@ end
         x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
-    l̇ = sum(ϵ .* Jϵ; dims = 1)
+    l̇ = -sum(ϵ .* Jϵ; dims = 1)
     if icnf isa RNODE
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(Jϵ)))
-        vcat(ż, -l̇, Ė, ṅ)
+        vcat(ż, l̇, Ė, ṅ)
     else
-        vcat(ż, -l̇)
+        vcat(ż, l̇)
     end
 end
 
@@ -288,13 +288,13 @@ end
         x -> first(icnf.nn(x, p, st))
     end, z)
     ϵJ = only(VJ(ϵ))
-    l̇ = sum(ϵJ .* ϵ; dims = 1)
+    l̇ = -sum(ϵJ .* ϵ; dims = 1)
     if icnf isa RNODE
         Ė = transpose(norm.(eachcol(ż)))
         ṅ = transpose(norm.(eachcol(ϵJ)))
-        vcat(ż, -l̇, Ė, ṅ)
+        vcat(ż, l̇, Ė, ṅ)
     else
-        vcat(ż, -l̇)
+        vcat(ż, l̇)
     end
 end
 

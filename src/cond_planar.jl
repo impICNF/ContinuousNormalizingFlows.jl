@@ -47,7 +47,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż = first(icnf.nn(vcat(z, ys), p, st))
-    l̇ =
+    l̇ = -(
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
@@ -59,7 +59,8 @@ end
                 ),
             ),
         )
-    vcat(ż, -l̇)
+    )
+    vcat(ż, l̇)
 end
 
 @views function augmented_f(
@@ -75,7 +76,7 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż = first(icnf.nn(vcat(z, ys), p, st))
-    l̇ =
+    l̇ = -(
         p.u ⋅ transpose(
             only(
                 AbstractDifferentiation.jacobian(
@@ -87,7 +88,8 @@ end
                 ),
             ),
         )
-    vcat(ż, -l̇)
+    )
+    vcat(ż, l̇)
 end
 
 @views function augmented_f(
@@ -103,13 +105,14 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż = first(icnf.nn(vcat(z, ys), p, st))
-    l̇ =
+    l̇ = -(
         p.u ⋅ transpose(
             only(Zygote.jacobian(let ys = ys, p = p, st = st
                 x -> first(pl_h(icnf.nn, vcat(x, ys), p, st))
             end, z)),
         )
-    vcat(ż, -l̇)
+    )
+    vcat(ż, l̇)
 end
 
 @views function augmented_f(
@@ -125,11 +128,12 @@ end
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż = first(icnf.nn(vcat(z, ys), p, st))
-    l̇ =
+    l̇ = -(
         p.u ⋅ transpose(
             only(Zygote.jacobian(let ys = ys, p = p, st = st
                 x -> first(pl_h(icnf.nn, vcat(x, ys), p, st))
             end, z)),
         )
-    vcat(ż, -l̇)
+    )
+    vcat(ż, l̇)
 end
