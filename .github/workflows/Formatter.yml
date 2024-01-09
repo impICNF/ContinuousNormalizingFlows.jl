@@ -14,9 +14,12 @@ jobs:
           arch: x64
           show-versioninfo: true
       - name: Install JuliaFormatter and format
+        shell: julia --color=yes {0}
         run: |
-          julia --color=yes -e 'import Pkg; Pkg.add("JuliaFormatter")'
-          julia --color=yes -e 'using JuliaFormatter; format(".")'
+          using Pkg
+          Pkg.add("JuliaFormatter")
+          using JuliaFormatter
+          format(".")
 
       # https://github.com/marketplace/actions/create-pull-request
       # https://github.com/peter-evans/create-pull-request#reference-example

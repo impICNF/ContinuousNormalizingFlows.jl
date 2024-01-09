@@ -5,6 +5,7 @@ on:
   push:
       branches:
         - 'main'
+      tags: ['*']
 jobs:
   CompatHelper:
     runs-on: ubuntu-latest
@@ -16,9 +17,15 @@ jobs:
           arch: x64
           show-versioninfo: true
       - name: Pkg.add
-        run: julia --color=yes -e 'using Pkg; Pkg.add("CompatHelper")'
+        shell: julia --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.add("CompatHelper")
       - name: CompatHelper.main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia --color=yes -e 'using CompatHelper; CompatHelper.main(; include_jll = true, subdirs = ["", "docs", "test", "benchmark"])'
+        shell: julia --color=yes {0}
+        run: |
+          using CompatHelper
+          CompatHelper.main(; include_jll = true, subdirs = ["", "docs", "test", "benchmark"])
