@@ -15,6 +15,7 @@ makedocs(;
     sitename = "ContinuousNormalizingFlows.jl",
     format = Documenter.HTML(;
         canonical = "https://impICNF.github.io/ContinuousNormalizingFlows.jl",
+        edit_link = "main",
     ),
     pages = ["Home" => "index.md"],
 )

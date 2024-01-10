@@ -17,15 +17,12 @@ using LuxCUDA: LuxCUDA
 using MLJBase: MLJBase
 using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase
-using TruncatedStacktraces: TruncatedStacktraces
 using Zygote: Zygote
 
 GC.enable_logging(true)
 
 debuglogger = Logging.ConsoleLogger(Logging.Debug)
 Logging.global_logger(debuglogger)
-
-TruncatedStacktraces.VERBOSE[] = true
 
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"

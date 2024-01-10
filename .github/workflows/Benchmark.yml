@@ -7,7 +7,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
-  Benchmark:
+  benchmark:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,12 +18,24 @@ jobs:
           show-versioninfo: true
       - uses: julia-actions/julia-buildpkg@v1
       - name: Install dependencies
-        run: julia --color=yes -e 'using Pkg; Pkg.add(["PkgBenchmark", "BenchmarkCI"])'
+        shell: julia --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.add(["PkgBenchmark", "BenchmarkCI"])
       - name: Run benchmarks
-        run: julia --color=yes -e 'using BenchmarkCI; BenchmarkCI.judge(; baseline="origin/main", retune=true, verbose=true)'
+        shell: julia --color=yes {0}
+        run: |
+          using BenchmarkCI
+          BenchmarkCI.judge(; baseline="origin/main", retune=true, verbose=true)
       - name: Print judgement
-        run: julia --color=yes -e 'using BenchmarkCI; BenchmarkCI.displayjudgement()'
+        shell: julia --color=yes {0}
+        run: |
+          using BenchmarkCI
+          BenchmarkCI.displayjudgement()
       - name: Post results
-        run: julia --color=yes -e 'using BenchmarkCI; BenchmarkCI.postjudge()'
+        shell: julia --color=yes {0}
+        run: |
+          using BenchmarkCI
+          BenchmarkCI.postjudge()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
