@@ -163,16 +163,48 @@ end
 end
 
 @views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractICNF{T, <:ADVectorMode, false},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, J = AbstractDifferentiation.value_and_jacobian(
+        icnf.differentiation_backend,
+        let p = p, st = st
+            x -> first(icnf.nn(x, p, st))
+        end,
+        z,
+    )
+    l̇ = -tr(only(J))
+    vcat(ż, l̇)
+end
+
+@views function augmented_f(
     du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractICNF{T},
-    mode::Mode,
-    ϵ::AbstractVecOrMat{T},
+    icnf::AbstractICNF{T, <:ADVectorMode, true},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
-    du .= augmented_f(u, p, t, icnf, mode, ϵ, st)
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, J = AbstractDifferentiation.value_and_jacobian(
+        icnf.differentiation_backend,
+        let p = p, st = st
+            x -> first(icnf.nn(x, p, st))
+        end,
+        z,
+    )
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -tr(only(J))
     nothing
 end
 
@@ -180,58 +212,76 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractICNF{T, <:ADVectorMode},
+    icnf::AbstractICNF{T, <:ZygoteVectorMode, false},
     mode::TestMode,
     ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz, J = AbstractDifferentiation.value_and_jacobian(
-        icnf.differentiation_backend,
-        let p = p, st = st
-            x -> first(icnf.nn(x, p, st))
-        end,
-        z,
-    )
-    trace_J = tr(only(J))
-    vcat(mz, -trace_J)
-end
-
-@views function augmented_f(
-    u::Any,
-    p::Any,
-    t::Any,
-    icnf::AbstractICNF{T, <:ZygoteVectorMode},
-    mode::TestMode,
-    ϵ::AbstractVector{T},
-    st::Any,
-) where {T <: AbstractFloat}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1)]
-    mz, J = Zygote.withjacobian(let p = p, st = st
+    ż, J = Zygote.withjacobian(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    trace_J = tr(only(J))
-    vcat(mz, -trace_J)
+    l̇ = -tr(only(J))
+    vcat(ż, l̇)
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractICNF{T, <:ZygoteVectorMode, true},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, J = Zygote.withjacobian(let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -tr(only(J))
+    nothing
 end
 
 @views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractICNF{T, <:MatrixMode},
+    icnf::AbstractICNF{T, <:MatrixMode, false},
     mode::TestMode,
     ϵ::AbstractMatrix{T},
     st::Any,
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, let p = p, st = st
+    ż, J = jacobian_batched(icnf, let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    trace_J = transpose(tr.(eachslice(J; dims = 3)))
-    vcat(mz, -trace_J)
+    l̇ = -transpose(tr.(eachslice(J; dims = 3)))
+    vcat(ż, l̇)
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractICNF{T, <:MatrixMode, true},
+    mode::TestMode,
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż, J = jacobian_batched(icnf, let p = p, st = st
+        x -> first(icnf.nn(x, p, st))
+    end, z)
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -(tr.(eachslice(J; dims = 3)))
+    nothing
 end
 
 @inline function (icnf::AbstractICNF)(xs::Any, ps::Any, st::Any)

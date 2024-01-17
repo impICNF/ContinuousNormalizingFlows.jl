@@ -172,17 +172,50 @@ end
 end
 
 @views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:ADVectorMode, false},
+    mode::TestMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, J = AbstractDifferentiation.value_and_jacobian(
+        icnf.differentiation_backend,
+        let ys = ys, p = p, st = st
+            x -> first(icnf.nn(vcat(x, ys), p, st))
+        end,
+        z,
+    )
+    l̇ = -tr(only(J))
+    vcat(ż, l̇)
+end
+
+@views function augmented_f(
     du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T},
-    mode::Mode,
-    ys::AbstractVecOrMat{<:Real},
-    ϵ::AbstractVecOrMat{T},
+    icnf::AbstractCondICNF{T, <:ADVectorMode, true},
+    mode::TestMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
     st::Any,
 ) where {T <: AbstractFloat}
-    du .= augmented_f(u, p, t, icnf, mode, ys, ϵ, st)
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, J = AbstractDifferentiation.value_and_jacobian(
+        icnf.differentiation_backend,
+        let ys = ys, p = p, st = st
+            x -> first(icnf.nn(vcat(x, ys), p, st))
+        end,
+        z,
+    )
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -tr(only(J))
     nothing
 end
 
@@ -190,7 +223,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:ADVectorMode},
+    icnf::AbstractCondICNF{T, <:ZygoteVectorMode, false},
     mode::TestMode,
     ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
@@ -198,41 +231,39 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    mz, J = AbstractDifferentiation.value_and_jacobian(
-        icnf.differentiation_backend,
-        let ys = ys, p = p, st = st
-            x -> first(icnf.nn(vcat(x, ys), p, st))
-        end,
-        z,
-    )
-    trace_J = tr(only(J))
-    vcat(mz, -trace_J)
-end
-
-@views function augmented_f(
-    u::Any,
-    p::Any,
-    t::Any,
-    icnf::AbstractCondICNF{T, <:ZygoteVectorMode},
-    mode::TestMode,
-    ys::AbstractVector{<:Real},
-    ϵ::AbstractVector{T},
-    st::Any,
-) where {T <: AbstractFloat}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1)]
-    mz, J = Zygote.withjacobian(let ys = ys, p = p, st = st
+    ż, J = Zygote.withjacobian(let ys = ys, p = p, st = st
         x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
-    trace_J = tr(only(J))
-    vcat(mz, -trace_J)
+    l̇ = -tr(only(J))
+    vcat(ż, l̇)
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:ZygoteVectorMode, true},
+    mode::TestMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, J = Zygote.withjacobian(let ys = ys, p = p, st = st
+        x -> first(icnf.nn(vcat(x, ys), p, st))
+    end, z)
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -tr(only(J))
+    nothing
 end
 
 @views function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:MatrixMode},
+    icnf::AbstractCondICNF{T, <:MatrixMode, false},
     mode::TestMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
@@ -240,11 +271,32 @@ end
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    mz, J = jacobian_batched(icnf, let ys = ys, p = p, st = st
+    ż, J = jacobian_batched(icnf, let ys = ys, p = p, st = st
         x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
-    trace_J = transpose(tr.(eachslice(J; dims = 3)))
-    vcat(mz, -trace_J)
+    l̇ = -transpose(tr.(eachslice(J; dims = 3)))
+    vcat(ż, l̇)
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:MatrixMode, true},
+    mode::TestMode,
+    ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż, J = jacobian_batched(icnf, let ys = ys, p = p, st = st
+        x -> first(icnf.nn(vcat(x, ys), p, st))
+    end, z)
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -(tr.(eachslice(J; dims = 3)))
+    nothing
 end
 
 @inline function (icnf::AbstractCondICNF)(xs_ys::Any, ps::Any, st::Any)

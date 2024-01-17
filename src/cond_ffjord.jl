@@ -137,7 +137,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:ADVecJacVectorMode},
+    icnf::AbstractCondICNF{T, <:ADVecJacVectorMode, false},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
@@ -164,10 +164,40 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:ADJacVecVectorMode},
+    icnf::AbstractCondICNF{T, <:ADVecJacVectorMode, true},
+    mode::TrainMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, VJ = AbstractDifferentiation.value_and_pullback_function(
+        icnf.differentiation_backend,
+        let ys = ys, p = p, st = st
+            x -> first(icnf.nn(vcat(x, ys), p, st))
+        end,
+        z,
+    )
+    ϵJ = only(VJ(ϵ))
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
+    if icnf isa CondRNODE
+        du[(end - n_aug + 1)] = norm(ż)
+        du[(end - n_aug + 2)] = norm(ϵJ)
+    end
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:ADJacVecVectorMode, false},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
@@ -195,10 +225,41 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:ZygoteVectorMode},
+    icnf::AbstractCondICNF{T, <:ADJacVecVectorMode, true},
+    mode::TrainMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż_JV = AbstractDifferentiation.value_and_pushforward_function(
+        icnf.differentiation_backend,
+        let ys = ys, p = p, st = st
+            x -> first(icnf.nn(vcat(x, ys), p, st))
+        end,
+        z,
+    )
+    ż, Jϵ = ż_JV(ϵ)
+    Jϵ = only(Jϵ)
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
+    if icnf isa CondRNODE
+        du[(end - n_aug + 1)] = norm(ż)
+        du[(end - n_aug + 2)] = norm(Jϵ)
+    end
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:ZygoteVectorMode, false},
     mode::TrainMode,
     ys::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
@@ -221,10 +282,36 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:SDVecJacMatrixMode},
+    icnf::AbstractCondICNF{T, <:ZygoteVectorMode, true},
+    mode::TrainMode,
+    ys::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
+        x -> first(icnf.nn(vcat(x, ys), p, st))
+    end, z)
+    ϵJ = only(VJ(ϵ))
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
+    if icnf isa CondRNODE
+        du[(end - n_aug + 1)] = norm(ż)
+        du[(end - n_aug + 2)] = norm(ϵJ)
+    end
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:SDVecJacMatrixMode, false},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
@@ -252,10 +339,41 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:SDJacVecMatrixMode},
+    icnf::AbstractCondICNF{T, <:SDVecJacMatrixMode, true},
+    mode::TrainMode,
+    ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = first(icnf.nn(vcat(z, ys), p, st))
+    Jf = VecJac(
+        let ys = ys, p = p, st = st
+            x -> first(icnf.nn(vcat(x, ys), p, st))
+        end,
+        z;
+        autodiff = icnf.autodiff_backend,
+    )
+    ϵJ = reshape(Jf * ϵ, size(z))
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
+    if icnf isa CondRNODE
+        du[(end - n_aug + 1), :] .= norm.(eachcol(ż))
+        du[(end - n_aug + 2), :] .= norm.(eachcol(ϵJ))
+    end
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:SDJacVecMatrixMode, false},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
@@ -283,10 +401,41 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::AbstractCondICNF{T, <:ZygoteMatrixMode},
+    icnf::AbstractCondICNF{T, <:SDJacVecMatrixMode, true},
+    mode::TrainMode,
+    ys::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = first(icnf.nn(vcat(z, ys), p, st))
+    Jf = JacVec(
+        let ys = ys, p = p, st = st
+            x -> first(icnf.nn(vcat(x, ys), p, st))
+        end,
+        z;
+        autodiff = icnf.autodiff_backend,
+    )
+    Jϵ = reshape(Jf * ϵ, size(z))
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
+    if icnf isa CondRNODE
+        du[(end - n_aug + 1), :] .= norm.(eachcol(ż))
+        du[(end - n_aug + 2), :] .= norm.(eachcol(Jϵ))
+    end
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::AbstractCondICNF{T, <:ZygoteMatrixMode, false},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
