@@ -313,10 +313,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Union{
-        CondRNODE{T, <:ZygoteMatrixModeInplace, true},
-        CondFFJORD{T, <:ZygoteMatrixModeInplace, true},
-    },
+    icnf::AbstractCondICNF{T, <:ZygoteMatrixMode, true},
     mode::TrainMode,
     ys::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},

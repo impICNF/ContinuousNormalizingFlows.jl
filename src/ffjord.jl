@@ -303,10 +303,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Union{
-        RNODE{T, <:ZygoteMatrixModeInplace, true},
-        FFJORD{T, <:ZygoteMatrixModeInplace, true},
-    },
+    icnf::AbstractICNF{T, <:ZygoteMatrixMode, true},
     mode::TrainMode,
     ϵ::AbstractMatrix{T},
     st::Any,
