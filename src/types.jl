@@ -26,8 +26,6 @@ struct SDJacVecMatrixMode <: SDMatrixMode end
 struct ZygoteVectorMode <: VectorMode end
 struct ZygoteMatrixMode <: MatrixMode end
 
-struct ZygoteMatrixModeInplace <: MatrixMode end
-
 abstract type AbstractFlows{
     T <: AbstractFloat,
     CM <: ComputeMode,
