@@ -23,7 +23,8 @@
     end
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
     nvars_ = ifelse(GROUP == "All", Int[1, 2], Int[1])
-    inplaces = ifelse(GROUP == "All", Bool[false, true], Bool[false])
+    inplaces = Bool[false, true]
+    # inplaces = ifelse(GROUP == "All", Bool[false, true], Bool[false])
     aug_steers = ifelse(GROUP == "All", Bool[false, true], Bool[true])
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
@@ -35,7 +36,7 @@
         ADJacVecVectorMode,
         ZygoteVectorMode,
         SDVecJacMatrixMode,
-        # SDJacVecMatrixMode,
+        SDJacVecMatrixMode,
         ZygoteMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
@@ -153,6 +154,21 @@
             diff2_loss = x -> loss(icnf, omode, x, ps, st)
         end
 
+        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
+            d = CondICNFDist(icnf, omode, r2, ps, st)
+        else
+            d = ICNFDist(icnf, omode, ps, st)
+        end
+
+        @test !isnothing(Distributions.logpdf(d, r))
+        @test !isnothing(Distributions.pdf(d, r))
+        @test !isnothing(rand(d))
+        @test !isnothing(rand(d, 1))
+
+        if (inplace && (GROUP != "All")) || compute_mode <: SDJacVecMatrixMode
+            continue
+        end
+
         @testset "$(typeof(adb).name.name) / Loss / ps" for adb in adb_list
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff_loss, ps),
@@ -236,16 +252,5 @@
         @test !isnothing(ForwardDiff.gradient(diff2_loss, r))
         @test_throws DimensionMismatch !isnothing(ForwardDiff.jacobian(diff2_loss, r))
         @test !isnothing(ForwardDiff.hessian(diff2_loss, r)) skip = true
-
-        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
-            d = CondICNFDist(icnf, omode, r2, ps, st)
-        else
-            d = ICNFDist(icnf, omode, ps, st)
-        end
-
-        @test !isnothing(Distributions.logpdf(d, r))
-        @test !isnothing(Distributions.pdf(d, r))
-        @test !isnothing(rand(d))
-        @test !isnothing(rand(d, 1))
     end
 end
