@@ -25,6 +25,7 @@ jobs:
           version: '1'
           arch: x64
           show-versioninfo: true
+      - uses: julia-actions/cache@v1
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
