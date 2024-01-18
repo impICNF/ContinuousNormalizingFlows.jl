@@ -165,7 +165,7 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
 
-        if (inplace && (GROUP != "All")) || compute_mode <: SDJacVecMatrixMode
+        if (GROUP != "All") && (inplace || compute_mode <: SDJacVecMatrixMode)
             continue
         end
 
