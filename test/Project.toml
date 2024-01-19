@@ -22,7 +22,7 @@ cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 [compat]
 ADTypes = "0.2"
 AbstractDifferentiation = "0.6"
-Aqua = "0.7, 0.8"
+Aqua = "0.8"
 CUDA = "5"
 ComponentArrays = "0.15"
 ComputationalResources = "0.3"
