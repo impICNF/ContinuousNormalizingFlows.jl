@@ -40,7 +40,7 @@ end
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{T, <:ADVectorMode},
+    icnf::Planar{T, <:ADVectorMode, false},
     mode::TestMode,
     ϵ::AbstractVector{T},
     st::Any,
@@ -65,10 +65,40 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{T, <:ADVectorMode},
+    icnf::Planar{T, <:ADVectorMode, true},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż = first(icnf.nn(z, p, st))
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(
+        p.u ⋅ transpose(
+            only(
+                AbstractDifferentiation.jacobian(
+                    icnf.differentiation_backend,
+                    let p = p, st = st
+                        x -> first(pl_h(icnf.nn, x, p, st))
+                    end,
+                    z,
+                ),
+            ),
+        )
+    )
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::Planar{T, <:ADVectorMode, false},
     mode::TrainMode,
     ϵ::AbstractVector{T},
     st::Any,
@@ -93,10 +123,40 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{T, <:ZygoteVectorMode},
+    icnf::Planar{T, <:ADVectorMode, true},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż = first(icnf.nn(z, p, st))
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(
+        p.u ⋅ transpose(
+            only(
+                AbstractDifferentiation.jacobian(
+                    icnf.differentiation_backend,
+                    let p = p, st = st
+                        x -> first(pl_h(icnf.nn, x, p, st))
+                    end,
+                    z,
+                ),
+            ),
+        )
+    )
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::Planar{T, <:ZygoteVectorMode, false},
     mode::TestMode,
     ϵ::AbstractVector{T},
     st::Any,
@@ -113,10 +173,32 @@ end
 end
 
 @views function augmented_f(
+    du::Any,
     u::Any,
     p::Any,
     t::Any,
-    icnf::Planar{T, <:ZygoteVectorMode},
+    icnf::Planar{T, <:ZygoteVectorMode, true},
+    mode::TestMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż = first(icnf.nn(z, p, st))
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(
+        p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
+            x -> first(pl_h(icnf.nn, x, p, st))
+        end, z)))
+    )
+    nothing
+end
+
+@views function augmented_f(
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::Planar{T, <:ZygoteVectorMode, false},
     mode::TrainMode,
     ϵ::AbstractVector{T},
     st::Any,
@@ -130,4 +212,26 @@ end
         end, z)))
     )
     vcat(ż, l̇)
+end
+
+@views function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    t::Any,
+    icnf::Planar{T, <:ZygoteVectorMode, true},
+    mode::TrainMode,
+    ϵ::AbstractVector{T},
+    st::Any,
+) where {T <: AbstractFloat}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż = first(icnf.nn(z, p, st))
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(
+        p.u ⋅ transpose(only(Zygote.jacobian(let p = p, st = st
+            x -> first(pl_h(icnf.nn, x, p, st))
+        end, z)))
+    )
+    nothing
 end

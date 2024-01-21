@@ -13,6 +13,7 @@ jobs:
           version: '1'
           arch: x64
           show-versioninfo: true
+      - uses: julia-actions/cache@v1
       - name: Install JuliaFormatter and format
         shell: julia --color=yes {0}
         run: |

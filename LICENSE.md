@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2021-2023 Hossein Pourbozorg [prbzrg@gmail.com](mailto:prbzrg@gmail.com) and contributors
+Copyright (c) 2021-2024 Hossein Pourbozorg [prbzrg@gmail.com](mailto:prbzrg@gmail.com) and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
