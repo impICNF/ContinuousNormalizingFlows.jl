@@ -72,67 +72,6 @@ struct CondRNODE{
     λ₂::T
 end
 
-function construct(
-    aicnf::Type{<:CondRNODE},
-    nn,
-    nvars::Int,
-    naugmented::Int = 0;
-    data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
-    inplace::Bool = false,
-    resource::AbstractResource = CPU1(),
-    basedist::Distribution = MvNormal(
-        Zeros{data_type}(nvars + naugmented),
-        Eye{data_type}(nvars + naugmented),
-    ),
-    tspan::NTuple{2} = (zero(data_type), one(data_type)),
-    steer_rate::AbstractFloat = zero(data_type),
-    differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = ifelse(
-        compute_mode <: SDJacVecMatrixMode,
-        AutoForwardDiff(),
-        AutoZygote(),
-    ),
-    sol_kwargs::NamedTuple = sol_kwargs_defaults.medium,
-    rng::AbstractRNG = rng_AT(resource),
-    λ₁::AbstractFloat = convert(data_type, 1e-2),
-    λ₂::AbstractFloat = convert(data_type, 1e-2),
-)
-    steerdist = Uniform{data_type}(-steer_rate, steer_rate)
-
-    aicnf{
-        data_type,
-        compute_mode,
-        inplace,
-        !iszero(naugmented),
-        !iszero(steer_rate),
-        typeof(nn),
-        typeof(nvars),
-        typeof(resource),
-        typeof(basedist),
-        typeof(tspan),
-        typeof(steerdist),
-        typeof(differentiation_backend),
-        typeof(autodiff_backend),
-        typeof(sol_kwargs),
-        typeof(rng),
-    }(
-        nn,
-        nvars,
-        naugmented,
-        resource,
-        basedist,
-        tspan,
-        steerdist,
-        differentiation_backend,
-        autodiff_backend,
-        sol_kwargs,
-        rng,
-        λ₁,
-        λ₂,
-    )
-end
-
 @views function augmented_f(
     u::Any,
     p::Any,
