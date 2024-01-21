@@ -165,10 +165,6 @@ function get_fsol(sol::ODESolution)
     last(sol.u)
 end
 
-function get_fsol(sol::AbstractArray{<:Real, 2})
-    sol[:, end]
-end
-
-function get_fsol(sol::AbstractArray{<:Real, 3})
-    sol[:, :, end]
+function get_fsol(sol::AbstractArray{T, N}) where {T, N}
+    selectdim(sol, N, lastindex(sol, N))
 end
