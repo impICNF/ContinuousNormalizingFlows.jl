@@ -112,7 +112,7 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol[:, end]
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
@@ -127,7 +127,7 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol[:, :, end]
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
     logp̂x = logpdf(icnf.basedist, z) - Δlogp
@@ -143,7 +143,7 @@ end
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol[:, end]
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
 end
@@ -156,7 +156,15 @@ end
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     sol = solve(prob; icnf.sol_kwargs...)
-    fsol = sol[:, :, end]
+    fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
+end
+
+@inline @views function get_fsol(sol::SciMLBase.AbstractODESolution)
+    last(sol.u)
+end
+
+@inline @views function get_fsol(sol::AbstractArray{T, N}) where {T, N}
+    selectdim(sol, N, lastindex(sol, N))
 end
