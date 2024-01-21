@@ -215,10 +215,8 @@
             @test_throws MethodError !isnothing(
                 AbstractDifferentiation.derivative(adb, diff2_loss, r),
             )
-            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
-                adb isa AbstractDifferentiation.ReverseDiffBackend && VERSION >= v"1.10"
-            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r)) broken =
-                adb isa AbstractDifferentiation.ReverseDiffBackend && VERSION >= v"1.10"
+            @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+            @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r))
             @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) skip =
                 true
         end
@@ -247,7 +245,7 @@
         @test !isnothing(Zygote.hessian(diff2_loss4, r)) skip = true
         @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r)) skip = true
 
-        @test !isnothing(ReverseDiff.gradient(diff2_loss, r)) broken = VERSION >= v"1.10"
+        @test !isnothing(ReverseDiff.gradient(diff2_loss, r))
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
         @test !isnothing(ReverseDiff.hessian(diff2_loss, r)) skip = true
 
