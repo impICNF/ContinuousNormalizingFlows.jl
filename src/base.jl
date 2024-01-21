@@ -161,7 +161,7 @@ end
     z
 end
 
-@inline @views function get_fsol(sol::SciMLBase.AbstractODEProblem)
+@inline @views function get_fsol(sol::SciMLBase.AbstractODESolution)
     last(sol.u)
 end
 
