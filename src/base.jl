@@ -23,38 +23,74 @@ function construct(
     ),
     sol_kwargs::NamedTuple = sol_kwargs_defaults.medium,
     rng::AbstractRNG = rng_AT(resource),
+    λ₁::AbstractFloat = convert(data_type, 1e-2),
+    λ₂::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    aicnf{
-        data_type,
-        compute_mode,
-        inplace,
-        !iszero(naugmented),
-        !iszero(steer_rate),
-        typeof(nn),
-        typeof(nvars),
-        typeof(resource),
-        typeof(basedist),
-        typeof(tspan),
-        typeof(steerdist),
-        typeof(differentiation_backend),
-        typeof(autodiff_backend),
-        typeof(sol_kwargs),
-        typeof(rng),
-    }(
-        nn,
-        nvars,
-        naugmented,
-        resource,
-        basedist,
-        tspan,
-        steerdist,
-        differentiation_backend,
-        autodiff_backend,
-        sol_kwargs,
-        rng,
-    )
+    if aicnf <: Union{RNODE, CondRNODE}
+        aicnf{
+            data_type,
+            compute_mode,
+            inplace,
+            !iszero(naugmented),
+            !iszero(steer_rate),
+            typeof(nn),
+            typeof(nvars),
+            typeof(resource),
+            typeof(basedist),
+            typeof(tspan),
+            typeof(steerdist),
+            typeof(differentiation_backend),
+            typeof(autodiff_backend),
+            typeof(sol_kwargs),
+            typeof(rng),
+        }(
+            nn,
+            nvars,
+            naugmented,
+            resource,
+            basedist,
+            tspan,
+            steerdist,
+            differentiation_backend,
+            autodiff_backend,
+            sol_kwargs,
+            rng,
+            λ₁,
+            λ₂,
+        )
+    else
+        aicnf{
+            data_type,
+            compute_mode,
+            inplace,
+            !iszero(naugmented),
+            !iszero(steer_rate),
+            typeof(nn),
+            typeof(nvars),
+            typeof(resource),
+            typeof(basedist),
+            typeof(tspan),
+            typeof(steerdist),
+            typeof(differentiation_backend),
+            typeof(autodiff_backend),
+            typeof(sol_kwargs),
+            typeof(rng),
+        }(
+            nn,
+            nvars,
+            naugmented,
+            resource,
+            basedist,
+            tspan,
+            steerdist,
+            differentiation_backend,
+            autodiff_backend,
+            sol_kwargs,
+            rng,
+        )
+    end
 end
 
 @inline function n_augment(::AbstractFlows, ::Mode)
@@ -162,7 +198,7 @@ end
 end
 
 @inline @views function get_fsol(sol::SciMLBase.AbstractODESolution)
-    last(sol.u)
+    last(sol)
 end
 
 @inline @views function get_fsol(sol::AbstractArray{T, N}) where {T, N}

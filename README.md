@@ -30,21 +30,28 @@ Pkg.add("ContinuousNormalizingFlows")
 ```julia
 # Parameters
 nvars = 1
+naugs = nvars
+# n_in = nvars # without augmentation
+n_in = nvars + naugs # with augmentation
 n = 1024
 
 # Model
 using ContinuousNormalizingFlows, Lux #, CUDA, ComputationalResources
-nn = Chain(Dense(nvars => 4 * nvars, tanh), Dense(4 * nvars => nvars, tanh))
+nn = Chain(
+    Dense(n_in => 3 * n_in, tanh; use_bias = false),
+    Dense(3 * n_in => n_in, tanh; use_bias = false),
+)
 # icnf = construct(RNODE, nn, nvars) # use defaults
 icnf = construct(
     RNODE,
     nn,
     nvars, # number of variables
-    nvars; # number of augmented dimensions
+    naugs; # number of augmented dimensions
     compute_mode = ZygoteMatrixMode, # process data in batches
-    tspan = (0.0f0, 9.0f0), # have bigger time span
+    tspan = (0.0f0, 13.0f0), # have bigger time span
     steer_rate = 0.1f0, # add random noise to end of the time span
     # resource = CUDALibs(), # process data by GPU
+    # inplace = true, # use the inplace version of functions
 )
 
 # Data
