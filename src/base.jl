@@ -161,10 +161,10 @@ end
     z
 end
 
-function get_fsol(sol::ODESolution)
+@inline @views function get_fsol(sol::ODESolution)
     last(sol.u)
 end
 
-function get_fsol(sol::AbstractArray{T, N}) where {T, N}
+@inline @views function get_fsol(sol::AbstractArray{T, N}) where {T, N}
     selectdim(sol, N, lastindex(sol, N))
 end
