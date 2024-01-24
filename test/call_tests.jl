@@ -22,12 +22,9 @@
         ]
     end
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
-    nvars_ = Int[1, 2]
-    # nvars_ = ifelse(GROUP == "All", Int[1, 2], Int[1])
-    inplaces = Bool[false, true]
-    # inplaces = ifelse(GROUP == "All", Bool[false, true], Bool[false])
+    nvars_ = Int[2]
     aug_steers = Bool[false, true]
-    # aug_steers = ifelse(GROUP == "All", Bool[false, true], Bool[true])
+    inplaces = Bool[false, true]
     adb_list = AbstractDifferentiation.AbstractBackend[
         AbstractDifferentiation.ZygoteBackend(),
         AbstractDifferentiation.ReverseDiffBackend(),
@@ -167,8 +164,7 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, 1))
 
-        if (GROUP != "All") &&
-           (compute_mode <: SDJacVecMatrixMode || inplace || !aug_steer || nvars == 1)
+        if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
             continue
         end
 

@@ -21,9 +21,9 @@
             CondPlanar,
         ]
     end
-    nvars_ = ifelse(GROUP == "All", Int[1, 2], Int[1])
-    inplaces = ifelse(GROUP == "All", Bool[false, true], Bool[false])
-    aug_steers = ifelse(GROUP == "All", Bool[false, true], Bool[true])
+    nvars_ = Int[2]
+    aug_steers = Bool[false, true]
+    inplaces = Bool[false, true]
     n_epochs = 2
     adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
@@ -35,7 +35,7 @@
         ADJacVecVectorMode,
         ZygoteVectorMode,
         SDVecJacMatrixMode,
-        # SDJacVecMatrixMode,
+        SDJacVecMatrixMode,
         ZygoteMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
@@ -116,6 +116,11 @@
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
+
+            if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
+                continue
+            end
+
             @test !isnothing(MLJBase.fit!(mach))
             @test !isnothing(MLJBase.transform(mach, (df, df2)))
             @test !isnothing(MLJBase.fitted_params(mach))
@@ -125,6 +130,11 @@
         else
             model = ICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, df)
+
+            if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
+                continue
+            end
+
             @test !isnothing(MLJBase.fit!(mach))
             @test !isnothing(MLJBase.transform(mach, df))
             @test !isnothing(MLJBase.fitted_params(mach))
