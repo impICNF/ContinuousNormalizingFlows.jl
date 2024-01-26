@@ -14,15 +14,13 @@ SUITE["main"]["inplace"]["direct"] = BenchmarkGroup(["direct"])
 SUITE["main"]["inplace"]["AD-1-order"] = BenchmarkGroup(["gradient"])
 
 nvars = 2^3
-n = 2^6
-r = rand(Float32, nvars, n)
+r = rand(Float32, nvars)
 nn = Dense(nvars => nvars, tanh)
 
 icnf = construct(
     RNODE,
     nn,
     nvars;
-    compute_mode = ZygoteMatrixMode,
     sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
 )
 ps, st = Lux.setup(icnf.rng, icnf)
@@ -48,7 +46,6 @@ icnf2 = construct(
     RNODE,
     nn,
     nvars;
-    compute_mode = ZygoteMatrixMode,
     inplace = true,
     sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
 )
