@@ -151,7 +151,7 @@ end
     z = sol[begin:(end - n_aug - 1), end]
     Δlogp = sol[(end - n_aug), end]
     augs = sol[(end - n_aug + 1):end, end]
-    logp̂x = logpdf(icnf.basedist, z) - Δlogp
+    logp̂x = logpdf(icnf.basedist, z) .- Δlogp
     (logp̂x, augs)
 end
 
