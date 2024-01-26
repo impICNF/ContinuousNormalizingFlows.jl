@@ -22,6 +22,7 @@
         ]
     end
     omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
+    ndata_ = Int[4]
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
@@ -52,20 +53,20 @@
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
+        ndata in ndata_,
         omode in omodes,
         mt in mts
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        r = convert.(data_type, rand(data_dist, nvars))
-        if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-            r = hcat(r)
-        end
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        r2 = convert.(data_type, rand(data_dist2, nvars))
-        if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-            r2 = hcat(r2)
+        if compute_mode <: ContinuousNormalizingFlows.VectorMode
+            r = convert.(data_type, rand(data_dist, nvars))
+            r2 = convert.(data_type, rand(data_dist2, nvars))
+        elseif compute_mode <: ContinuousNormalizingFlows.MatrixMode
+            r = convert.(data_type, rand(data_dist, nvars, ndata))
+            r2 = convert.(data_type, rand(data_dist2, nvars, ndata))
         end
 
         nn = ifelse(
