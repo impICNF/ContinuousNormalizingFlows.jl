@@ -131,7 +131,7 @@
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             @test !isnothing(inference(icnf, omode, r, r2, ps, st))
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-                @test !isnothing(generate(icnf, omode, r2, ps, st, 1))
+                @test !isnothing(generate(icnf, omode, r2, ps, st, ndata))
             else
                 @test !isnothing(generate(icnf, omode, r2, ps, st))
             end
@@ -143,7 +143,7 @@
         else
             @test !isnothing(inference(icnf, omode, r, ps, st))
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-                @test !isnothing(generate(icnf, omode, ps, st, 1))
+                @test !isnothing(generate(icnf, omode, ps, st, ndata))
             else
                 @test !isnothing(generate(icnf, omode, ps, st))
             end
@@ -163,7 +163,7 @@
         @test !isnothing(Distributions.logpdf(d, r))
         @test !isnothing(Distributions.pdf(d, r))
         @test !isnothing(rand(d))
-        @test !isnothing(rand(d, 1))
+        @test !isnothing(rand(d, ndata))
 
         if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
             continue

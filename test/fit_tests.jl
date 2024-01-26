@@ -21,11 +21,11 @@
             CondPlanar,
         ]
     end
+    n_epochs_ = Int[2]
     ndata_ = Int[4]
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    n_epochs = 2
     adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
         ADTypes.AutoReverseDiff(),
@@ -54,6 +54,7 @@
         aug_steer in aug_steers,
         nvars in nvars_,
         ndata in ndata_,
+        n_epochs in n_epochs_,
         mt in mts
 
         data_dist =
