@@ -21,10 +21,11 @@
             CondPlanar,
         ]
     end
+    n_epochs_ = Int[2]
+    ndata_ = Int[4]
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    n_epochs = 2
     adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
         ADTypes.AutoReverseDiff(),
@@ -52,15 +53,17 @@
         inplace in inplaces,
         aug_steer in aug_steers,
         nvars in nvars_,
+        ndata in ndata_,
+        n_epochs in n_epochs_,
         mt in mts
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        r = convert.(data_type, rand(data_dist, nvars, 1))
-        df = DataFrames.DataFrame(transpose(r), :auto)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        r2 = convert.(data_type, rand(data_dist, nvars, 1))
+        r = convert.(data_type, rand(data_dist, nvars, ndata))
+        r2 = convert.(data_type, rand(data_dist2, nvars, ndata))
+        df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
 
         nn = ifelse(
