@@ -1,5 +1,9 @@
 @testset "Instability" begin
-    JET.test_package("ContinuousNormalizingFlows"; target_defined_modules = true)
+    JET.test_package(
+        ContinuousNormalizingFlows;
+        target_modules = [ContinuousNormalizingFlows],
+        mode = :sound,
+    )
 
     nvars = 2
     r = rand(Float32, nvars)
@@ -13,6 +17,18 @@
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
     loss(icnf, TrainMode(), r, ps, st)
-    JET.@test_call target_defined_modules = true loss(icnf, TrainMode(), r, ps, st)
-    JET.@test_opt target_defined_modules = true loss(icnf, TrainMode(), r, ps, st)
+    JET.@test_call target_modules = [ContinuousNormalizingFlows], mode = :sound loss(
+        icnf,
+        TrainMode(),
+        r,
+        ps,
+        st,
+    )
+    JET.@test_opt target_modules = [ContinuousNormalizingFlows] loss(
+        icnf,
+        TrainMode(),
+        r,
+        ps,
+        st,
+    )
 end

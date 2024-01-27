@@ -1,3 +1,6 @@
 @testset "Quality" begin
-    Aqua.test_all(ContinuousNormalizingFlows)
+    @testset "Method ambiguity" begin
+        test_ambiguities(ContinuousNormalizingFlows)
+    end
+    Aqua.test_all(ContinuousNormalizingFlows; ambiguities = false)
 end
