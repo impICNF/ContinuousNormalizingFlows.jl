@@ -17,18 +17,15 @@
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
     loss(icnf, TrainMode(), r, ps, st)
-    JET.@test_call target_modules = [ContinuousNormalizingFlows], mode = :sound loss(
-        icnf,
-        TrainMode(),
-        r,
-        ps,
-        st,
+    JET.test_call(
+        loss,
+        Base.typesof(icnf, TrainMode(), r, ps, st);
+        target_modules = [ContinuousNormalizingFlows],
+        mode = :sound,
     )
-    JET.@test_opt target_modules = [ContinuousNormalizingFlows] loss(
-        icnf,
-        TrainMode(),
-        r,
-        ps,
-        st,
+    JET.test_opt(
+        loss,
+        Base.typesof(icnf, TrainMode(), r, ps, st);
+        target_modules = [ContinuousNormalizingFlows],
     )
 end
