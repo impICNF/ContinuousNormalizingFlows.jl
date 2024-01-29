@@ -12,6 +12,7 @@
         RNODE,
         nn,
         nvars;
+        compute_mode = ZygoteVectorMode,
         sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
     )
     ps, st = Lux.setup(icnf.rng, icnf)
