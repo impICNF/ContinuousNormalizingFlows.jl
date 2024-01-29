@@ -219,7 +219,7 @@ end
         end,
         z,
     )
-    ϵJ = only(VJ(ϵ))
+    ϵJ = oftype(z, only(VJ(ϵ)))
     l̇ = -(ϵJ ⋅ ϵ)
     if icnf isa CondRNODE
         Ė = norm(ż)
@@ -250,7 +250,7 @@ end
         end,
         z,
     )
-    ϵJ = only(VJ(ϵ))
+    ϵJ = oftype(z, only(VJ(ϵ)))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     if icnf isa CondRNODE
@@ -280,7 +280,7 @@ end
         z,
     )
     ż, Jϵ = ż_JV(ϵ)
-    Jϵ = only(Jϵ)
+    Jϵ = oftype(z, only(Jϵ))
     l̇ = -(ϵ ⋅ Jϵ)
     if icnf isa CondRNODE
         Ė = norm(ż)
@@ -312,7 +312,7 @@ end
         z,
     )
     ż, Jϵ = ż_JV(ϵ)
-    Jϵ = only(Jϵ)
+    Jϵ = oftype(z, only(Jϵ))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
     if icnf isa CondRNODE
@@ -337,7 +337,7 @@ end
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
-    ϵJ = only(VJ(ϵ))
+    ϵJ = oftype(z, only(VJ(ϵ)))
     l̇ = -(ϵJ ⋅ ϵ)
     if icnf isa CondRNODE
         Ė = norm(ż)
@@ -364,7 +364,7 @@ end
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
-    ϵJ = only(VJ(ϵ))
+    ϵJ = oftype(z, only(VJ(ϵ)))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     if icnf isa CondRNODE
@@ -394,7 +394,7 @@ end
         z;
         autodiff = icnf.autodiff_backend,
     )
-    ϵJ = reshape(Jf * ϵ, size(z))
+    ϵJ = oftype(z, reshape(Jf * ϵ, size(z)))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     if icnf isa CondRNODE
         Ė = transpose(norm.(eachcol(ż)))
@@ -426,7 +426,7 @@ end
         z;
         autodiff = icnf.autodiff_backend,
     )
-    ϵJ = reshape(Jf * ϵ, size(z))
+    ϵJ = oftype(z, reshape(Jf * ϵ, size(z)))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     if icnf isa CondRNODE
@@ -456,7 +456,7 @@ end
         z;
         autodiff = icnf.autodiff_backend,
     )
-    Jϵ = reshape(Jf * ϵ, size(z))
+    Jϵ = oftype(z, reshape(Jf * ϵ, size(z)))
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     if icnf isa CondRNODE
         Ė = transpose(norm.(eachcol(ż)))
@@ -488,7 +488,7 @@ end
         z;
         autodiff = icnf.autodiff_backend,
     )
-    Jϵ = reshape(Jf * ϵ, size(z))
+    Jϵ = oftype(z, reshape(Jf * ϵ, size(z)))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     if icnf isa CondRNODE
@@ -513,7 +513,7 @@ end
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
-    ϵJ = only(VJ(ϵ))
+    ϵJ = oftype(z, only(VJ(ϵ)))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     if icnf isa CondRNODE
         Ė = transpose(norm.(eachcol(ż)))
@@ -540,7 +540,7 @@ end
     ż, VJ = Zygote.pullback(let ys = ys, p = p, st = st
         x -> first(icnf.nn(vcat(x, ys), p, st))
     end, z)
-    ϵJ = only(VJ(ϵ))
+    ϵJ = oftype(z, only(VJ(ϵ)))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     if icnf isa CondRNODE
