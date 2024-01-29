@@ -216,7 +216,7 @@ end
         end,
         z,
     )
-    ϵJ = oftype(z, only(VJ(ϵ)))
+    ϵJ = oftype(ϵ, only(VJ(ϵ)))
     l̇ = -(ϵJ ⋅ ϵ)
     if icnf isa RNODE
         Ė = norm(ż)
@@ -246,7 +246,7 @@ end
         end,
         z,
     )
-    ϵJ = oftype(z, only(VJ(ϵ)))
+    ϵJ = oftype(ϵ, only(VJ(ϵ)))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     if icnf isa RNODE
@@ -275,7 +275,7 @@ end
         z,
     )
     ż, Jϵ = ż_JV(ϵ)
-    Jϵ = oftype(z, only(Jϵ))
+    Jϵ = oftype(ϵ, only(Jϵ))
     l̇ = -(ϵ ⋅ Jϵ)
     if icnf isa RNODE
         Ė = norm(ż)
@@ -306,7 +306,7 @@ end
         z,
     )
     ż, Jϵ = ż_JV(ϵ)
-    Jϵ = oftype(z, only(Jϵ))
+    Jϵ = oftype(ϵ, only(Jϵ))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
     if icnf isa RNODE
@@ -330,7 +330,7 @@ end
     ż, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = oftype(z, only(VJ(ϵ)))
+    ϵJ = oftype(ϵ, only(VJ(ϵ)))
     l̇ = -(ϵJ ⋅ ϵ)
     if icnf isa RNODE
         Ė = norm(ż)
@@ -356,7 +356,7 @@ end
     ż, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = oftype(z, only(VJ(ϵ)))
+    ϵJ = oftype(ϵ, only(VJ(ϵ)))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     if icnf isa RNODE
@@ -381,7 +381,7 @@ end
     Jf = VecJac(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
-    ϵJ = oftype(z, reshape(Jf * ϵ, size(z)))
+    ϵJ = oftype(ϵ, reshape(Jf * ϵ, size(z)))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     if icnf isa RNODE
         Ė = transpose(norm.(eachcol(ż)))
@@ -408,7 +408,7 @@ end
     Jf = VecJac(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
-    ϵJ = oftype(z, reshape(Jf * ϵ, size(z)))
+    ϵJ = oftype(ϵ, reshape(Jf * ϵ, size(z)))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     if icnf isa RNODE
@@ -433,7 +433,7 @@ end
     Jf = JacVec(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
-    Jϵ = oftype(z, reshape(Jf * ϵ, size(z)))
+    Jϵ = oftype(ϵ, reshape(Jf * ϵ, size(z)))
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     if icnf isa RNODE
         Ė = transpose(norm.(eachcol(ż)))
@@ -460,7 +460,7 @@ end
     Jf = JacVec(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z; autodiff = icnf.autodiff_backend)
-    Jϵ = oftype(z, reshape(Jf * ϵ, size(z)))
+    Jϵ = oftype(ϵ, reshape(Jf * ϵ, size(z)))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     if icnf isa RNODE
@@ -484,7 +484,7 @@ end
     ż, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = oftype(z, only(VJ(ϵ)))
+    ϵJ = oftype(ϵ, only(VJ(ϵ)))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     if icnf isa RNODE
         Ė = transpose(norm.(eachcol(ż)))
@@ -510,7 +510,7 @@ end
     ż, VJ = Zygote.pullback(let p = p, st = st
         x -> first(icnf.nn(x, p, st))
     end, z)
-    ϵJ = oftype(z, only(VJ(ϵ)))
+    ϵJ = oftype(ϵ, only(VJ(ϵ)))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     if icnf isa RNODE
