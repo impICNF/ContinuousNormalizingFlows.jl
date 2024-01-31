@@ -17,7 +17,6 @@ nvars = 2^3
 r = rand(Float32, nvars)
 nn = Dense(nvars => nvars, tanh)
 
-
 icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteVectorMode)
 ps, st = Lux.setup(icnf.rng, icnf)
 ps = ComponentArray(ps)
