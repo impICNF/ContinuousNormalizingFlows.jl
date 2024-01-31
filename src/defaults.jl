@@ -2,7 +2,7 @@ const sol_kwargs_defaults = (
     high = (
         alg_hints = [:nonstiff],
         alg = VCABM(),
-        sensealg = QuadratureAdjoint(; autodiff = true, autojacvec = ZygoteVJP()),
+        sensealg = QuadratureAdjoint(; autodiff = true, autojacvec = EnzymeVJP()),
         reltol = eps(one(Float32)),
         abstol = eps(one(Float32)) * eps(one(Float32)),
         maxiters = typemax(Int32),
@@ -13,7 +13,7 @@ const sol_kwargs_defaults = (
         alg = VCABM(),
         sensealg = InterpolatingAdjoint(;
             autodiff = true,
-            autojacvec = ZygoteVJP(),
+            autojacvec = EnzymeVJP(),
             checkpointing = true,
         ),
         reltol = sqrt(eps(one(Float32))),
@@ -34,7 +34,7 @@ const sol_kwargs_defaults = (
         alg = VCABM(),
         sensealg = InterpolatingAdjoint(;
             autodiff = true,
-            autojacvec = ZygoteVJP(),
+            autojacvec = EnzymeVJP(),
             checkpointing = true,
         ),
         reltol = sqrt(sqrt(eps(one(Float32)))),
