@@ -17,7 +17,8 @@ nvars = 2^3
 r = rand(Float32, nvars)
 nn = Dense(nvars => nvars, tanh)
 
-icnf = construct(RNODE, nn, nvars)
+
+icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteVectorMode)
 ps, st = Lux.setup(icnf.rng, icnf)
 ps = ComponentArray(ps)
 
@@ -37,7 +38,7 @@ SUITE["main"]["no_inplace"]["AD-1-order"]["train"] =
 SUITE["main"]["no_inplace"]["AD-1-order"]["test"] =
     @benchmarkable Zygote.gradient(diff_loss_tt, ps)
 
-icnf2 = construct(RNODE, nn, nvars; inplace = true)
+icnf2 = construct(RNODE, nn, nvars; inplace = true, compute_mode = ZygoteVectorMode)
 
 diff_loss_tn2(x) = loss(icnf2, TrainMode(), r, x, st)
 diff_loss_tt2(x) = loss(icnf2, TestMode(), r, x, st)
