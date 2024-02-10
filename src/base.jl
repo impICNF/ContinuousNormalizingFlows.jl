@@ -198,7 +198,7 @@ end
 end
 
 @inline @views function get_fsol(sol::SciMLBase.AbstractODESolution)
-    last(sol)
+    last(sol.u)
 end
 
 @inline @views function get_fsol(sol::AbstractArray{T, N}) where {T, N}
