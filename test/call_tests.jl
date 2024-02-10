@@ -106,7 +106,7 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
+                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
             ),
             construct(
                 mt,
@@ -116,7 +116,7 @@
                 compute_mode,
                 inplace,
                 resource,
-                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
+                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
             ),
         )
         ps, st = Lux.setup(icnf.rng, icnf)
