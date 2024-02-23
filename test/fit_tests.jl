@@ -103,18 +103,8 @@
                 inplace,
                 resource,
                 steer_rate = convert(data_type, 0.1),
-                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
             ),
-            construct(
-                mt,
-                nn,
-                nvars;
-                data_type,
-                compute_mode,
-                inplace,
-                resource,
-                sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium,
-            ),
+            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
         )
         if mt <: ContinuousNormalizingFlows.AbstractCondICNF
             model = CondICNFModel(icnf; n_epochs, adtype)
