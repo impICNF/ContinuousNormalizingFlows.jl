@@ -8,7 +8,7 @@
     nvars = 2
     r = rand(Float32, nvars)
     nn = Lux.Dense(nvars => nvars, tanh)
-    icnf = construct(RNODE, nn, nvars; compute_mode = ZygoteVectorMode)
+    icnf = construct(RNODE, nn, nvars)
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
     loss(icnf, TrainMode(), r, ps, st)
