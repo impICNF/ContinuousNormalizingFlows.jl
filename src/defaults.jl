@@ -1,16 +1,14 @@
 const sol_kwargs_defaults = (
     high = (
-        alg_hints = [:nonstiff],
-        alg = VCABM(),
+        alg = Vern6(; thread = OrdinaryDiffEq.True(), lazy = true),
         sensealg = QuadratureAdjoint(; autodiff = true, autojacvec = ZygoteVJP()),
         reltol = eps(one(Float32)),
         abstol = eps(one(Float32)) * eps(one(Float32)),
         maxiters = typemax(Int32),
     ),
     medium = (
-        alg_hints = [:nonstiff, :memorybound],
         save_everystep = false,
-        alg = VCABM(),
+        alg = Vern6(; thread = OrdinaryDiffEq.True(), lazy = true),
         sensealg = InterpolatingAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
@@ -21,17 +19,15 @@ const sol_kwargs_defaults = (
         maxiters = typemax(Int32),
     ),
     medium_noad = (
-        alg_hints = [:nonstiff, :memorybound],
         save_everystep = false,
-        alg = VCABM(),
+        alg = Vern6(; thread = OrdinaryDiffEq.True(), lazy = true),
         reltol = sqrt(eps(one(Float32))),
         abstol = eps(one(Float32)),
         maxiters = typemax(Int32),
     ),
     low = (
-        alg_hints = [:nonstiff, :memorybound],
         save_everystep = false,
-        alg = VCABM(),
+        alg = Vern6(; thread = OrdinaryDiffEq.True(), lazy = true),
         sensealg = InterpolatingAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
