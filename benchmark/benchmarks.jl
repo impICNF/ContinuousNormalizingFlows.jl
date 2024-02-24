@@ -55,7 +55,8 @@ SUITE["main"]["no_inplace"]["AD-1-order"]["test"] =
 icnf2 = construct(
     RNODE,
     nn,
-    nvars;
+    nvars,
+    naugs;
     inplace = true,
     compute_mode = ZygoteMatrixMode,
     tspan = (0.0f0, 13.0f0),
