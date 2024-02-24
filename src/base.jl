@@ -149,6 +149,10 @@ end
     Random.default_rng()
 end
 
+@inline function base_AT(::AbstractResource)
+    Array
+end
+
 @views function inference_sol(
     icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
