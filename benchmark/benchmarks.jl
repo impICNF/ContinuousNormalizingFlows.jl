@@ -16,18 +16,25 @@ SUITE["main"]["inplace"]["AD-1-order"] = BenchmarkGroup(["gradient"])
 
 rng = StableRNG(12345)
 nvars = 2^3
-r = rand(Float32, nvars)
-nn = Dense(nvars => nvars, tanh)
+naugs = nvars
+n_in = nvars + naugs
+n = 2^6
+nn = Dense(n_in => n_in, tanh)
 
 icnf = construct(
     RNODE,
     nn,
-    nvars;
+    nvars,
+    naugs;
+    compute_mode = ZygoteMatrixMode,
+    tspan = (0.0f0, 13.0f0),
+    steer_rate = 0.1f0,
     sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
     rng,
 )
 ps, st = Lux.setup(icnf.rng, icnf)
 ps = ComponentArray(ps)
+r = rand(icnf.rng, Float32, nvars, n)
 
 diff_loss_tn(x) = loss(icnf, TrainMode(), r, x, st)
 diff_loss_tt(x) = loss(icnf, TestMode(), r, x, st)
@@ -50,6 +57,9 @@ icnf2 = construct(
     nn,
     nvars;
     inplace = true,
+    compute_mode = ZygoteMatrixMode,
+    tspan = (0.0f0, 13.0f0),
+    steer_rate = 0.1f0,
     sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
     rng,
 )

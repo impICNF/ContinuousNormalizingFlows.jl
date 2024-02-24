@@ -37,10 +37,7 @@ n = 1024
 
 # Model
 using ContinuousNormalizingFlows, Lux #, CUDA, ComputationalResources
-nn = Chain(
-    Dense(n_in => 3 * n_in, tanh; use_bias = false),
-    Dense(3 * n_in => n_in, tanh; use_bias = false),
-)
+nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 # icnf = construct(RNODE, nn, nvars) # use defaults
 icnf = construct(
     RNODE,
