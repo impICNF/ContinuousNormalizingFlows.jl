@@ -7,7 +7,7 @@ using ContinuousNormalizingFlows.ComputationalResources
     CURAND.default_rng()
 end
 
-@inline function ContinuousNormalizingFlows.base_AT(::AbstractResource)
+@inline function ContinuousNormalizingFlows.base_AT(::CUDALibs)
     CuArray
 end
 
