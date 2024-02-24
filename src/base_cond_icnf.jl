@@ -12,7 +12,7 @@ export inference, generate, loss
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input)
+    ϵ = rand(icnf.rng, icnf.epsdist)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -41,7 +41,7 @@ end
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input, size(xs, 2))
+    ϵ = rand(icnf.rng, icnf.epsdist, size(xs, 2))
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -67,7 +67,7 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input)
+    ϵ = rand(icnf.rng, icnf.epsdist)
     new_xs = oftype(ϵ, rand(icnf.rng, icnf.basedist))
     zrs = similar(new_xs, n_aug + 1)
     @ignore_derivatives fill!(zrs, zero(T))
@@ -97,7 +97,7 @@ end
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    ϵ = randn(icnf.rng, T, icnf.nvars + n_aug_input, n)
+    ϵ = rand(icnf.rng, icnf.epsdist, n)
     new_xs = oftype(ϵ, rand(icnf.rng, icnf.basedist, n))
     zrs = similar(new_xs, n_aug + 1, n)
     @ignore_derivatives fill!(zrs, zero(T))
