@@ -71,10 +71,10 @@ end
     n_aug_input = n_augment_input(icnf)
     new_xs = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.basedist, new_xs)
-    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
     zrs = similar(new_xs, n_aug + 1)
     @ignore_derivatives fill!(zrs, zero(T))
+    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input)
+    rand!(icnf.rng, icnf.epsdist, ϵ)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -103,10 +103,10 @@ end
     n_aug_input = n_augment_input(icnf)
     new_xs = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input, n)
     rand!(icnf.rng, icnf.basedist, new_xs)
-    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input, n)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
     zrs = similar(new_xs, n_aug + 1, n)
     @ignore_derivatives fill!(zrs, zero(T))
+    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input, n)
+    rand!(icnf.rng, icnf.epsdist, ϵ)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
