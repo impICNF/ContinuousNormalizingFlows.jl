@@ -15,6 +15,7 @@ struct CondPlanar{
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
+    EPSDIST <: Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: NamedTuple,
@@ -28,6 +29,7 @@ struct CondPlanar{
     basedist::BASEDIST
     tspan::TSPAN
     steerdist::STEERDIST
+    epsdist::EPSDIST
     differentiation_backend::DIFFERENTIATION_BACKEND
     autodiff_backend::AUTODIFF_BACKEND
     sol_kwargs::SOL_KWARGS

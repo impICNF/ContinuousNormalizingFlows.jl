@@ -15,6 +15,10 @@ function construct(
     ),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
+    epsdist::Distribution = MvNormal(
+        Zeros{data_type}(nvars + naugmented),
+        Eye{data_type}(nvars + naugmented),
+    ),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     autodiff_backend::ADTypes.AbstractADType = ifelse(
         compute_mode <: SDJacVecMatrixMode,
@@ -41,6 +45,7 @@ function construct(
             typeof(basedist),
             typeof(tspan),
             typeof(steerdist),
+            typeof(epsdist),
             typeof(differentiation_backend),
             typeof(autodiff_backend),
             typeof(sol_kwargs),
@@ -53,6 +58,7 @@ function construct(
             basedist,
             tspan,
             steerdist,
+            epsdist,
             differentiation_backend,
             autodiff_backend,
             sol_kwargs,
@@ -73,6 +79,7 @@ function construct(
             typeof(basedist),
             typeof(tspan),
             typeof(steerdist),
+            typeof(epsdist),
             typeof(differentiation_backend),
             typeof(autodiff_backend),
             typeof(sol_kwargs),
@@ -85,6 +92,7 @@ function construct(
             basedist,
             tspan,
             steerdist,
+            epsdist,
             differentiation_backend,
             autodiff_backend,
             sol_kwargs,
@@ -139,6 +147,10 @@ end
 
 @inline function rng_AT(::AbstractResource)
     Random.default_rng()
+end
+
+@inline function base_AT(::AbstractResource)
+    Array
 end
 
 @views function inference_sol(
