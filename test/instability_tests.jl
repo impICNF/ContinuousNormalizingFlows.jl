@@ -5,12 +5,26 @@
         mode = :sound,
     )
 
-    nvars = 2
-    r = rand(Float32, nvars)
-    nn = Lux.Dense(nvars => nvars, tanh)
-    icnf = construct(RNODE, nn, nvars)
+    nvars = 2^3
+    naugs = nvars
+    n_in = nvars + naugs
+    n = 2^6
+    nn = Lux.Dense(n_in => n_in, tanh)
+
+    icnf = construct(
+        RNODE,
+        nn,
+        nvars,
+        naugs;
+        compute_mode = ZygoteMatrixMode,
+        tspan = (0.0f0, 13.0f0),
+        steer_rate = 0.1f0,
+        sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
+    )
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
+    r = rand(icnf.rng, Float32, nvars, n)
+
     loss(icnf, TrainMode(), r, ps, st)
     JET.test_call(
         loss,
