@@ -149,8 +149,12 @@ end
     Random.default_rng()
 end
 
-@inline function base_AT(::AbstractResource)
-    Array
+@inline function base_AT(
+    ::AbstractResource,
+    ::AbstractFlows{T},
+    dims...,
+) where {T <: AbstractFloat}
+    Array{T}(undef, dims...)
 end
 
 @views function inference_sol(
