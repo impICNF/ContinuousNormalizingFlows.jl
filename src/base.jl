@@ -178,9 +178,9 @@ end
     fsol = get_fsol(sol)
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
-    logpz = Zygote.Buffer(Δlogp)
+    logpz = similar(Δlogp)
     logpdf!(logpz, icnf.basedist, z)
-    logp̂x = copy(logpz) - Δlogp
+    logp̂x = logpz - Δlogp
     augs = fsol[(end - n_aug + 1):end, :]
     (logp̂x, eachrow(augs))
 end
