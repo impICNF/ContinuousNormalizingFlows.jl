@@ -1,6 +1,6 @@
 export inference, generate, loss
 
-@views function inference_prob(
+function inference_prob(
     icnf::AbstractICNF{T, <:VectorMode, INPLACE},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -29,7 +29,7 @@ export inference, generate, loss
     )
 end
 
-@views function inference_prob(
+function inference_prob(
     icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -58,7 +58,7 @@ end
     )
 end
 
-@views function generate_prob(
+function generate_prob(
     icnf::AbstractICNF{T, <:VectorMode, INPLACE},
     mode::Mode,
     ps::Any,
@@ -88,7 +88,7 @@ end
     )
 end
 
-@views function generate_prob(
+function generate_prob(
     icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
     mode::Mode,
     ps::Any,
