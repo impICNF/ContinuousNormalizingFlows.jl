@@ -164,7 +164,7 @@ end
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     augs = fsol[(end - n_aug + 1):end]
-    logpz = oftype(Δlogp, logpdf(icnf.basedist, z))
+    logpz = convert(T, logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     (logp̂x, augs)
 end
@@ -180,7 +180,7 @@ end
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
     augs = fsol[(end - n_aug + 1):end, :]
-    logpz = oftype(Δlogp, logpdf(icnf.basedist, z))
+    logpz = convert(base_AT(icnf.resource){T}, logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     (logp̂x, eachrow(augs))
 end
