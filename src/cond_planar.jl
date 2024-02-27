@@ -36,7 +36,7 @@ struct CondPlanar{
     rng::RNG
 end
 
-@views function augmented_f(
+function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -65,7 +65,7 @@ end
     vcat(ż, l̇)
 end
 
-@views function augmented_f(
+function augmented_f(
     du::Any,
     u::Any,
     p::Any,
@@ -96,7 +96,7 @@ end
     nothing
 end
 
-@views function augmented_f(
+function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -125,7 +125,7 @@ end
     vcat(ż, l̇)
 end
 
-@views function augmented_f(
+function augmented_f(
     du::Any,
     u::Any,
     p::Any,
@@ -156,7 +156,7 @@ end
     nothing
 end
 
-@views function augmented_f(
+function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -179,7 +179,7 @@ end
     vcat(ż, l̇)
 end
 
-@views function augmented_f(
+function augmented_f(
     du::Any,
     u::Any,
     p::Any,
@@ -204,7 +204,7 @@ end
     nothing
 end
 
-@views function augmented_f(
+function augmented_f(
     u::Any,
     p::Any,
     t::Any,
@@ -227,7 +227,7 @@ end
     vcat(ż, l̇)
 end
 
-@views function augmented_f(
+function augmented_f(
     du::Any,
     u::Any,
     p::Any,
