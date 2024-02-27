@@ -1,4 +1,4 @@
-@views function jacobian_batched(
+function jacobian_batched(
     icnf::AbstractFlows{T, <:SDVecJacMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
@@ -16,7 +16,7 @@
     y, copy(res)
 end
 
-@views function jacobian_batched(
+function jacobian_batched(
     icnf::AbstractFlows{T, <:SDJacVecMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
@@ -34,7 +34,7 @@ end
     y, copy(res)
 end
 
-@views function jacobian_batched(
+function jacobian_batched(
     ::AbstractFlows{T, <:ZygoteMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
