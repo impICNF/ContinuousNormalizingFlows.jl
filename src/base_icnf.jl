@@ -11,7 +11,7 @@ function inference_prob(
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input)
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.epsdist, ϵ)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
@@ -40,7 +40,7 @@ function inference_prob(
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input, size(xs, 2))
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     rand!(icnf.rng, icnf.epsdist, ϵ)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
@@ -66,11 +66,11 @@ function generate_prob(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input)
+    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input)
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.epsdist, ϵ)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
@@ -97,11 +97,11 @@ function generate_prob(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input, n)
+    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
     rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
     @ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource){T}(undef, icnf.nvars + n_aug_input, n)
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
     rand!(icnf.rng, icnf.epsdist, ϵ)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(

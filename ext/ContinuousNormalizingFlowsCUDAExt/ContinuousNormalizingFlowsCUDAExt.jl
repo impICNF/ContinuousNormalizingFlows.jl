@@ -7,8 +7,12 @@ using ContinuousNormalizingFlows.ComputationalResources
     CURAND.default_rng()
 end
 
-@inline function ContinuousNormalizingFlows.base_AT(::CUDALibs)
-    CuArray
+@inline function ContinuousNormalizingFlows.base_AT(
+    ::CUDALibs,
+    ::ContinuousNormalizingFlows.AbstractFlows{T},
+    dims...,
+) where {T <: AbstractFloat}
+    CuArray{T}(undef, dims...)
 end
 
 end
