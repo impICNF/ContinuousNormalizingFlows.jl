@@ -157,6 +157,8 @@ end
     Array{T}(undef, dims...)
 end
 
+@non_differentiable base_AT(::Any...)
+
 @views function inference_sol(
     icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
