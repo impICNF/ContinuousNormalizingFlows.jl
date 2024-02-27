@@ -153,7 +153,7 @@ end
     Array
 end
 
-@views function inference_sol(
+function inference_sol(
     icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
@@ -168,7 +168,7 @@ end
     (logp̂x, augs)
 end
 
-@views function inference_sol(
+function inference_sol(
     icnf::AbstractFlows{T, <:MatrixMode, INPLACE},
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
@@ -183,7 +183,7 @@ end
     (logp̂x, eachrow(augs))
 end
 
-@views function generate_sol(
+function generate_sol(
     icnf::AbstractFlows{T, <:VectorMode, INPLACE},
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
@@ -196,7 +196,7 @@ end
     z
 end
 
-@views function generate_sol(
+function generate_sol(
     icnf::AbstractFlows{T, <:MatrixMode, INPLACE},
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
@@ -209,10 +209,10 @@ end
     z
 end
 
-@inline @views function get_fsol(sol::SciMLBase.AbstractODESolution)
+@inline function get_fsol(sol::SciMLBase.AbstractODESolution)
     last(sol.u)
 end
 
-@inline @views function get_fsol(sol::AbstractArray{T, N}) where {T, N}
+@inline function get_fsol(sol::AbstractArray{T, N}) where {T, N}
     selectdim(sol, N, lastindex(sol, N))
 end
