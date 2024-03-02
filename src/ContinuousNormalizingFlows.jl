@@ -7,6 +7,7 @@ using AbstractDifferentiation,
     ComponentArrays,
     ComputationalResources,
     DataFrames,
+    DifferentialEquations,
     Dates,
     Distributions,
     DistributionsAD,
@@ -21,7 +22,6 @@ using AbstractDifferentiation,
     Optimisers,
     Optimization,
     OptimizationOptimisers,
-    OrdinaryDiffEq,
     ProgressMeter,
     Random,
     ScientificTypes,
@@ -31,7 +31,6 @@ using AbstractDifferentiation,
     Statistics,
     Zygote
 
-include("defaults.jl")
 include("types.jl")
 
 include("planar_layer.jl")

@@ -25,7 +25,7 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::NamedTuple = sol_kwargs_defaults.medium,
+    sol_kwargs::NamedTuple = (save_everystep = false,),
     rng::AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = convert(data_type, 1e-2),
     λ₂::AbstractFloat = convert(data_type, 1e-2),

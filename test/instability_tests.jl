@@ -19,7 +19,6 @@
         compute_mode = ZygoteMatrixMode,
         tspan = (0.0f0, 13.0f0),
         steer_rate = 0.1f0,
-        sol_kwargs = ContinuousNormalizingFlows.sol_kwargs_defaults.medium_noad,
     )
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
