@@ -19,13 +19,15 @@ using ReverseDiff: ReverseDiff
 using SciMLBase: SciMLBase
 using Zygote: Zygote
 
-GC.enable_logging(true)
-
-debuglogger = Logging.ConsoleLogger(Logging.Debug)
-Logging.global_logger(debuglogger)
-
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
+
+if (GROUP == "All")
+    GC.enable_logging(true)
+
+    debuglogger = Logging.ConsoleLogger(Logging.Debug)
+    Logging.global_logger(debuglogger)
+end
 
 @testset "Overall" begin
     if GROUP == "All" ||
