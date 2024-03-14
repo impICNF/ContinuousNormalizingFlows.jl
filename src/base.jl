@@ -1,13 +1,14 @@
 export construct
 
 function construct(
-    aicnf::Type{<:AbstractFlows},
-    nn,
+    aicnf,
+    nn::LuxCore.AbstractExplicitLayer,
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
     inplace::Bool = false,
+    cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
     resource::AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
@@ -30,78 +31,58 @@ function construct(
         alg = Tsit5(; thread = OrdinaryDiffEq.True()),
     ),
     rng::AbstractRNG = rng_AT(resource),
-    λ₁::AbstractFloat = convert(data_type, 1e-2),
-    λ₂::AbstractFloat = convert(data_type, 1e-2),
+    λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
+        convert(data_type, 1e-2)
+    else
+        zero(data_type)
+    end,
+    λ₂::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
+        convert(data_type, 1e-2)
+    else
+        zero(data_type)
+    end,
+    λ₃::AbstractFloat = convert(data_type, 1e-2),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
-    if aicnf <: Union{RNODE, CondRNODE}
-        aicnf{
-            data_type,
-            compute_mode,
-            inplace,
-            !iszero(naugmented),
-            !iszero(steer_rate),
-            typeof(nn),
-            typeof(nvars),
-            typeof(resource),
-            typeof(basedist),
-            typeof(tspan),
-            typeof(steerdist),
-            typeof(epsdist),
-            typeof(differentiation_backend),
-            typeof(autodiff_backend),
-            typeof(sol_kwargs),
-            typeof(rng),
-        }(
-            nn,
-            nvars,
-            naugmented,
-            resource,
-            basedist,
-            tspan,
-            steerdist,
-            epsdist,
-            differentiation_backend,
-            autodiff_backend,
-            sol_kwargs,
-            rng,
-            λ₁,
-            λ₂,
-        )
-    else
-        aicnf{
-            data_type,
-            compute_mode,
-            inplace,
-            !iszero(naugmented),
-            !iszero(steer_rate),
-            typeof(nn),
-            typeof(nvars),
-            typeof(resource),
-            typeof(basedist),
-            typeof(tspan),
-            typeof(steerdist),
-            typeof(epsdist),
-            typeof(differentiation_backend),
-            typeof(autodiff_backend),
-            typeof(sol_kwargs),
-            typeof(rng),
-        }(
-            nn,
-            nvars,
-            naugmented,
-            resource,
-            basedist,
-            tspan,
-            steerdist,
-            epsdist,
-            differentiation_backend,
-            autodiff_backend,
-            sol_kwargs,
-            rng,
-        )
-    end
+    ICNF{
+        data_type,
+        compute_mode,
+        inplace,
+        cond,
+        !iszero(λ₁),
+        !iszero(λ₂),
+        !iszero(λ₃),
+        !iszero(naugmented),
+        !iszero(steer_rate),
+        typeof(nn),
+        typeof(nvars),
+        typeof(resource),
+        typeof(basedist),
+        typeof(tspan),
+        typeof(steerdist),
+        typeof(epsdist),
+        typeof(differentiation_backend),
+        typeof(autodiff_backend),
+        typeof(sol_kwargs),
+        typeof(rng),
+    }(
+        nn,
+        nvars,
+        naugmented,
+        resource,
+        basedist,
+        tspan,
+        steerdist,
+        epsdist,
+        differentiation_backend,
+        autodiff_backend,
+        sol_kwargs,
+        rng,
+        λ₁,
+        λ₂,
+        λ₃,
+    )
 end
 
 @inline function n_augment(::AbstractFlows, ::Mode)

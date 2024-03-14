@@ -70,7 +70,7 @@
         end
 
         nn = ifelse(
-            mt <: ContinuousNormalizingFlows.AbstractCondICNF,
+            mt <: Union{CondRNODE, CondFFJORD, CondPlanar},
             ifelse(
                 mt <: CondPlanar,
                 ifelse(
@@ -118,7 +118,7 @@
             st = gdev(st)
         end
 
-        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
+        if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
             @test !isnothing(inference(icnf, omode, r, r2, ps, st))
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
                 @test !isnothing(generate(icnf, omode, r2, ps, st, ndata))
@@ -144,7 +144,7 @@
             diff2_loss = x -> loss(icnf, omode, x, ps, st)
         end
 
-        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
+        if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
             d = CondICNFDist(icnf, omode, r2, ps, st)
         else
             d = ICNFDist(icnf, omode, ps, st)

@@ -1,7 +1,7 @@
 export inference, generate, loss
 
 function inference_prob(
-    icnf::AbstractICNF{T, <:VectorMode, INPLACE},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, false},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
@@ -13,14 +13,15 @@ function inference_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
         vcat(xs, zrs),
@@ -30,7 +31,38 @@ function inference_prob(
 end
 
 function inference_prob(
-    icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, true},
+    mode::Mode,
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
+    ps::Any,
+    st::Any,
+) where {T <: AbstractFloat, INPLACE}
+    n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
+    zrs = similar(xs, n_aug_input + n_aug + 1)
+    @ignore_derivatives fill!(zrs, zero(T))
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys))
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        ifelse(
+            INPLACE,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
+            end,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
+            end,
+        ),
+        vcat(xs, zrs),
+        steer_tspan(icnf, mode),
+        ps,
+    )
+end
+
+function inference_prob(
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, false},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
@@ -42,14 +74,46 @@ function inference_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
+            end,
+        ),
+        vcat(xs, zrs),
+        steer_tspan(icnf, mode),
+        ps,
+    )
+end
+
+function inference_prob(
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, true},
+    mode::Mode,
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+    ps::Any,
+    st::Any,
+) where {T <: AbstractFloat, INPLACE}
+    n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
+    zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
+    @ignore_derivatives fill!(zrs, zero(T))
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
+    rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys))
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        ifelse(
+            INPLACE,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
+            end,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
         vcat(xs, zrs),
@@ -59,7 +123,7 @@ function inference_prob(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T, <:VectorMode, INPLACE},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, false},
     mode::Mode,
     ps::Any,
     st::Any,
@@ -72,14 +136,15 @@ function generate_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
         vcat(new_xs, zrs),
@@ -89,7 +154,39 @@ function generate_prob(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, true},
+    mode::Mode,
+    ys::AbstractVector{<:Real},
+    ps::Any,
+    st::Any,
+) where {T <: AbstractFloat, INPLACE}
+    n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
+    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    rand!(icnf.rng, icnf.basedist, new_xs)
+    zrs = similar(new_xs, n_aug + 1)
+    @ignore_derivatives fill!(zrs, zero(T))
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys))
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        ifelse(
+            INPLACE,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
+            end,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
+            end,
+        ),
+        vcat(new_xs, zrs),
+        reverse(steer_tspan(icnf, mode)),
+        ps,
+    )
+end
+
+function generate_prob(
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, false},
     mode::Mode,
     ps::Any,
     st::Any,
@@ -103,14 +200,48 @@ function generate_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
     rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, st = st
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, ϵ, st)
+            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
+            end,
+        ),
+        vcat(new_xs, zrs),
+        reverse(steer_tspan(icnf, mode)),
+        ps,
+    )
+end
+
+function generate_prob(
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, true},
+    mode::Mode,
+    ys::AbstractMatrix{<:Real},
+    ps::Any,
+    st::Any,
+    n::Int,
+) where {T <: AbstractFloat, INPLACE}
+    n_aug = n_augment(icnf, mode)
+    n_aug_input = n_augment_input(icnf)
+    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
+    rand!(icnf.rng, icnf.basedist, new_xs)
+    zrs = similar(new_xs, n_aug + 1, n)
+    @ignore_derivatives fill!(zrs, zero(T))
+    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
+    rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys))
+    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+        ifelse(
+            INPLACE,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
+            end,
+            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
         vcat(new_xs, zrs),
@@ -129,6 +260,17 @@ end
     inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ps, st))
 end
 
+@inline function inference(
+    icnf::AbstractICNF,
+    mode::Mode,
+    xs::AbstractVecOrMat{<:Real},
+    ys::AbstractVecOrMat{<:Real},
+    ps::Any,
+    st::Any,
+)
+    inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ys, ps, st))
+end
+
 @inline function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
@@ -139,6 +281,16 @@ end
 end
 
 @inline function generate(
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    mode::Mode,
+    ys::AbstractVector{<:Real},
+    ps::Any,
+    st::Any,
+)
+    generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st))
+end
+
+@inline function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
@@ -146,6 +298,17 @@ end
     n::Int,
 )
     generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st, n))
+end
+
+@inline function generate(
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    mode::Mode,
+    ys::AbstractMatrix{<:Real},
+    ps::Any,
+    st::Any,
+    n::Int,
+)
+    generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st, n))
 end
 
 @inline function loss(
@@ -159,6 +322,17 @@ end
 end
 
 @inline function loss(
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    mode::Mode,
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
+    ps::Any,
+    st::Any,
+)
+    -first(inference(icnf, mode, xs, ys, ps, st))
+end
+
+@inline function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -168,6 +342,30 @@ end
     -mean(first(inference(icnf, mode, xs, ps, st)))
 end
 
-@inline function (icnf::AbstractICNF)(xs::Any, ps::Any, st::Any)
+@inline function loss(
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    mode::Mode,
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+    ps::Any,
+    st::Any,
+)
+    -mean(first(inference(icnf, mode, xs, ys, ps, st)))
+end
+
+@inline function (icnf::AbstractICNF{T, CM, INPLACE, false})(
+    xs::Any,
+    ps::Any,
+    st::Any,
+) where {T, CM, INPLACE}
     first(inference(icnf, TrainMode(), xs, ps, st))
+end
+
+@inline function (icnf::AbstractICNF{T, CM, INPLACE, true})(
+    xs_ys::Any,
+    ps::Any,
+    st::Any,
+) where {T, CM, INPLACE}
+    xs, ys = xs_ys
+    first(inference(icnf, TrainMode(), xs, ys, ps, st))
 end
