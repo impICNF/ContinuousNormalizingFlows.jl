@@ -1,7 +1,7 @@
 export construct
 
 function construct(
-    aicnf,
+    aicnf::Type{<:AbstractFlows},
     nn::LuxCore.AbstractExplicitLayer,
     nvars::Int,
     naugmented::Int = 0;

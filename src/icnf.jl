@@ -1,13 +1,19 @@
 export ICNF, RNODE, CondRNODE, FFJORD, CondFFJORD, Planar, CondPlanar
 
-struct Planar end
-struct CondPlanar end
+struct Planar{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
+       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct CondPlanar{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
+       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
 
-struct FFJORD end
-struct CondFFJORD end
+struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
+       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct CondFFJORD{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
+       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
 
-struct RNODE end
-struct CondRNODE end
+struct RNODE{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
+       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct CondRNODE{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
+       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
 
 """
 Implementation of ICNF.
