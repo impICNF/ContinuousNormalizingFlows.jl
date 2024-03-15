@@ -208,3 +208,7 @@ end
 @inline function get_fsol(sol::AbstractArray{T, N}) where {T, N}
     selectdim(sol, N, lastindex(sol, N))
 end
+
+function cond_layer(nn::LuxCore.AbstractExplicitLayer, ys::AbstractArray)
+    Chain(Base.Fix2(vcat, ys), nn)
+end

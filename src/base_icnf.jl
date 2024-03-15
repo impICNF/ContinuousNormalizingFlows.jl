@@ -44,7 +44,7 @@ function inference_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = StatefulLuxLayer(cond_layer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -105,7 +105,7 @@ function inference_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = StatefulLuxLayer(cond_layer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -168,7 +168,7 @@ function generate_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = StatefulLuxLayer(cond_layer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
@@ -233,7 +233,7 @@ function generate_prob(
     @ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
     rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = StatefulLuxLayer(cond_layer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
