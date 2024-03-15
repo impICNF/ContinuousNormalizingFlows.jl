@@ -17,10 +17,10 @@ function inference_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -48,10 +48,10 @@ function inference_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -78,10 +78,10 @@ function inference_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -109,10 +109,10 @@ function inference_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -140,10 +140,10 @@ function generate_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -172,10 +172,10 @@ function generate_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -204,10 +204,10 @@ function generate_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
@@ -237,10 +237,10 @@ function generate_prob(
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         ifelse(
             INPLACE,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
             end,
-            let icnf = icnf, mode = mode, ys = nn, ϵ = ϵ, nn = nn
+            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
                 (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
             end,
         ),
