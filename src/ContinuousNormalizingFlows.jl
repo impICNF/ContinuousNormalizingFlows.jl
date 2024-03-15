@@ -34,6 +34,7 @@ using AbstractDifferentiation,
 include("types.jl")
 
 include("planar_layer.jl")
+include("cond_layer.jl")
 
 include("base.jl")
 include("base_icnf.jl")
