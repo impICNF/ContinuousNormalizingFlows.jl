@@ -38,17 +38,12 @@ include("cond_layer.jl")
 
 include("base.jl")
 include("base_icnf.jl")
-include("base_cond_icnf.jl")
 
 include("core.jl")
 include("core_icnf.jl")
 include("core_cond_icnf.jl")
 
-include("ffjord.jl")
-include("planar.jl")
-
-include("cond_ffjord.jl")
-include("cond_planar.jl")
+include("icnf.jl")
 
 include("utils.jl")
 
