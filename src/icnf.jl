@@ -221,9 +221,21 @@ function augmented_f(
     )
     ϵJ = only(VJ(ϵ))
     l̇ = -(ϵJ ⋅ ϵ)
-    Ė = NORM_Z ? norm(ż) : zero(T)
-    ṅ = NORM_J ? norm(ϵJ) : zero(T)
-    Ȧ = (NORM_Z_AUG && AUGMENTED) ? norm(z_aug) : zero(T)
+    Ė = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    ṅ = if NORM_J
+        norm(ϵJ)
+    else
+        zero(T)
+    end
+    Ȧ = if (NORM_Z_AUG && AUGMENTED)
+        norm(z_aug)
+    else
+        zero(T)
+    end
     vcat(ż, l̇, Ė, ṅ, Ȧ)
 end
 
@@ -263,9 +275,21 @@ function augmented_f(
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
-    du[(end - n_aug + 1)] = NORM_Z ? norm(ż) : zero(T)
-    du[(end - n_aug + 2)] = NORM_J ? norm(ϵJ) : zero(T)
-    du[(end - n_aug + 3)] = (NORM_Z_AUG && AUGMENTED) ? norm(z_aug) : zero(T)
+    du[(end - n_aug + 1)] = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2)] = if NORM_J
+        norm(ϵJ)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 3)] = if (NORM_Z_AUG && AUGMENTED)
+        norm(z_aug)
+    else
+        zero(T)
+    end
     nothing
 end
 
@@ -304,9 +328,21 @@ function augmented_f(
     ż, Jϵ = ż_JV(ϵ)
     Jϵ = only(Jϵ)
     l̇ = -(ϵ ⋅ Jϵ)
-    Ė = NORM_Z ? norm(ż) : zero(T)
-    ṅ = NORM_J ? norm(Jϵ) : zero(T)
-    Ȧ = NORM_Z_AUG ? norm(z_aug) : zero(T)
+    Ė = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    ṅ = if NORM_J
+        norm(Jϵ)
+    else
+        zero(T)
+    end
+    Ȧ = if NORM_Z_AUG
+        norm(z_aug)
+    else
+        zero(T)
+    end
     vcat(ż, l̇, Ė, ṅ, Ȧ)
 end
 
@@ -347,9 +383,21 @@ function augmented_f(
     Jϵ = only(Jϵ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
-    du[(end - n_aug + 1)] = NORM_Z ? norm(ż) : zero(T)
-    du[(end - n_aug + 2)] = NORM_J ? norm(Jϵ) : zero(T)
-    du[(end - n_aug + 3)] = (NORM_Z_AUG && AUGMENTED) ? norm(z_aug) : zero(T)
+    du[(end - n_aug + 1)] = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2)] = if NORM_J
+        norm(Jϵ)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 3)] = if (NORM_Z_AUG && AUGMENTED)
+        norm(z_aug)
+    else
+        zero(T)
+    end
     nothing
 end
 
@@ -383,9 +431,21 @@ function augmented_f(
     end, z)
     ϵJ = only(VJ(ϵ))
     l̇ = -(ϵJ ⋅ ϵ)
-    Ė = NORM_Z ? norm(ż) : zero(T)
-    ṅ = NORM_J ? norm(ϵJ) : zero(T)
-    Ȧ = (NORM_Z_AUG && AUGMENTED) ? norm(z_aug) : zero(T)
+    Ė = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    ṅ = if NORM_J
+        norm(ϵJ)
+    else
+        zero(T)
+    end
+    Ȧ = if (NORM_Z_AUG && AUGMENTED)
+        norm(z_aug)
+    else
+        zero(T)
+    end
     vcat(ż, l̇, Ė, ṅ, Ȧ)
 end
 
@@ -421,9 +481,21 @@ function augmented_f(
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
-    du[(end - n_aug + 1)] = NORM_Z ? norm(ż) : zero(T)
-    du[(end - n_aug + 2)] = NORM_J ? norm(ϵJ) : zero(T)
-    du[(end - n_aug + 3)] = (NORM_Z_AUG && AUGMENTED) ? norm(z_aug) : zero(T)
+    du[(end - n_aug + 1)] = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2)] = if NORM_J
+        norm(ϵJ)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 3)] = if (NORM_Z_AUG && AUGMENTED)
+        norm(z_aug)
+    else
+        zero(T)
+    end
     nothing
 end
 
@@ -458,9 +530,21 @@ function augmented_f(
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(NORM_Z ? norm.(eachcol(ż)) : zeros(T, size(u, 2)))
-    ṅ = transpose(NORM_J ? norm.(eachcol(ϵJ)) : zeros(T, size(u, 2)))
-    Ȧ = transpose((NORM_Z_AUG && AUGMENTED) ? norm.(eachcol(z_aug)) : zeros(T, size(u, 2)))
+    Ė = transpose(if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zeros(T, size(u, 2))
+    end)
+    ṅ = transpose(if NORM_J
+        norm.(eachcol(ϵJ))
+    else
+        zeros(T, size(u, 2))
+    end)
+    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(u, 2))
+    end)
     vcat(ż, l̇, Ė, ṅ, Ȧ)
 end
 
@@ -497,10 +581,21 @@ function augmented_f(
     ϵJ = reshape(Jf * ϵ, size(z))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= NORM_Z ? norm.(eachcol(ż)) : zeros(T, size(u, 2))
-    du[(end - n_aug + 2), :] .= NORM_J ? norm.(eachcol(ϵJ)) : zeros(T, size(u, 2))
-    du[(end - n_aug + 3), :] .=
-        (NORM_Z_AUG && AUGMENTED) ? norm.(eachcol(z_aug)) : zeros(T, size(u, 2))
+    du[(end - n_aug + 1), :] .= if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zeros(T, size(u, 2))
+    end
+    du[(end - n_aug + 2), :] .= if NORM_J
+        norm.(eachcol(ϵJ))
+    else
+        zeros(T, size(u, 2))
+    end
+    du[(end - n_aug + 3), :] .= if (NORM_Z_AUG && AUGMENTED)
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(u, 2))
+    end
     nothing
 end
 
@@ -535,9 +630,21 @@ function augmented_f(
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
-    Ė = transpose(NORM_Z ? norm.(eachcol(ż)) : zeros(T, size(u, 2)))
-    ṅ = transpose(NORM_J ? norm.(eachcol(Jϵ)) : zeros(T, size(u, 2)))
-    Ȧ = transpose((NORM_Z_AUG && AUGMENTED) ? norm.(eachcol(z_aug)) : zeros(T, size(u, 2)))
+    Ė = transpose(if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zeros(T, size(u, 2))
+    end)
+    ṅ = transpose(if NORM_J
+        norm.(eachcol(Jϵ))
+    else
+        zeros(T, size(u, 2))
+    end)
+    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(u, 2))
+    end)
     vcat(ż, l̇, Ė, ṅ, Ȧ)
 end
 
@@ -574,10 +681,21 @@ function augmented_f(
     Jϵ = reshape(Jf * ϵ, size(z))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= NORM_Z ? norm.(eachcol(ż)) : zeros(T, size(u, 2))
-    du[(end - n_aug + 2), :] .= NORM_J ? norm.(eachcol(Jϵ)) : zeros(T, size(u, 2))
-    du[(end - n_aug + 3), :] .=
-        (NORM_Z_AUG && AUGMENTED) ? norm.(eachcol(z_aug)) : zeros(T, size(u, 2))
+    du[(end - n_aug + 1), :] .= if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zeros(T, size(u, 2))
+    end
+    du[(end - n_aug + 2), :] .= if NORM_J
+        norm.(eachcol(Jϵ))
+    else
+        zeros(T, size(u, 2))
+    end
+    du[(end - n_aug + 3), :] .= if (NORM_Z_AUG && AUGMENTED)
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(u, 2))
+    end
     nothing
 end
 
@@ -611,9 +729,21 @@ function augmented_f(
     end, z)
     ϵJ = only(VJ(ϵ))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(NORM_Z ? norm.(eachcol(ż)) : zeros(T, size(u, 2)))
-    ṅ = transpose(NORM_J ? norm.(eachcol(ϵJ)) : zeros(T, size(u, 2)))
-    Ȧ = transpose((NORM_Z_AUG && AUGMENTED) ? norm.(eachcol(z_aug)) : zeros(T, size(u, 2)))
+    Ė = transpose(if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zeros(T, size(u, 2))
+    end)
+    ṅ = transpose(if NORM_J
+        norm.(eachcol(ϵJ))
+    else
+        zeros(T, size(u, 2))
+    end)
+    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(u, 2))
+    end)
     vcat(ż, l̇, Ė, ṅ, Ȧ)
 end
 
@@ -649,10 +779,21 @@ function augmented_f(
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= NORM_Z ? norm.(eachcol(ż)) : zeros(T, size(u, 2))
-    du[(end - n_aug + 2), :] .= NORM_J ? norm.(eachcol(ϵJ)) : zeros(T, size(u, 2))
-    du[(end - n_aug + 3), :] .=
-        (NORM_Z_AUG && AUGMENTED) ? norm.(eachcol(z_aug)) : zeros(T, size(u, 2))
+    du[(end - n_aug + 1), :] .= if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zeros(T, size(u, 2))
+    end
+    du[(end - n_aug + 2), :] .= if NORM_J
+        norm.(eachcol(ϵJ))
+    else
+        zeros(T, size(u, 2))
+    end
+    du[(end - n_aug + 3), :] .= if (NORM_Z_AUG && AUGMENTED)
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(u, 2))
+    end
     nothing
 end
 
