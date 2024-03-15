@@ -344,7 +344,7 @@ function augmented_f(
     else
         zero(T)
     end
-    Ȧ = if NORM_Z_AUG
+    Ȧ = if (NORM_Z_AUG && AUGMENTED)
         norm(z_aug)
     else
         zero(T)
