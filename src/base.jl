@@ -41,7 +41,7 @@ function construct(
     else
         zero(data_type)
     end,
-    λ₃::AbstractFloat = convert(data_type, 1e-2),
+    λ₃::AbstractFloat = zero(data_type),
 )
     steerdist = Uniform{data_type}(-steer_rate, steer_rate)
 
