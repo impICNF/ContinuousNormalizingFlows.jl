@@ -105,8 +105,8 @@ function Base.show(io::IO, icnf::AbstractFlows)
 end
 
 @inline function n_augment_input(
-    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, INPLACE, true},
-) where {INPLACE}
+    icnf::AbstractFlows{<:AbstractFloat, <:ComputeMode, INPLACE, COND, true},
+) where {INPLACE, COND}
     icnf.naugmented
 end
 
@@ -115,9 +115,9 @@ end
 end
 
 @inline function steer_tspan(
-    icnf::AbstractFlows{T, <:ComputeMode, INPLACE, AUGMENTED, true},
+    icnf::AbstractFlows{T, <:ComputeMode, INPLACE, COND, AUGMENTED, true},
     ::TrainMode,
-) where {T <: AbstractFloat, INPLACE, AUGMENTED}
+) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
     r = convert(T, rand(icnf.rng, icnf.steerdist))
