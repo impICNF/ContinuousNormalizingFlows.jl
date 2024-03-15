@@ -102,9 +102,19 @@
                 compute_mode,
                 inplace,
                 resource,
-                steer_rate = convert(data_type, 0.1),
+                steer_rate = convert(data_type, 1e-1),
+                λ₃ = convert(data_type, 1e-2),
             ),
-            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+            construct(
+                mt,
+                nn,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+                λ₃ = convert(data_type, 1e-2),
+            ),
         )
         if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
             model = CondICNFModel(icnf; n_epochs, adtype)
