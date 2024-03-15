@@ -42,7 +42,7 @@ struct ICNF{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: NamedTuple,
     RNG <: AbstractRNG,
-} <: ICNF{T, CM, INPLACE, COND, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER}
     nn::NN
     nvars::NVARS
     naugmented::NVARS
