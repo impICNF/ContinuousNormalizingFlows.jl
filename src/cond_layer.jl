@@ -1,11 +1,7 @@
 struct CondLayer{NN <: LuxCore.AbstractExplicitLayer, AT <: AbstractArray} <:
-       LuxCore.AbstractExplicitLayer
+       LuxCore.AbstractExplicitContainerLayer{(:nn,)}
     nn::NN
     ys::AT
-end
-
-function LuxCore.initialparameters(rng::AbstractRNG, layer::CondLayer)
-    LuxCore.initialparameters(rng, layer.nn)
 end
 
 @inline function (m::CondLayer)(z::AbstractArray, ps::Any, st::Any)
