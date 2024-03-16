@@ -67,7 +67,7 @@
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
 
         nn = ifelse(
-            mt <: ContinuousNormalizingFlows.AbstractCondICNF,
+            mt <: Union{CondRNODE, CondFFJORD, CondPlanar},
             ifelse(
                 mt <: CondPlanar,
                 ifelse(
@@ -102,11 +102,21 @@
                 compute_mode,
                 inplace,
                 resource,
-                steer_rate = convert(data_type, 0.1),
+                steer_rate = convert(data_type, 1e-1),
+                λ₃ = convert(data_type, 1e-2),
             ),
-            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+            construct(
+                mt,
+                nn,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+                λ₃ = convert(data_type, 1e-2),
+            ),
         )
-        if mt <: ContinuousNormalizingFlows.AbstractCondICNF
+        if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
 
