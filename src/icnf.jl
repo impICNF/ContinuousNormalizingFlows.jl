@@ -213,7 +213,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
     end
@@ -266,7 +266,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
     end
@@ -319,7 +319,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
     end
@@ -373,7 +373,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
     end
@@ -427,7 +427,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
     end
@@ -476,7 +476,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
     end
@@ -525,7 +525,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
@@ -575,7 +575,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
@@ -625,7 +625,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
@@ -675,7 +675,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
@@ -725,7 +725,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
@@ -774,7 +774,7 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if AUGMENTED
+    if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
