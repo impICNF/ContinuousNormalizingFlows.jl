@@ -28,7 +28,7 @@ icnf = construct(
     naugs;
     compute_mode = ZygoteMatrixMode,
     tspan = (0.0f0, 13.0f0),
-    steer_rate = 0.1f0,
+    steer_rate = 1.0f-1,
     rng,
 )
 ps, st = Lux.setup(icnf.rng, icnf)
@@ -59,7 +59,7 @@ icnf2 = construct(
     inplace = true,
     compute_mode = ZygoteMatrixMode,
     tspan = (0.0f0, 13.0f0),
-    steer_rate = 0.1f0,
+    steer_rate = 1.0f-1,
     rng,
 )
 

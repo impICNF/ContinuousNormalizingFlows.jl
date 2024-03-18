@@ -18,7 +18,8 @@
         naugs;
         compute_mode = ZygoteMatrixMode,
         tspan = (0.0f0, 13.0f0),
-        steer_rate = 0.1f0,
+        steer_rate = 1.0f-1,
+        λ₃ = 1.0f-2,
     )
     ps, st = Lux.setup(icnf.rng, icnf)
     ps = ComponentArrays.ComponentArray(ps)
