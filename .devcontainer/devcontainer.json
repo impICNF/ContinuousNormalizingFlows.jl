@@ -1,0 +1,7 @@
+{
+    "image": "julia:latest",
+    "features": {
+        "ghcr.io/julialang/devcontainer-features/julia:1": {
+        }
+    }
+}
