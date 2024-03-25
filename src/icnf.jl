@@ -84,7 +84,7 @@ function augmented_f(
     ż, J = AbstractDifferentiation.value_and_jacobian(
         icnf.differentiation_backend,
         let p = p
-            x -> nn(x, p)
+            x -> LuxCore.apply(nn, x, p)
         end,
         z,
     )
@@ -107,7 +107,7 @@ function augmented_f(
     ż, J = AbstractDifferentiation.value_and_jacobian(
         icnf.differentiation_backend,
         let p = p
-            x -> nn(x, p)
+            x -> LuxCore.apply(nn, x, p)
         end,
         z,
     )
@@ -128,7 +128,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, J = Zygote.withjacobian(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     l̇ = -tr(only(J))
     vcat(ż, l̇)
@@ -147,7 +147,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, J = Zygote.withjacobian(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -tr(only(J))
@@ -166,7 +166,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     l̇ = -transpose(tr.(eachslice(J; dims = 3)))
     vcat(ż, l̇)
@@ -185,7 +185,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -(tr.(eachslice(J; dims = 3)))
@@ -220,7 +220,7 @@ function augmented_f(
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let p = p
-            x -> nn(x, p)
+            x -> LuxCore.apply(nn, x, p)
         end,
         z,
     )
@@ -273,7 +273,7 @@ function augmented_f(
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let p = p
-            x -> nn(x, p)
+            x -> LuxCore.apply(nn, x, p)
         end,
         z,
     )
@@ -326,7 +326,7 @@ function augmented_f(
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let p = p
-            x -> nn(x, p)
+            x -> LuxCore.apply(nn, x, p)
         end,
         z,
     )
@@ -380,7 +380,7 @@ function augmented_f(
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let p = p
-            x -> nn(x, p)
+            x -> LuxCore.apply(nn, x, p)
         end,
         z,
     )
@@ -432,7 +432,7 @@ function augmented_f(
         z_aug = z[(end - n_aug_input + 1):end]
     end
     ż, VJ = Zygote.pullback(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     ϵJ = only(VJ(ϵ))
     l̇ = -(ϵJ ⋅ ϵ)
@@ -481,7 +481,7 @@ function augmented_f(
         z_aug = z[(end - n_aug_input + 1):end]
     end
     ż, VJ = Zygote.pullback(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1)] .= ż
@@ -529,9 +529,9 @@ function augmented_f(
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
-    ż = nn(z, p)
+    ż = LuxCore.apply(nn, z, p)
     Jf = VecJac(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
@@ -579,9 +579,9 @@ function augmented_f(
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
-    ż = nn(z, p)
+    ż = LuxCore.apply(nn, z, p)
     Jf = VecJac(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z; autodiff = icnf.autodiff_backend)
     ϵJ = reshape(Jf * ϵ, size(z))
     du[begin:(end - n_aug - 1), :] .= ż
@@ -629,9 +629,9 @@ function augmented_f(
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
-    ż = nn(z, p)
+    ż = LuxCore.apply(nn, z, p)
     Jf = JacVec(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
@@ -679,9 +679,9 @@ function augmented_f(
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
-    ż = nn(z, p)
+    ż = LuxCore.apply(nn, z, p)
     Jf = JacVec(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z; autodiff = icnf.autodiff_backend)
     Jϵ = reshape(Jf * ϵ, size(z))
     du[begin:(end - n_aug - 1), :] .= ż
@@ -730,7 +730,7 @@ function augmented_f(
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
     ż, VJ = Zygote.pullback(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     ϵJ = only(VJ(ϵ))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
@@ -779,7 +779,7 @@ function augmented_f(
         z_aug = z[(end - n_aug_input + 1):end, :]
     end
     ż, VJ = Zygote.pullback(let p = p
-        x -> nn(x, p)
+        x -> LuxCore.apply(nn, x, p)
     end, z)
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1), :] .= ż
