@@ -22,8 +22,8 @@
         ]
     end
     n_epochs_ = Int[2]
-    ndata_ = Int[4]
-    nvars_ = Int[2]
+    ndata_ = Int[2^6]
+    nvars_ = Int[2^3]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
     adtypes = ADTypes.AbstractADType[
