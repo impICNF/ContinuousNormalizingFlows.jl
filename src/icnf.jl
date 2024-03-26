@@ -1,19 +1,61 @@
 export ICNF, RNODE, CondRNODE, FFJORD, CondFFJORD, Planar, CondPlanar
 
-struct Planar{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
-struct CondPlanar{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct Planar{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+struct CondPlanar{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
-struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
-struct CondFFJORD{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct FFJORD{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+struct CondFFJORD{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
-struct RNODE{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
-struct CondRNODE{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct RNODE{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+struct CondRNODE{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
 """
 Implementation of ICNF.
