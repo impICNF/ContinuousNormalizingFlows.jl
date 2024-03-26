@@ -804,20 +804,46 @@ end
 
 @inline function loss(
     icnf::ICNF{<:AbstractFloat, <:VectorMode},
-    mode::Mode,
+    mode::TrainMode,
     xs::AbstractVector{<:Real},
     ps::Any,
+    st::Any,
 )
-    logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps)
+    logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
+    -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
+end
+
+@inline function loss(
+    icnf::ICNF{<:AbstractFloat, <:VectorMode},
+    mode::TrainMode,
+    xs::AbstractVector{<:Real},
+    ys::AbstractVector{<:Real},
+    ps::Any,
+    st::Any,
+)
+    logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
 end
 
 @inline function loss(
     icnf::ICNF{<:AbstractFloat, <:MatrixMode},
-    mode::Mode,
+    mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
+    st::Any,
 )
-    logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps)
+    logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
+    mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
+end
+
+@inline function loss(
+    icnf::ICNF{<:AbstractFloat, <:MatrixMode},
+    mode::TrainMode,
+    xs::AbstractMatrix{<:Real},
+    ys::AbstractMatrix{<:Real},
+    ps::Any,
+    st::Any,
+)
+    logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
 end
