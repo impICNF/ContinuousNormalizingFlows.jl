@@ -196,21 +196,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADVecJacVectorMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
@@ -240,21 +230,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADVecJacVectorMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
@@ -284,21 +264,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADJacVecVectorMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
@@ -329,21 +299,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADJacVecVectorMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
@@ -374,21 +334,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteVectorMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = Zygote.pullback(let p = p
@@ -414,21 +364,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteVectorMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = Zygote.pullback(let p = p
@@ -454,21 +394,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:SDVecJacMatrixMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:SDVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = LuxCore.apply(nn, z, p)
@@ -495,21 +425,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:SDVecJacMatrixMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:SDVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = LuxCore.apply(nn, z, p)
@@ -536,21 +456,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:SDJacVecMatrixMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:SDJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = LuxCore.apply(nn, z, p)
@@ -577,21 +487,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:SDJacVecMatrixMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:SDJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż = LuxCore.apply(nn, z, p)
@@ -618,21 +518,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteMatrixMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, VJ = Zygote.pullback(let p = p
@@ -658,21 +548,11 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteMatrixMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, VJ = Zygote.pullback(let p = p
