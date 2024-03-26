@@ -18,6 +18,7 @@ using AbstractDifferentiation,
     MLJModelInterface,
     MLUtils,
     NNlib,
+    Octavian,
     Optimisers,
     Optimization,
     OptimizationOptimisers,
@@ -31,21 +32,21 @@ using AbstractDifferentiation,
     Statistics,
     Zygote
 
+include(joinpath("layers", "cond_layer.jl"))
+include(joinpath("layers", "planar_layer.jl"))
+include(joinpath("layers", "mul_layer.jl"))
+
 include("types.jl")
 
-include("planar_layer.jl")
-include("cond_layer.jl")
-
-include("base.jl")
 include("base_icnf.jl")
-
-include("core.jl")
-include("core_icnf.jl")
-include("core_cond_icnf.jl")
 
 include("icnf.jl")
 
 include("utils.jl")
+
+include(joinpath("cores", "core.jl"))
+include(joinpath("cores", "core_icnf.jl"))
+include(joinpath("cores", "core_cond_icnf.jl"))
 
 """
 Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Julia
