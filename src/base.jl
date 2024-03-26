@@ -144,10 +144,10 @@ end
 @non_differentiable base_AT(::Any...)
 
 function inference_sol(
-    icnf::AbstractFlows{T, <:VectorMode, INPLACE},
+    icnf::AbstractFlows{T, <:VectorMode, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG},
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
-) where {T <: AbstractFloat, INPLACE}
+) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
     fsol = get_fsol(sol)
@@ -156,14 +156,21 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end]
     logpz = oftype(Δlogp, logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    (logp̂x, augs)
+    Ȧ = if (NORM_Z_AUG && AUGMENTED)
+        n_aug_input = n_augment_input(icnf)
+        z_aug = z[(end - n_aug_input + 1):end]
+        norm(z_aug)
+    else
+        zero(T)
+    end
+    (logp̂x, vcat(augs, Ȧ))
 end
 
 function inference_sol(
-    icnf::AbstractFlows{T, <:MatrixMode, INPLACE},
+    icnf::AbstractFlows{T, <:MatrixMode, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG},
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
-) where {T <: AbstractFloat, INPLACE}
+) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
     sol = solve(prob; icnf.sol_kwargs...)
     fsol = get_fsol(sol)
@@ -172,7 +179,14 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end, :]
     logpz = oftype(Δlogp, logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    (logp̂x, eachrow(augs))
+    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
+        n_aug_input = n_augment_input(icnf)
+        z_aug = z[(end - n_aug_input + 1):end, :]
+        norm.(eachcol(z_aug))
+    else
+        zeros(T, size(z, 2))
+    end)
+    (logp̂x, eachrow(vcat(augs, Ȧ)))
 end
 
 function generate_sol(
