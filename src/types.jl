@@ -33,6 +33,7 @@ abstract type AbstractFlows{
     COND,
     AUGMENTED,
     STEER,
+    NORM_Z_AUG,
 } <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} end
 abstract type AbstractICNF{
     T <: AbstractFloat,
@@ -41,7 +42,8 @@ abstract type AbstractICNF{
     COND,
     AUGMENTED,
     STEER,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
 # MLJ interface
 

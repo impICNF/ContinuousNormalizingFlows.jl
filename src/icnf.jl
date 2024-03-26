@@ -1,19 +1,61 @@
 export ICNF, RNODE, CondRNODE, FFJORD, CondFFJORD, Planar, CondPlanar
 
-struct Planar{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
-struct CondPlanar{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct Planar{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+struct CondPlanar{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
-struct FFJORD{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
-struct CondFFJORD{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct FFJORD{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+struct CondFFJORD{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
-struct RNODE{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
-struct CondRNODE{T <: AbstractFloat, CM <: ComputeMode, INPLACE, COND, AUGMENTED, STEER} <:
-       AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER} end
+struct RNODE{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+struct CondRNODE{
+    T <: AbstractFloat,
+    CM <: ComputeMode,
+    INPLACE,
+    COND,
+    AUGMENTED,
+    STEER,
+    NORM_Z_AUG,
+} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
 """
 Implementation of ICNF.
@@ -47,7 +89,7 @@ struct ICNF{
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: NamedTuple,
     RNG <: AbstractRNG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER}
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
     nn::NN
     nvars::NVARS
     naugmented::NVARS
@@ -67,7 +109,7 @@ struct ICNF{
 end
 
 @inline function n_augment(::ICNF, ::TrainMode)
-    3
+    2
 end
 
 function augmented_f(
@@ -196,27 +238,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADVecJacVectorMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-    end
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let p = p
@@ -236,12 +264,7 @@ function augmented_f(
     else
         zero(T)
     end
-    Ȧ = if (NORM_Z_AUG && AUGMENTED)
-        norm(z_aug)
-    else
-        zero(T)
-    end
-    vcat(ż, l̇, Ė, ṅ, Ȧ)
+    vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -249,27 +272,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADVecJacVectorMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-    end
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
         icnf.differentiation_backend,
         let p = p
@@ -290,11 +299,6 @@ function augmented_f(
     else
         zero(T)
     end
-    du[(end - n_aug + 3)] = if (NORM_Z_AUG && AUGMENTED)
-        norm(z_aug)
-    else
-        zero(T)
-    end
     nothing
 end
 
@@ -302,27 +306,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADJacVecVectorMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-    end
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let p = p
@@ -343,12 +333,7 @@ function augmented_f(
     else
         zero(T)
     end
-    Ȧ = if (NORM_Z_AUG && AUGMENTED)
-        norm(z_aug)
-    else
-        zero(T)
-    end
-    vcat(ż, l̇, Ė, ṅ, Ȧ)
+    vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -356,27 +341,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ADJacVecVectorMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ADJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-    end
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
         icnf.differentiation_backend,
         let p = p
@@ -398,11 +369,6 @@ function augmented_f(
     else
         zero(T)
     end
-    du[(end - n_aug + 3)] = if (NORM_Z_AUG && AUGMENTED)
-        norm(z_aug)
-    else
-        zero(T)
-    end
     nothing
 end
 
@@ -410,27 +376,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteVectorMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-    end
     ż, VJ = Zygote.pullback(let p = p
         x -> LuxCore.apply(nn, x, p)
     end, z)
@@ -446,12 +398,7 @@ function augmented_f(
     else
         zero(T)
     end
-    Ȧ = if (NORM_Z_AUG && AUGMENTED)
-        norm(z_aug)
-    else
-        zero(T)
-    end
-    vcat(ż, l̇, Ė, ṅ, Ȧ)
+    vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -459,27 +406,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteVectorMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-    end
     ż, VJ = Zygote.pullback(let p = p
         x -> LuxCore.apply(nn, x, p)
     end, z)
@@ -496,8 +429,69 @@ function augmented_f(
     else
         zero(T)
     end
-    du[(end - n_aug + 3)] = if (NORM_Z_AUG && AUGMENTED)
-        norm(z_aug)
+    nothing
+end
+
+function augmented_f(
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:SDVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn,
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = LuxCore.apply(nn, z, p)
+    Jf = VecJac(let p = p
+        x -> LuxCore.apply(nn, x, p)
+    end, z; autodiff = icnf.autodiff_backend)
+    ϵJ = reshape(Jf * ϵ, size(z))
+    l̇ = -sum(ϵJ .* ϵ; dims = 1)
+    Ė = transpose(if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zrs_Ė = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
+    end)
+    ṅ = transpose(if NORM_J
+        norm.(eachcol(ϵJ))
+    else
+        zrs_ṅ = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
+    end)
+    vcat(ż, l̇, Ė, ṅ)
+end
+
+function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:SDVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn,
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = LuxCore.apply(nn, z, p)
+    Jf = VecJac(let p = p
+        x -> LuxCore.apply(nn, x, p)
+    end, z; autodiff = icnf.autodiff_backend)
+    ϵJ = reshape(Jf * ϵ, size(z))
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
+    du[(end - n_aug + 1), :] .= if NORM_Z
+        norm.(eachcol(ż))
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2), :] .= if NORM_J
+        norm.(eachcol(ϵJ))
     else
         zero(T)
     end
@@ -508,127 +502,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:SDVecJacMatrixMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:SDJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-    end
-    ż = LuxCore.apply(nn, z, p)
-    Jf = VecJac(let p = p
-        x -> LuxCore.apply(nn, x, p)
-    end, z; autodiff = icnf.autodiff_backend)
-    ϵJ = reshape(Jf * ϵ, size(z))
-    l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(if NORM_Z
-        norm.(eachcol(ż))
-    else
-        zeros(T, size(u, 2))
-    end)
-    ṅ = transpose(if NORM_J
-        norm.(eachcol(ϵJ))
-    else
-        zeros(T, size(u, 2))
-    end)
-    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
-        norm.(eachcol(z_aug))
-    else
-        zeros(T, size(u, 2))
-    end)
-    vcat(ż, l̇, Ė, ṅ, Ȧ)
-end
-
-function augmented_f(
-    du::Any,
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{
-        T,
-        <:SDVecJacMatrixMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
-    mode::TrainMode,
-    nn,
-    ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1), :]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-    end
-    ż = LuxCore.apply(nn, z, p)
-    Jf = VecJac(let p = p
-        x -> LuxCore.apply(nn, x, p)
-    end, z; autodiff = icnf.autodiff_backend)
-    ϵJ = reshape(Jf * ϵ, size(z))
-    du[begin:(end - n_aug - 1), :] .= ż
-    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= if NORM_Z
-        norm.(eachcol(ż))
-    else
-        zeros(T, size(u, 2))
-    end
-    du[(end - n_aug + 2), :] .= if NORM_J
-        norm.(eachcol(ϵJ))
-    else
-        zeros(T, size(u, 2))
-    end
-    du[(end - n_aug + 3), :] .= if (NORM_Z_AUG && AUGMENTED)
-        norm.(eachcol(z_aug))
-    else
-        zeros(T, size(u, 2))
-    end
-    nothing
-end
-
-function augmented_f(
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{
-        T,
-        <:SDJacVecMatrixMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
-    mode::TrainMode,
-    nn,
-    ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1), :]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-    end
     ż = LuxCore.apply(nn, z, p)
     Jf = JacVec(let p = p
         x -> LuxCore.apply(nn, x, p)
@@ -638,19 +518,18 @@ function augmented_f(
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zrs_Ė = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(Jϵ))
     else
-        zeros(T, size(u, 2))
+        zrs_ṅ = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
     end)
-    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
-        norm.(eachcol(z_aug))
-    else
-        zeros(T, size(u, 2))
-    end)
-    vcat(ż, l̇, Ė, ṅ, Ȧ)
+    vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -658,27 +537,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:SDJacVecMatrixMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:SDJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-    end
     ż = LuxCore.apply(nn, z, p)
     Jf = JacVec(let p = p
         x -> LuxCore.apply(nn, x, p)
@@ -689,17 +554,12 @@ function augmented_f(
     du[(end - n_aug + 1), :] .= if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
         norm.(eachcol(Jϵ))
     else
-        zeros(T, size(u, 2))
-    end
-    du[(end - n_aug + 3), :] .= if (NORM_Z_AUG && AUGMENTED)
-        norm.(eachcol(z_aug))
-    else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     nothing
 end
@@ -708,27 +568,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteMatrixMode,
-        false,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-    end
     ż, VJ = Zygote.pullback(let p = p
         x -> LuxCore.apply(nn, x, p)
     end, z)
@@ -737,19 +583,18 @@ function augmented_f(
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zrs_Ė = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(ϵJ))
     else
-        zeros(T, size(u, 2))
+        zrs_ṅ = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
     end)
-    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
-        norm.(eachcol(z_aug))
-    else
-        zeros(T, size(u, 2))
-    end)
-    vcat(ż, l̇, Ė, ṅ, Ȧ)
+    vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -757,27 +602,13 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{
-        T,
-        <:ZygoteMatrixMode,
-        true,
-        COND,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-        NORM_Z_AUG,
-    },
+    icnf::ICNF{T, <:ZygoteMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, NORM_Z_AUG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    if (NORM_Z_AUG && AUGMENTED)
-        n_aug_input = n_augment_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-    end
     ż, VJ = Zygote.pullback(let p = p
         x -> LuxCore.apply(nn, x, p)
     end, z)
@@ -787,17 +618,12 @@ function augmented_f(
     du[(end - n_aug + 1), :] .= if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
         norm.(eachcol(ϵJ))
     else
-        zeros(T, size(u, 2))
-    end
-    du[(end - n_aug + 3), :] .= if (NORM_Z_AUG && AUGMENTED)
-        norm.(eachcol(z_aug))
-    else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     nothing
 end
