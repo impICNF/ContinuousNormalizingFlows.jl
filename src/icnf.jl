@@ -452,12 +452,16 @@ function augmented_f(
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zrs_Ė = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(ϵJ))
     else
-        zeros(T, size(u, 2))
+        zrs_ṅ = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
     end)
     vcat(ż, l̇, Ė, ṅ)
 end
@@ -484,12 +488,12 @@ function augmented_f(
     du[(end - n_aug + 1), :] .= if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
         norm.(eachcol(ϵJ))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     nothing
 end
@@ -514,12 +518,16 @@ function augmented_f(
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zrs_Ė = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(Jϵ))
     else
-        zeros(T, size(u, 2))
+        zrs_ṅ = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
     end)
     vcat(ż, l̇, Ė, ṅ)
 end
@@ -546,12 +554,12 @@ function augmented_f(
     du[(end - n_aug + 1), :] .= if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
         norm.(eachcol(Jϵ))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     nothing
 end
@@ -575,12 +583,16 @@ function augmented_f(
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zrs_Ė = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(ϵJ))
     else
-        zeros(T, size(u, 2))
+        zrs_ṅ = similar(ż, size(ż, 2))
+        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
     end)
     vcat(ż, l̇, Ė, ṅ)
 end
@@ -606,12 +618,12 @@ function augmented_f(
     du[(end - n_aug + 1), :] .= if NORM_Z
         norm.(eachcol(ż))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
         norm.(eachcol(ϵJ))
     else
-        zeros(T, size(u, 2))
+        zero(T)
     end
     nothing
 end

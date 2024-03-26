@@ -184,7 +184,9 @@ function inference_sol(
         z_aug = z[(end - n_aug_input + 1):end, :]
         norm.(eachcol(z_aug))
     else
-        zeros(T, size(z, 2))
+        zrs_aug = similar(augs, size(augs, 2))
+        @ignore_derivatives fill!(zrs_aug, zero(T))
+        zrs_aug
     end)
     (logp̂x, eachrow(vcat(augs, Ȧ)))
 end
