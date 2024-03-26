@@ -6,8 +6,8 @@ end
 
 function MulLayer(
     nvars::Int,
-    activation = identity;
-    init_weight = Lux.glorot_uniform,
+    activation::Any = identity;
+    init_weight::Any = Lux.glorot_uniform,
     allow_fast_activation::Bool = true,
 )
     activation = ifelse(allow_fast_activation, NNlib.fast_act(activation), activation)
@@ -30,6 +30,6 @@ function LuxCore.outputsize(m::MulLayer)
     (m.nvars,)
 end
 
-@inline function (m::MulLayer)(x::AbstractVecOrMat, ps, st::NamedTuple)
+@inline function (m::MulLayer)(x::AbstractVecOrMat, ps::Any, st::NamedTuple)
     return Lux.__apply_activation(m.activation, Octavian.matmul(ps.weight, x)), st
 end

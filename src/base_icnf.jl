@@ -579,7 +579,7 @@ end
 end
 
 @inline function (icnf::AbstractICNF{T, CM, INPLACE, false})(
-    xs::Any,
+    xs::AbstractVecOrMat,
     ps::Any,
     st::NamedTuple,
 ) where {T, CM, INPLACE}
@@ -587,7 +587,7 @@ end
 end
 
 @inline function (icnf::AbstractICNF{T, CM, INPLACE, true})(
-    xs_ys::Any,
+    xs_ys::Tuple,
     ps::Any,
     st::NamedTuple,
 ) where {T, CM, INPLACE}
