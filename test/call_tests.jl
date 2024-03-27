@@ -1,18 +1,18 @@
 @testset "Call Tests" begin
     mts = if GROUP == "RNODE"
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[RNODE]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE]
     elseif GROUP == "FFJORD"
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[FFJORD]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[FFJORD]
     elseif GROUP == "Planar"
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[Planar]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[Planar]
     elseif GROUP == "CondRNODE"
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondRNODE]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[CondRNODE]
     elseif GROUP == "CondFFJORD"
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondFFJORD]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[CondFFJORD]
     elseif GROUP == "CondPlanar"
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[CondPlanar]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[CondPlanar]
     else
-        Type{<:ContinuousNormalizingFlows.AbstractFlows}[
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[
             RNODE,
             FFJORD,
             Planar,

@@ -9,7 +9,7 @@ end
 
 @inline function ContinuousNormalizingFlows.base_AT(
     ::CUDALibs,
-    ::ContinuousNormalizingFlows.AbstractFlows{T},
+    ::ContinuousNormalizingFlows.AbstractICNF{T},
     dims...,
 ) where {T <: AbstractFloat}
     CuArray{T}(undef, dims...)

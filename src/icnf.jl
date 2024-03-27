@@ -8,7 +8,7 @@ struct Planar{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 struct CondPlanar{
     T <: AbstractFloat,
     CM <: ComputeMode,
@@ -17,7 +17,7 @@ struct CondPlanar{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
 struct FFJORD{
     T <: AbstractFloat,
@@ -27,7 +27,7 @@ struct FFJORD{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 struct CondFFJORD{
     T <: AbstractFloat,
     CM <: ComputeMode,
@@ -36,7 +36,7 @@ struct CondFFJORD{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
 struct RNODE{
     T <: AbstractFloat,
@@ -46,7 +46,7 @@ struct RNODE{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 struct CondRNODE{
     T <: AbstractFloat,
     CM <: ComputeMode,
@@ -55,7 +55,7 @@ struct CondRNODE{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: AbstractFlows{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
+} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
 
 """
 Implementation of ICNF.
@@ -633,7 +633,7 @@ end
     mode::TrainMode,
     xs::AbstractVector{<:Real},
     ps::Any,
-    st::Any,
+    st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
@@ -645,7 +645,7 @@ end
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
-    st::Any,
+    st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
     -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
@@ -656,7 +656,7 @@ end
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any,
+    st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
@@ -668,7 +668,7 @@ end
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
-    st::Any,
+    st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
     mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)

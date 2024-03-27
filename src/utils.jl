@@ -1,5 +1,5 @@
 function jacobian_batched(
-    icnf::AbstractFlows{T, <:SDVecJacMatrixMode},
+    icnf::AbstractICNF{T, <:SDVecJacMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
@@ -17,7 +17,7 @@ function jacobian_batched(
 end
 
 function jacobian_batched(
-    icnf::AbstractFlows{T, <:SDJacVecMatrixMode},
+    icnf::AbstractICNF{T, <:SDJacVecMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
@@ -35,7 +35,7 @@ function jacobian_batched(
 end
 
 function jacobian_batched(
-    ::AbstractFlows{T, <:ZygoteMatrixMode},
+    ::AbstractICNF{T, <:ZygoteMatrixMode},
     f,
     xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
