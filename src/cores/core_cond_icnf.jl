@@ -6,13 +6,12 @@ mutable struct CondICNFModel <: MLJICNF
     m::AbstractICNF
     loss::Function
 
-    optimizers::AbstractVector
+    optimizers::Tuple
     n_epochs::Int
     adtype::ADTypes.AbstractADType
 
     use_batch::Bool
     batch_size::Int
-    have_callback::Bool
 
     compute_mode::Type{<:ComputeMode}
 end
@@ -20,24 +19,13 @@ end
 function CondICNFModel(
     m::AbstractICNF{<:AbstractFloat, CM},
     loss::Function = loss;
-    optimizers::AbstractVector = Any[Optimisers.Lion(),],
+    optimizers::Tuple = (Lion(),),
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
-    have_callback::Bool = true,
 ) where {CM <: ComputeMode}
-    CondICNFModel(
-        m,
-        loss,
-        optimizers,
-        n_epochs,
-        adtype,
-        use_batch,
-        batch_size,
-        have_callback,
-        CM,
-    )
+    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, CM)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -88,43 +76,28 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                 data = [(x, y)]
             end
             optprob_re = remake(optprob; u0 = ps)
-            if model.have_callback
-                prgr = Progress(
-                    length(data);
-                    desc = "Fitting (epoch: $ep of $(model.n_epochs)): ",
-                    showspeed = true,
-                )
-                itr_n = ones(Int)
-                tst_one = @timed res = solve(
-                    optprob_re,
-                    opt,
-                    data;
-                    callback = let mm = model.m, prgr = prgr, itr_n = itr_n
-                        (ps_, l_) -> callback_f(ps_, l_, mm, prgr, itr_n)
-                    end,
-                )
-                ProgressMeter.finish!(prgr)
-
-            else
-                tst_one = @timed res = solve(optprob_re, opt, data)
-            end
+            tst_one = @timed res = solve(optprob_re, opt, data; progress = true)
             ps .= res.u
             @info(
                 "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
                 "elapsed time (seconds)" = tst_one.time,
                 "garbage collection time (seconds)" = tst_one.gctime,
+                "allocated (bytes)" = tst_one.bytes,
+                "final loss value" = res.objective,
             )
         end
         @info(
             "Fitting (all epochs) - $(typeof(opt).name.name)",
             "elapsed time (seconds)" = tst_epochs.time,
             "garbage collection time (seconds)" = tst_epochs.gctime,
+            "allocated (bytes)" = tst_epochs.bytes,
         )
     end
     @info(
         "Fitting - Overall",
         "elapsed time (seconds)" = tst_overall.time,
         "garbage collection time (seconds)" = tst_overall.gctime,
+        "allocated (bytes)" = tst_overall.bytes,
     )
 
     fitresult = (ps, st)

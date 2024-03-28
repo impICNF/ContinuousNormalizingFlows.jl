@@ -28,6 +28,10 @@ Pkg.add("ContinuousNormalizingFlows")
 ## Usage
 
 ```julia
+# Enable Logging
+using Logging, TerminalLoggers
+global_logger(TerminalLogger())
+
 # Parameters
 nvars = 1
 naugs = nvars
@@ -58,14 +62,14 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase #, ForwardDiff, ADTypes, Optimisers
+using DataFrames, MLJBase #, ForwardDiff, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 # model = ICNFModel(icnf) # use defaults
 model = ICNFModel(
     icnf;
     batch_size = 256, # have bigger batchs
     # n_epochs = 100, # have less epochs
-    # optimizers = [Optimisers.Adam()], # use a different optimizer
+    # optimizers = (Adam(),), # use a different optimizer
     # adtype = AutoForwardDiff(), # use ForwardDiff
 )
 mach = machine(model, df)
