@@ -69,7 +69,7 @@ model = ICNFModel(
     icnf;
     batch_size = 256, # have bigger batchs
     # n_epochs = 100, # have less epochs
-    # optimizers = (Lion(),), # use a different optimizer
+    # optimizers = (Adam(),), # use a different optimizer
     # adtype = AutoForwardDiff(), # use ForwardDiff
 )
 mach = machine(model, df)
