@@ -82,18 +82,22 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                 "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
                 "elapsed time (seconds)" = tst_one.time,
                 "garbage collection time (seconds)" = tst_one.gctime,
+                "bytes allocated" = tst_one.bytes,
+                "final loss value" = res.objective,
             )
         end
         @info(
             "Fitting (all epochs) - $(typeof(opt).name.name)",
             "elapsed time (seconds)" = tst_epochs.time,
             "garbage collection time (seconds)" = tst_epochs.gctime,
+            "bytes allocated" = tst_epochs.bytes,
         )
     end
     @info(
         "Fitting - Overall",
         "elapsed time (seconds)" = tst_overall.time,
         "garbage collection time (seconds)" = tst_overall.gctime,
+        "bytes allocated" = tst_overall.bytes,
     )
 
     fitresult = (ps, st)
