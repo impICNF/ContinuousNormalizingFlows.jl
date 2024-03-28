@@ -12,7 +12,6 @@ mutable struct CondICNFModel <: MLJICNF
 
     use_batch::Bool
     batch_size::Int
-    have_callback::Bool
 
     compute_mode::Type{<:ComputeMode}
 end
@@ -25,19 +24,8 @@ function CondICNFModel(
     adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
-    have_callback::Bool = true,
 ) where {CM <: ComputeMode}
-    CondICNFModel(
-        m,
-        loss,
-        optimizers,
-        n_epochs,
-        adtype,
-        use_batch,
-        batch_size,
-        have_callback,
-        CM,
-    )
+    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, CM)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -88,26 +76,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                 data = [(x, y)]
             end
             optprob_re = remake(optprob; u0 = ps)
-            if model.have_callback
-                prgr = Progress(
-                    length(data);
-                    desc = "Fitting (epoch: $ep of $(model.n_epochs)): ",
-                    showspeed = true,
-                )
-                itr_n = ones(Int)
-                tst_one = @timed res = solve(
-                    optprob_re,
-                    opt,
-                    data;
-                    callback = let mm = model.m, prgr = prgr, itr_n = itr_n
-                        (ps_, l_) -> callback_f(ps_, l_, mm, prgr, itr_n)
-                    end,
-                )
-                ProgressMeter.finish!(prgr)
-
-            else
-                tst_one = @timed res = solve(optprob_re, opt, data)
-            end
+            tst_one = @timed res = solve(optprob_re, opt, data; progress = true)
             ps .= res.u
             @info(
                 "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",

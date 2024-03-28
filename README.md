@@ -28,6 +28,10 @@ Pkg.add("ContinuousNormalizingFlows")
 ## Usage
 
 ```julia
+# Enable Logging
+using Logging, TerminalLoggers
+global_logger(TerminalLogger())
+
 # Parameters
 nvars = 1
 naugs = nvars
