@@ -6,7 +6,7 @@ mutable struct ICNFModel <: MLJICNF
     m::AbstractICNF
     loss::Function
 
-    optimizers::AbstractVector
+    optimizers::Tuple
     n_epochs::Int
     adtype::ADTypes.AbstractADType
 
@@ -19,7 +19,7 @@ end
 function ICNFModel(
     m::AbstractICNF{<:AbstractFloat, CM},
     loss::Function = loss;
-    optimizers::AbstractVector = Any[PolyOpt(),],
+    optimizers::Tuple = (PolyOpt(),),
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,
