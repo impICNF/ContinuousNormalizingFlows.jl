@@ -20,7 +20,7 @@ end
 function CondICNFModel(
     m::AbstractICNF{<:AbstractFloat, CM},
     loss::Function = loss;
-    optimizers::AbstractVector = Any[Optimisers.Lion(),],
+    optimizers::AbstractVector = Any[PolyOpt(),],
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = AutoZygote(),
     use_batch::Bool = true,

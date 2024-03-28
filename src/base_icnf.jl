@@ -26,10 +26,7 @@ function construct(
         AutoForwardDiff(),
         AutoZygote(),
     ),
-    sol_kwargs::NamedTuple = (
-        save_everystep = false,
-        alg = Tsit5(; thread = OrdinaryDiffEq.True()),
-    ),
+    sol_kwargs::NamedTuple = (save_everystep = false,),
     rng::AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1e-2)
