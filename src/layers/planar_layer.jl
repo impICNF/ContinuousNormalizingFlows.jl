@@ -73,33 +73,33 @@ function LuxCore.outputsize(m::PlanarLayer)
 end
 
 @inline function (m::PlanarLayer{true})(z::AbstractVector, ps::Any, st::NamedTuple)
-    ps.u * Lux.__apply_activation(m.activation, (ps.w ⋅ z) + only(ps.b)), st
+    ps.u * Lux.apply_bias_activation(m.activation, (ps.w ⋅ z), only(ps.b)), st
 end
 
 @inline function (m::PlanarLayer{true})(z::AbstractMatrix, ps::Any, st::NamedTuple)
-    ps.u * Lux.__apply_activation(m.activation, muladd(transpose(ps.w), z, only(ps.b))), st
+    ps.u * Lux.apply_bias_activation(m.activation, transpose(ps.w) * z, only(ps.b)), st
 end
 
 @inline function (m::PlanarLayer{false})(z::AbstractVector, ps::Any, st::NamedTuple)
-    ps.u * Lux.__apply_activation(m.activation, ps.w ⋅ z), st
+    ps.u * Lux.apply_activation(m.activation, ps.w ⋅ z), st
 end
 
 @inline function (m::PlanarLayer{false})(z::AbstractMatrix, ps::Any, st::NamedTuple)
-    ps.u * Lux.__apply_activation(m.activation, transpose(ps.w) * z), st
+    ps.u * Lux.apply_activation(m.activation, transpose(ps.w) * z), st
 end
 
 @inline function pl_h(m::PlanarLayer{true}, z::AbstractVector, ps::Any, st::NamedTuple)
-    Lux.__apply_activation(m.activation, (ps.w ⋅ z) + only(ps.b)), st
+    Lux.apply_bias_activation(m.activation, (ps.w ⋅ z), only(ps.b)), st
 end
 
 @inline function pl_h(m::PlanarLayer{true}, z::AbstractMatrix, ps::Any, st::NamedTuple)
-    Lux.__apply_activation(m.activation, muladd(transpose(ps.w), z, only(ps.b))), st
+    Lux.apply_bias_activation(m.activation, transpose(ps.w) * z, only(ps.b)), st
 end
 
 @inline function pl_h(m::PlanarLayer{false}, z::AbstractVector, ps::Any, st::NamedTuple)
-    Lux.__apply_activation(m.activation, ps.w ⋅ z), st
+    Lux.apply_activation(m.activation, ps.w ⋅ z), st
 end
 
 @inline function pl_h(m::PlanarLayer{false}, z::AbstractMatrix, ps::Any, st::NamedTuple)
-    Lux.__apply_activation(m.activation, transpose(ps.w) * z), st
+    Lux.apply_activation(m.activation, transpose(ps.w) * z), st
 end
