@@ -2,8 +2,8 @@ export ICNFModel, ICNFDist
 
 # MLJ interface
 
-mutable struct ICNFModel <: MLJICNF
-    m::AbstractICNF
+mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
+    m::AICNF
     loss::Function
 
     optimizers::Tuple
@@ -39,9 +39,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         st = gdev(st)
     end
     optfunc = OptimizationFunction(
-        let mm = model.m, md = TrainMode(), st = st
-            (u, p, xs_) -> model.loss(mm, md, xs_, u, st)
-        end,
+        make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
     )
     optprob = OptimizationProblem(optfunc, ps)
@@ -112,15 +110,10 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     end
     (ps, st) = fitresult
 
-    if model.compute_mode <: VectorMode
-        tst = @timed logp̂x = broadcast(
-            let mm = model.m, md = TestMode(), ps = ps, st = st
-                x -> first(inference(model.m, TestMode(), x, ps, st))
-            end,
-            eachcol(xnew),
-        )
+    tst = @timed if model.compute_mode <: VectorMode
+        logp̂x = broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
     elseif model.compute_mode <: MatrixMode
-        tst = @timed logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
+        logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
     else
         error("Not Implemented")
     end
@@ -129,6 +122,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
         "Transforming",
         "elapsed time (seconds)" = tst.time,
         "garbage collection time (seconds)" = tst.gctime,
+        "allocated (bytes)" = tst.bytes,
     )
 
     DataFrame(; px = exp.(logp̂x))
@@ -154,8 +148,8 @@ MLJBase.metadata_model(
 
 # Distributions interface
 
-struct ICNFDist <: ICNFDistribution
-    m::AbstractICNF
+struct ICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
+    m::AICNF
     mode::Mode
     ps::Any
     st::NamedTuple
@@ -166,12 +160,6 @@ function ICNFDist(mach::Machine{<:ICNFModel}, mode::Mode)
     ICNFDist(mach.model.m, mode, ps, st)
 end
 
-function Base.length(d::ICNFDist)
-    d.m.nvars
-end
-function Base.eltype(d::ICNFDist)
-    first(typeof(d.m).parameters)
-end
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ps, d.st))
@@ -183,9 +171,7 @@ function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
 end
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        broadcast(let d = d
-            x -> Distributions._logpdf(d, x)
-        end, eachcol(A))
+        Distributions._logpdf.(d, eachcol(A))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ps, d.st))
     else
@@ -203,9 +189,7 @@ function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<
 end
 function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        A .= hcat(broadcast(let rng = rng, d = d
-            x -> Distributions._rand!(rng, d, x)
-        end, eachcol(A))...)
+        A .= hcat(Distributions._rand!.(rng, d, eachcol(A))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
     else

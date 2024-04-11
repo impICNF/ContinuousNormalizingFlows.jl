@@ -28,6 +28,9 @@ if (GROUP == "All")
 
     debuglogger = TerminalLoggers.TerminalLogger(stderr, Logging.Debug)
     Logging.global_logger(debuglogger)
+else
+    warnlogger = TerminalLoggers.TerminalLogger(stderr, Logging.Warn)
+    Logging.global_logger(warnlogger)
 end
 
 @testset "Overall" begin
