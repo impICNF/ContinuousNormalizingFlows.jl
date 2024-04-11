@@ -2,8 +2,8 @@ export CondICNFModel, CondICNFDist
 
 # MLJ interface
 
-mutable struct CondICNFModel <: MLJICNF
-    m::AbstractICNF
+mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
+    m::AICNF
     loss::Function
 
     optimizers::Tuple
@@ -159,8 +159,8 @@ MLJBase.metadata_model(
 
 # Distributions interface
 
-struct CondICNFDist <: ICNFDistribution
-    m::AbstractICNF
+struct CondICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
+    m::AICNF
     mode::Mode
     ys::AbstractVecOrMat{<:Real}
     ps::Any
@@ -176,12 +176,6 @@ function CondICNFDist(
     CondICNFDist(mach.model.m, mode, ys, ps, st)
 end
 
-function Base.length(d::CondICNFDist)
-    d.m.nvars
-end
-function Base.eltype(d::CondICNFDist)
-    first(typeof(d.m).parameters)
-end
 function Distributions._logpdf(d::CondICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ys, d.ps, d.st))

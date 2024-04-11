@@ -2,8 +2,8 @@ export ICNFModel, ICNFDist
 
 # MLJ interface
 
-mutable struct ICNFModel <: MLJICNF
-    m::AbstractICNF
+mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
+    m::AICNF
     loss::Function
 
     optimizers::Tuple
@@ -148,8 +148,8 @@ MLJBase.metadata_model(
 
 # Distributions interface
 
-struct ICNFDist <: ICNFDistribution
-    m::AbstractICNF
+struct ICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
+    m::AICNF
     mode::Mode
     ps::Any
     st::NamedTuple
@@ -160,12 +160,6 @@ function ICNFDist(mach::Machine{<:ICNFModel}, mode::Mode)
     ICNFDist(mach.model.m, mode, ps, st)
 end
 
-function Base.length(d::ICNFDist)
-    d.m.nvars
-end
-function Base.eltype(d::ICNFDist)
-    first(typeof(d.m).parameters)
-end
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ps, d.st))
