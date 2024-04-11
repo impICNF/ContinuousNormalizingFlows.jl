@@ -166,7 +166,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
     ż, J = value_and_jacobian(make_dyn_func(nn, p), icnf.autodiff_backend, z)
-    l̇ = -tr(only(J))
+    l̇ = -tr(J)
     vcat(ż, l̇)
 end
 
@@ -184,7 +184,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1)]
     ż, J = value_and_jacobian(make_dyn_func(nn, p), icnf.autodiff_backend, z)
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -tr(only(J))
+    du[(end - n_aug)] = -tr(J)
     nothing
 end
 
