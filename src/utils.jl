@@ -3,7 +3,7 @@
     f::Function,
     xs::AbstractMatrix{<:Real},
 ) where {T}
-    y, J = value_and_jacobian(f, icnf.autodiff_backend, xs)
+    y, J = DifferentiationInterface.value_and_jacobian(f, icnf.autodiff_backend, xs)
     y, split_jac(J, size(xs, 1))
 end
 

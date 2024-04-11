@@ -165,7 +165,11 @@ function augmented_f(
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = value_and_jacobian(make_dyn_func(nn, p), icnf.autodiff_backend, z)
+    ż, J = DifferentiationInterface.value_and_jacobian(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+    )
     l̇ = -tr(J)
     vcat(ż, l̇)
 end
@@ -182,7 +186,11 @@ function augmented_f(
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = value_and_jacobian(make_dyn_func(nn, p), icnf.autodiff_backend, z)
+    ż, J = DifferentiationInterface.value_and_jacobian(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+    )
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -tr(J)
     nothing
@@ -363,7 +371,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, ϵJ = value_and_pullback(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -(ϵJ ⋅ ϵ)
     Ė = if NORM_Z
         norm(ż)
@@ -390,7 +403,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, ϵJ = value_and_pullback(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -417,7 +435,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, Jϵ = value_and_pushforward(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -(ϵ ⋅ Jϵ)
     Ė = if NORM_Z
         norm(ż)
@@ -444,7 +467,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, Jϵ = value_and_pushforward(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -471,7 +499,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, ϵJ = value_and_pullback(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
@@ -502,7 +535,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, ϵJ = value_and_pullback(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
@@ -529,7 +567,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, Jϵ = value_and_pushforward(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
@@ -560,7 +603,12 @@ function augmented_f(
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż, Jϵ = value_and_pushforward(make_dyn_func(nn, p), icnf.autodiff_backend, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
