@@ -48,7 +48,7 @@ icnf = construct(
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
-    compute_mode = ZygoteMatrixMode, # process data in batches
+    compute_mode = DIVecJacMatrixMode, # process data in batches
     tspan = (0.0f0, 13.0f0), # have bigger time span
     steer_rate = 1.0f-1, # add random noise to end of the time span
     # resource = CUDALibs(), # process data by GPU
