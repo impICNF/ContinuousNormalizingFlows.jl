@@ -1,52 +1,13 @@
 function jacobian_batched(
-    icnf::AbstractICNF{T, <:SDVecJacMatrixMode},
-    f,
+    icnf::AbstractICNF{T, <:DIMatrixMode},
+    f::Function,
     xs::AbstractMatrix{<:Real},
-) where {T <: AbstractFloat}
-    y = f(xs)
-    z = similar(xs)
-    @ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
-    Jf = VecJac(f, xs; autodiff = icnf.autodiff_backend)
-    for i in axes(xs, 1)
-        @ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = reshape(Jf * z, size(xs))
-        @ignore_derivatives z[i, :] .= zero(T)
-    end
-    y, copy(res)
+) where {T}
+    y, J = value_and_jacobian(f, icnf.autodiff_backend, xs)
+    y, split_jac(J)
 end
 
-function jacobian_batched(
-    icnf::AbstractICNF{T, <:SDJacVecMatrixMode},
-    f,
-    xs::AbstractMatrix{<:Real},
-) where {T <: AbstractFloat}
-    y = f(xs)
-    z = similar(xs)
-    @ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
-    Jf = JacVec(f, xs; autodiff = icnf.autodiff_backend)
-    for i in axes(xs, 1)
-        @ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = reshape(Jf * z, size(xs))
-        @ignore_derivatives z[i, :] .= zero(T)
-    end
-    y, copy(res)
-end
-
-function jacobian_batched(
-    ::AbstractICNF{T, <:ZygoteMatrixMode},
-    f,
-    xs::AbstractMatrix{<:Real},
-) where {T <: AbstractFloat}
-    y, VJ = Zygote.pullback(f, xs)
-    z = similar(xs)
-    @ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
-    for i in axes(xs, 1)
-        @ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = only(VJ(z))
-        @ignore_derivatives z[i, :] .= zero(T)
-    end
-    y, copy(res)
+function split_jac(x::AbstractMatrix{<:Real})
+    sz = convert(Int, sqrt(size(x, 1)))
+    (x[i:(i + sz - 1), i:(i + sz - 1)] for i in firstindex(x, 1):sz:lastindex(x, 1))
 end

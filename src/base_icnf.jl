@@ -21,11 +21,7 @@ function construct(
         Eye{data_type}(nvars + naugmented),
     ),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = ifelse(
-        compute_mode <: SDJacVecMatrixMode,
-        AutoForwardDiff(),
-        AutoZygote(),
-    ),
+    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
     sol_kwargs::NamedTuple = (
         save_everystep = false,
         alg = Tsit5(; thread = OrdinaryDiffEq.True()),

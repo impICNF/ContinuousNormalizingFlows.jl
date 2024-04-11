@@ -34,10 +34,10 @@
     compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
         ADJacVecVectorMode,
-        ZygoteVectorMode,
-        SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
-        ZygoteMatrixMode,
+        DIVecJacVectorMode,
+        DIJacVecVectorMode,
+        DIVecJacMatrixMode,
+        DIJacVecMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
@@ -156,7 +156,8 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, ndata))
 
-        if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
+        if (GROUP != "All") &&
+           (compute_mode <: Union{DIJacVecVectorMode, DIJacVecMatrixMode} || inplace)
             continue
         end
 
@@ -208,12 +209,12 @@
             )
             @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
                 (GROUP != "All") &&
-                compute_mode <: Union{ZygoteMatrixMode, SDVecJacMatrixMode} &&
+                compute_mode <: DIVecJacMatrixMode &&
                 adb isa AbstractDifferentiation.ReverseDiffBackend &&
                 VERSION >= v"1.10"
             @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r)) broken =
                 (GROUP != "All") &&
-                compute_mode <: Union{ZygoteMatrixMode, SDVecJacMatrixMode} &&
+                compute_mode <: DIVecJacMatrixMode &&
                 adb isa AbstractDifferentiation.ReverseDiffBackend &&
                 VERSION >= v"1.10"
             @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) skip =
@@ -245,9 +246,7 @@
         @test !isnothing(Zygote.hessian_reverse(diff2_loss4, r)) skip = (GROUP != "All")
 
         @test !isnothing(ReverseDiff.gradient(diff2_loss, r)) broken =
-            (GROUP != "All") &&
-            compute_mode <: Union{ZygoteMatrixMode, SDVecJacMatrixMode} &&
-            VERSION >= v"1.10"
+            (GROUP != "All") && compute_mode <: DIVecJacMatrixMode && VERSION >= v"1.10"
         @test_throws MethodError !isnothing(ReverseDiff.jacobian(diff2_loss, r))
         @test !isnothing(ReverseDiff.hessian(diff2_loss, r)) skip = (GROUP != "All")
 
