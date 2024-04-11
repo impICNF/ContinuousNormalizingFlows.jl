@@ -1,5 +1,12 @@
 using ContinuousNormalizingFlows,
-    BenchmarkTools, ComponentArrays, Lux, PkgBenchmark, StableRNGs, Zygote
+    ADTypes,
+    BenchmarkTools,
+    ComponentArrays,
+    DifferentiationInterface,
+    Lux,
+    PkgBenchmark,
+    StableRNGs,
+    Zygote
 
 SUITE = BenchmarkGroup()
 
@@ -41,16 +48,16 @@ diff_loss_tt(x) = loss(icnf, TestMode(), r, x, st)
 
 diff_loss_tn(ps)
 diff_loss_tt(ps)
-Zygote.gradient(diff_loss_tn, ps)
-Zygote.gradient(diff_loss_tt, ps)
+DifferentiationInterface.gradient(diff_loss_tn, AutoZygote(), ps)
+DifferentiationInterface.gradient(diff_loss_tt, AutoZygote(), ps)
 GC.gc()
 
 SUITE["main"]["no_inplace"]["direct"]["train"] = @benchmarkable diff_loss_tn(ps)
 SUITE["main"]["no_inplace"]["direct"]["test"] = @benchmarkable diff_loss_tt(ps)
 SUITE["main"]["no_inplace"]["AD-1-order"]["train"] =
-    @benchmarkable Zygote.gradient(diff_loss_tn, ps)
+    @benchmarkable DifferentiationInterface.gradient(diff_loss_tn, AutoZygote(), ps)
 SUITE["main"]["no_inplace"]["AD-1-order"]["test"] =
-    @benchmarkable Zygote.gradient(diff_loss_tt, ps)
+    @benchmarkable DifferentiationInterface.gradient(diff_loss_tt, AutoZygote(), ps)
 
 icnf2 = construct(
     RNODE,
@@ -70,13 +77,13 @@ diff_loss_tt2(x) = loss(icnf2, TestMode(), r, x, st)
 
 diff_loss_tn2(ps)
 diff_loss_tt2(ps)
-Zygote.gradient(diff_loss_tn2, ps)
-Zygote.gradient(diff_loss_tt2, ps)
+DifferentiationInterface.gradient(diff_loss_tn2, AutoZygote(), ps)
+DifferentiationInterface.gradient(diff_loss_tt2, AutoZygote(), ps)
 GC.gc()
 
 SUITE["main"]["inplace"]["direct"]["train"] = @benchmarkable diff_loss_tn2(ps)
 SUITE["main"]["inplace"]["direct"]["test"] = @benchmarkable diff_loss_tt2(ps)
 SUITE["main"]["inplace"]["AD-1-order"]["train"] =
-    @benchmarkable Zygote.gradient(diff_loss_tn2, ps)
+    @benchmarkable DifferentiationInterface.gradient(diff_loss_tn2, AutoZygote(), ps)
 SUITE["main"]["inplace"]["AD-1-order"]["test"] =
-    @benchmarkable Zygote.gradient(diff_loss_tt2, ps)
+    @benchmarkable DifferentiationInterface.gradient(diff_loss_tt2, AutoZygote(), ps)
