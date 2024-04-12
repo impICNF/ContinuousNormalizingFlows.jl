@@ -111,8 +111,7 @@
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
 
-            if (GROUP != "All") &&
-               (compute_mode <: Union{DIJacVecVectorMode, DIJacVecMatrixMode} || inplace)
+            if (GROUP != "All") && inplace
                 continue
             end
 
@@ -126,8 +125,7 @@
             model = ICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, df)
 
-            if (GROUP != "All") &&
-               (compute_mode <: Union{DIJacVecVectorMode, DIJacVecMatrixMode} || inplace)
+            if (GROUP != "All") && inplace
                 continue
             end
 

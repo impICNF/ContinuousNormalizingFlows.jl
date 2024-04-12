@@ -161,8 +161,7 @@
         @test !isnothing(rand(d))
         @test !isnothing(rand(d, ndata))
 
-        if (GROUP != "All") &&
-           (compute_mode <: Union{DIJacVecVectorMode, DIJacVecMatrixMode} || inplace)
+        if (GROUP != "All") && inplace
             continue
         end
 
@@ -172,11 +171,7 @@
                     @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
                 end
                 @testset "x" begin
-                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
-                        (GROUP != "All") &&
-                        compute_mode <: DIVecJacMatrixMode &&
-                        adb isa AbstractDifferentiation.ReverseDiffBackend &&
-                        VERSION >= v"1.10"
+                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
                 end
             end
         end
@@ -190,11 +185,7 @@
                 @testset "x" begin
                     @test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
-                    ) broken =
-                        (GROUP != "All") &&
-                        compute_mode <: DIVecJacMatrixMode &&
-                        adtype isa AutoReverseDiff &&
-                        VERSION >= v"1.10"
+                    )
                 end
             end
         end
