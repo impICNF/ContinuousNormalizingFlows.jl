@@ -8,6 +8,7 @@ using ComputationalResources: ComputationalResources
 using CUDA: CUDA
 using cuDNN: cuDNN
 using DataFrames: DataFrames
+using DifferentiationInterface: DifferentiationInterface
 using Distributions: Distributions
 using ForwardDiff: ForwardDiff
 using JET: JET
@@ -28,6 +29,9 @@ if (GROUP == "All")
 
     debuglogger = TerminalLoggers.TerminalLogger(stderr, Logging.Debug)
     Logging.global_logger(debuglogger)
+else
+    warnlogger = TerminalLoggers.TerminalLogger(stderr, Logging.Warn)
+    Logging.global_logger(warnlogger)
 end
 
 @testset "Overall" begin

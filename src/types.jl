@@ -2,10 +2,10 @@ export TestMode,
     TrainMode,
     ADVecJacVectorMode,
     ADJacVecVectorMode,
-    SDVecJacMatrixMode,
-    SDJacVecMatrixMode,
-    ZygoteVectorMode,
-    ZygoteMatrixMode
+    DIVecJacVectorMode,
+    DIJacVecVectorMode,
+    DIVecJacMatrixMode,
+    DIJacVecMatrixMode
 
 abstract type Mode end
 struct TestMode <: Mode end
@@ -19,12 +19,19 @@ abstract type ADVectorMode <: VectorMode end
 struct ADVecJacVectorMode <: ADVectorMode end
 struct ADJacVecVectorMode <: ADVectorMode end
 
-abstract type SDMatrixMode <: MatrixMode end
-struct SDVecJacMatrixMode <: SDMatrixMode end
-struct SDJacVecMatrixMode <: SDMatrixMode end
+abstract type DIVectorMode <: VectorMode end
+struct DIVecJacVectorMode <: DIVectorMode end
+struct DIJacVecVectorMode <: DIVectorMode end
 
-struct ZygoteVectorMode <: VectorMode end
-struct ZygoteMatrixMode <: MatrixMode end
+abstract type DIMatrixMode <: MatrixMode end
+struct DIVecJacMatrixMode <: DIMatrixMode end
+struct DIJacVecMatrixMode <: DIMatrixMode end
+
+Base.Base.@deprecate_binding SDVecJacMatrixMode DIVecJacMatrixMode true
+Base.Base.@deprecate_binding SDJacVecMatrixMode DIJacVecMatrixMode true
+
+Base.Base.@deprecate_binding ZygoteVectorMode DIVecJacVectorMode true
+Base.Base.@deprecate_binding ZygoteMatrixMode DIVecJacMatrixMode true
 
 abstract type AbstractICNF{
     T <: AbstractFloat,
@@ -38,8 +45,8 @@ abstract type AbstractICNF{
 
 # MLJ interface
 
-abstract type MLJICNF <: MLJModelInterface.Unsupervised end
+abstract type MLJICNF{AICNF <: AbstractICNF} <: MLJModelInterface.Unsupervised end
 
 # Distributions interface
 
-abstract type ICNFDistribution <: ContinuousMultivariateDistribution end
+abstract type ICNFDistribution{AICNF <: AbstractICNF} <: ContinuousMultivariateDistribution end

@@ -21,11 +21,7 @@ function construct(
         Eye{data_type}(nvars + naugmented),
     ),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = ifelse(
-        compute_mode <: SDJacVecMatrixMode,
-        AutoForwardDiff(),
-        AutoZygote(),
-    ),
+    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),  
     sol_kwargs::NamedTuple = (save_everystep = false,),
     rng::AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
@@ -237,15 +233,7 @@ function inference_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -268,15 +256,7 @@ function inference_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -298,15 +278,7 @@ function inference_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -329,15 +301,7 @@ function inference_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -360,15 +324,7 @@ function generate_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -392,15 +348,7 @@ function generate_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -424,15 +372,7 @@ function generate_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(icnf.nn, ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -457,15 +397,7 @@ function generate_prob(
     rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
     ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        ifelse(
-            INPLACE,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (du, u, p, t) -> augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
-            end,
-            let icnf = icnf, mode = mode, nn = nn, ϵ = ϵ
-                (u, p, t) -> augmented_f(u, p, t, icnf, mode, nn, ϵ)
-            end,
-        ),
+        make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -573,6 +505,31 @@ end
     st::NamedTuple,
 )
     -mean(first(inference(icnf, mode, xs, ys, ps, st)))
+end
+
+@inline function make_ode_func(
+    icnf::AbstractICNF{T, CM, INPLACE},
+    mode::Mode,
+    nn::StatefulLuxLayer,
+    ϵ::AbstractVecOrMat{T},
+) where {T <: AbstractFloat, CM, INPLACE}
+    function ode_func_op(u, p, t)
+        augmented_f(u, p, t, icnf, mode, nn, ϵ)
+    end
+
+    function ode_func_ip(du, u, p, t)
+        augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
+    end
+
+    ifelse(INPLACE, ode_func_ip, ode_func_op)
+end
+
+@inline function make_dyn_func(nn::StatefulLuxLayer, ps::Any)
+    function dyn_func(x)
+        LuxCore.apply(nn, x, ps)
+    end
+
+    dyn_func
 end
 
 @inline function (icnf::AbstractICNF{T, CM, INPLACE, false})(
