@@ -12,7 +12,7 @@
         res[i, :, :] = VJ(z)
         @ignore_derivatives z[i, :] .= zero(T)
     end
-    y, copy(res)
+    y, eachslice(copy(res); dims = 3)
 end
 
 @inline function jacobian_batched(
