@@ -21,7 +21,7 @@ function construct(
         Eye{data_type}(nvars + naugmented),
     ),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),  
+    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
     sol_kwargs::NamedTuple = (save_everystep = false,),
     rng::AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
