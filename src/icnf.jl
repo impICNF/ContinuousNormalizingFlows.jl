@@ -158,15 +158,19 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:ZygoteVectorMode, false},
+    icnf::ICNF{T, <:DIVectorMode, false},
     mode::TestMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = Zygote.withjacobian(make_dyn_func(nn, p), z)
-    l̇ = -tr(only(J))
+    ż, J = DifferentiationInterface.value_and_jacobian(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+    )
+    l̇ = -tr(J)
     vcat(ż, l̇)
 end
 
@@ -175,16 +179,20 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:ZygoteVectorMode, true},
+    icnf::ICNF{T, <:DIVectorMode, true},
     mode::TestMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = Zygote.withjacobian(make_dyn_func(nn, p), z)
+    ż, J = DifferentiationInterface.value_and_jacobian(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+    )
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -tr(only(J))
+    du[(end - n_aug)] = -tr(J)
     nothing
 end
 
@@ -200,7 +208,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, make_dyn_func(nn, p), z)
-    l̇ = -transpose(tr.(eachslice(J; dims = 3)))
+    l̇ = -transpose(tr.(J))
     vcat(ż, l̇)
 end
 
@@ -218,7 +226,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, make_dyn_func(nn, p), z)
     du[begin:(end - n_aug - 1), :] .= ż
-    du[(end - n_aug), :] .= -(tr.(eachslice(J; dims = 3)))
+    du[(end - n_aug), :] .= -(tr.(J))
     nothing
 end
 
@@ -356,15 +364,19 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:ZygoteVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    icnf::ICNF{T, <:DIVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, VJ = Zygote.pullback(make_dyn_func(nn, p), z)
-    ϵJ = only(VJ(ϵ))
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -(ϵJ ⋅ ϵ)
     Ė = if NORM_Z
         norm(ż)
@@ -384,15 +396,19 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:ZygoteVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    icnf::ICNF{T, <:DIVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1)]
-    ż, VJ = Zygote.pullback(make_dyn_func(nn, p), z)
-    ϵJ = only(VJ(ϵ))
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -412,16 +428,83 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:SDVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    icnf::ICNF{T, <:DIJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn::StatefulLuxLayer,
+    ϵ::AbstractVector{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
+    l̇ = -(ϵ ⋅ Jϵ)
+    Ė = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    ṅ = if NORM_J
+        norm(Jϵ)
+    else
+        zero(T)
+    end
+    vcat(ż, l̇, Ė, ṅ)
+end
+
+function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:DIJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn::StatefulLuxLayer,
+    ϵ::AbstractVector{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    z = u[begin:(end - n_aug - 1)]
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
+    du[begin:(end - n_aug - 1)] .= ż
+    du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
+    du[(end - n_aug + 1)] = if NORM_Z
+        norm(ż)
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2)] = if NORM_J
+        norm(Jϵ)
+    else
+        zero(T)
+    end
+    nothing
+end
+
+function augmented_f(
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:DIVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = LuxCore.apply(nn, z, p)
-    Jf = VecJac(make_dyn_func(nn, p), z; autodiff = icnf.autodiff_backend)
-    ϵJ = reshape(Jf * ϵ, size(z))
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
@@ -445,16 +528,19 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:SDVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    icnf::ICNF{T, <:DIVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = LuxCore.apply(nn, z, p)
-    Jf = VecJac(make_dyn_func(nn, p), z; autodiff = icnf.autodiff_backend)
-    ϵJ = reshape(Jf * ϵ, size(z))
+    ż, ϵJ = DifferentiationInterface.value_and_pullback(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
@@ -474,16 +560,19 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:SDJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    icnf::ICNF{T, <:DIJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = LuxCore.apply(nn, z, p)
-    Jf = JacVec(make_dyn_func(nn, p), z; autodiff = icnf.autodiff_backend)
-    Jϵ = reshape(Jf * ϵ, size(z))
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(if NORM_Z
         norm.(eachcol(ż))
@@ -507,16 +596,19 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:SDJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    icnf::ICNF{T, <:DIJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
     nn::StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
-    ż = LuxCore.apply(nn, z, p)
-    Jf = JacVec(make_dyn_func(nn, p), z; autodiff = icnf.autodiff_backend)
-    Jϵ = reshape(Jf * ϵ, size(z))
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        make_dyn_func(nn, p),
+        icnf.autodiff_backend,
+        z,
+        ϵ,
+    )
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
@@ -526,66 +618,6 @@ function augmented_f(
     end
     du[(end - n_aug + 2), :] .= if NORM_J
         norm.(eachcol(Jϵ))
-    else
-        zero(T)
-    end
-    nothing
-end
-
-function augmented_f(
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{T, <:ZygoteMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
-    mode::TrainMode,
-    nn::StatefulLuxLayer,
-    ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1), :]
-    ż, VJ = Zygote.pullback(make_dyn_func(nn, p), z)
-    ϵJ = only(VJ(ϵ))
-    l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(if NORM_Z
-        norm.(eachcol(ż))
-    else
-        zrs_Ė = similar(ż, size(ż, 2))
-        @ignore_derivatives fill!(zrs_Ė, zero(T))
-        zrs_Ė
-    end)
-    ṅ = transpose(if NORM_J
-        norm.(eachcol(ϵJ))
-    else
-        zrs_ṅ = similar(ż, size(ż, 2))
-        @ignore_derivatives fill!(zrs_ṅ, zero(T))
-        zrs_ṅ
-    end)
-    vcat(ż, l̇, Ė, ṅ)
-end
-
-function augmented_f(
-    du::Any,
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{T, <:ZygoteMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
-    mode::TrainMode,
-    nn::StatefulLuxLayer,
-    ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
-    n_aug = n_augment(icnf, mode)
-    z = u[begin:(end - n_aug - 1), :]
-    ż, VJ = Zygote.pullback(make_dyn_func(nn, p), z)
-    ϵJ = only(VJ(ϵ))
-    du[begin:(end - n_aug - 1), :] .= ż
-    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= if NORM_Z
-        norm.(eachcol(ż))
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2), :] .= if NORM_J
-        norm.(eachcol(ϵJ))
     else
         zero(T)
     end

@@ -34,10 +34,10 @@
     compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
         ADVecJacVectorMode,
         ADJacVecVectorMode,
-        ZygoteVectorMode,
-        SDVecJacMatrixMode,
-        SDJacVecMatrixMode,
-        ZygoteMatrixMode,
+        DIVecJacVectorMode,
+        DIJacVecVectorMode,
+        DIVecJacMatrixMode,
+        DIJacVecMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
@@ -111,7 +111,7 @@
             model = CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
 
-            if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
+            if (GROUP != "All") && inplace
                 continue
             end
 
@@ -125,7 +125,7 @@
             model = ICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, df)
 
-            if (GROUP != "All") && (compute_mode <: SDJacVecMatrixMode || inplace)
+            if (GROUP != "All") && inplace
                 continue
             end
 

@@ -8,6 +8,7 @@ using ComputationalResources: ComputationalResources
 using CUDA: CUDA
 using cuDNN: cuDNN
 using DataFrames: DataFrames
+using DifferentiationInterface: DifferentiationInterface
 using Distributions: Distributions
 using ForwardDiff: ForwardDiff
 using JET: JET
