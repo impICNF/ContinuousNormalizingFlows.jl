@@ -174,6 +174,7 @@
                     @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
                         (GROUP != "All") &&
                         adb isa AbstractDifferentiation.ReverseDiffBackend &&
+                        compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
                         VERSION >= v"1.10"
                 end
             end
@@ -191,6 +192,7 @@
                     ) broken =
                         (GROUP != "All") &&
                         adtype isa ADTypes.AutoReverseDiff &&
+                        compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
                         VERSION >= v"1.10"
                 end
             end
