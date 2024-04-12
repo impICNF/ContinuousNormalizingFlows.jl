@@ -16,6 +16,24 @@
 end
 
 @inline function jacobian_batched(
+    icnf::AbstractICNF{T, <:DIJacVecMatrixMode},
+    f::Function,
+    xs::AbstractMatrix{<:Real},
+) where {T}
+    y = f(xs)
+    z = similar(xs)
+    @ignore_derivatives fill!(z, zero(T))
+    res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
+    for i in axes(xs, 1)
+        @ignore_derivatives z[i, :] .= one(T)
+        res[i, :, :] =
+            DifferentiationInterface.value_and_pushforward(f, icnf.autodiff_backend, xs, z)
+        @ignore_derivatives z[i, :] .= zero(T)
+    end
+    y, eachslice(copy(res); dims = 3)
+end
+
+@inline function jacobian_batched(
     icnf::AbstractICNF{T, <:DIMatrixMode},
     f::Function,
     xs::AbstractMatrix{<:Real},
