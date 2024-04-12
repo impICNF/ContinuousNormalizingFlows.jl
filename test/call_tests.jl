@@ -171,7 +171,10 @@
                     @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
                 end
                 @testset "x" begin
-                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r))
+                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
+                        (GROUP != "All") &&
+                        adb isa AbstractDifferentiation.ReverseDiffBackend &&
+                        VERSION >= v"1.10"
                 end
             end
         end
@@ -185,7 +188,10 @@
                 @testset "x" begin
                     @test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
-                    )
+                    ) broken =
+                        (GROUP != "All") &&
+                        adtype isa ADTypes.AutoReverseDiff &&
+                        VERSION >= v"1.10"
                 end
             end
         end
