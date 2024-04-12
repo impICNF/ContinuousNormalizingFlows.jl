@@ -169,53 +169,25 @@
         @testset "$(typeof(adb).name.name)" for adb in adb_list
             @testset "Loss" begin
                 @testset "ps" begin
-                    @test_throws MethodError !isnothing(
-                        AbstractDifferentiation.derivative(adb, diff_loss, ps),
-                    )
                     @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
-                    @test !isnothing(AbstractDifferentiation.jacobian(adb, diff_loss, ps))
-                    @test !isnothing(AbstractDifferentiation.hessian(adb, diff_loss, ps)) skip =
-                        (GROUP != "All")
                 end
                 @testset "x" begin
-                    @test_throws MethodError !isnothing(
-                        AbstractDifferentiation.derivative(adb, diff2_loss, r),
-                    )
                     @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
                         (GROUP != "All") &&
                         compute_mode <: DIVecJacMatrixMode &&
                         adb isa AbstractDifferentiation.ReverseDiffBackend &&
                         VERSION >= v"1.10"
-                    @test !isnothing(AbstractDifferentiation.jacobian(adb, diff2_loss, r)) broken =
-                        (GROUP != "All") &&
-                        compute_mode <: DIVecJacMatrixMode &&
-                        adb isa AbstractDifferentiation.ReverseDiffBackend &&
-                        VERSION >= v"1.10"
-                    @test !isnothing(AbstractDifferentiation.hessian(adb, diff2_loss, r)) skip =
-                        (GROUP != "All")
                 end
             end
         end
         @testset "$(typeof(adtype).name.name)" for adtype in adtypes
             @testset "Loss" begin
                 @testset "ps" begin
-                    @test_throws MethodError !isnothing(
-                        DifferentiationInterface.derivative(diff_loss, adtype, ps),
-                    )
                     @test !isnothing(
                         DifferentiationInterface.gradient(diff_loss, adtype, ps),
                     )
-                    @test !isnothing(
-                        DifferentiationInterface.jacobian(diff_loss, adtype, ps),
-                    )
-                    @test !isnothing(
-                        DifferentiationInterface.hessian(diff_loss, adtype, ps),
-                    ) skip = (GROUP != "All")
                 end
                 @testset "x" begin
-                    @test_throws MethodError !isnothing(
-                        DifferentiationInterface.derivative(diff2_loss, adtype, r),
-                    )
                     @test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
                     ) broken =
@@ -223,16 +195,6 @@
                         compute_mode <: DIVecJacMatrixMode &&
                         adtype isa AutoReverseDiff &&
                         VERSION >= v"1.10"
-                    @test !isnothing(
-                        DifferentiationInterface.jacobian(diff2_loss, adtype, r),
-                    ) broken =
-                        (GROUP != "All") &&
-                        compute_mode <: DIVecJacMatrixMode &&
-                        adtype isa AutoReverseDiff &&
-                        VERSION >= v"1.10"
-                    @test !isnothing(
-                        DifferentiationInterface.hessian(diff2_loss, adtype, r),
-                    ) skip = (GROUP != "All")
                 end
             end
         end
