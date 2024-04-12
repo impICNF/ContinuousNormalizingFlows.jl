@@ -26,8 +26,7 @@ end
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         @ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] =
-            DifferentiationInterface.value_and_pushforward(f, icnf.autodiff_backend, xs, z)
+        res[i, :, :] = DifferentiationInterface.pushforward(f, icnf.autodiff_backend, xs, z)
         @ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
