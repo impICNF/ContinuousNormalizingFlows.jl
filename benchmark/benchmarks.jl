@@ -26,7 +26,7 @@ nvars = 2^3
 naugs = nvars
 n_in = nvars + naugs
 n = 2^6
-nn = Dense(n_in => n_in, tanh)
+nn = Chain(Dense(n_in => n_in, tanh))
 
 icnf = construct(
     RNODE,

@@ -72,22 +72,26 @@
                 mt <: CondPlanar,
                 ifelse(
                     aug_steer,
-                    PlanarLayer(nvars * 2, tanh; n_cond = nvars),
-                    PlanarLayer(nvars, tanh; n_cond = nvars),
+                    Lux.Chain(PlanarLayer(nvars * 2, tanh; n_cond = nvars)),
+                    Lux.Chain(PlanarLayer(nvars, tanh; n_cond = nvars)),
                 ),
                 ifelse(
                     aug_steer,
-                    Lux.Dense(nvars * 3 => nvars * 2, tanh),
-                    Lux.Dense(nvars * 2 => nvars, tanh),
+                    Lux.Chain(Lux.Dense(nvars * 3 => nvars * 2, tanh)),
+                    Lux.Chain(Lux.Dense(nvars * 2 => nvars, tanh)),
                 ),
             ),
             ifelse(
                 mt <: Planar,
-                ifelse(aug_steer, PlanarLayer(nvars * 2, tanh), PlanarLayer(nvars, tanh)),
                 ifelse(
                     aug_steer,
-                    Lux.Dense(nvars * 2 => nvars * 2, tanh),
-                    Lux.Dense(nvars => nvars, tanh),
+                    Lux.Chain(PlanarLayer(nvars * 2, tanh)),
+                    Lux.Chain(PlanarLayer(nvars, tanh)),
+                ),
+                ifelse(
+                    aug_steer,
+                    Lux.Chain(Lux.Dense(nvars * 2 => nvars * 2, tanh)),
+                    Lux.Chain(Lux.Dense(nvars => nvars, tanh)),
                 ),
             ),
         )
