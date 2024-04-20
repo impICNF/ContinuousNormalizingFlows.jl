@@ -22,7 +22,7 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 cuDNN = "02a925ec-e4fe-4b08-9a7e-0d78e3d38ccd"
 
 [compat]
-ADTypes = "0.2"
+ADTypes = "0.2, 1"
 AbstractDifferentiation = "0.6"
 Aqua = "0.8"
 CUDA = "5"
