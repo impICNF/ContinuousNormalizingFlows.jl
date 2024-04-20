@@ -41,7 +41,7 @@ CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 ContinuousNormalizingFlowsCUDAExt = "CUDA"
 
 [compat]
-ADTypes = "0.2"
+ADTypes = "0.2, 1"
 AbstractDifferentiation = "0.6"
 CUDA = "5"
 ChainRulesCore = "1"
