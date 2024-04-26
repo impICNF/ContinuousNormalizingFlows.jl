@@ -247,12 +247,12 @@ function augmented_f(
     ϵJ = only(VJ(ϵ))
     l̇ = -(ϵJ ⋅ ϵ)
     Ė = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     ṅ = if NORM_J
-        norm(ϵJ)
+        LinearAlgebra.norm(ϵJ)
     else
         zero(T)
     end
@@ -280,12 +280,12 @@ function augmented_f(
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     du[(end - n_aug + 2)] = if NORM_J
-        norm(ϵJ)
+        LinearAlgebra.norm(ϵJ)
     else
         zero(T)
     end
@@ -312,12 +312,12 @@ function augmented_f(
     Jϵ = only(Jϵ)
     l̇ = -(ϵ ⋅ Jϵ)
     Ė = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     ṅ = if NORM_J
-        norm(Jϵ)
+        LinearAlgebra.norm(Jϵ)
     else
         zero(T)
     end
@@ -346,12 +346,12 @@ function augmented_f(
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     du[(end - n_aug + 2)] = if NORM_J
-        norm(Jϵ)
+        LinearAlgebra.norm(Jϵ)
     else
         zero(T)
     end
@@ -377,12 +377,12 @@ function augmented_f(
     )
     l̇ = -(ϵJ ⋅ ϵ)
     Ė = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     ṅ = if NORM_J
-        norm(ϵJ)
+        LinearAlgebra.norm(ϵJ)
     else
         zero(T)
     end
@@ -410,12 +410,12 @@ function augmented_f(
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     du[(end - n_aug + 2)] = if NORM_J
-        norm(ϵJ)
+        LinearAlgebra.norm(ϵJ)
     else
         zero(T)
     end
@@ -441,12 +441,12 @@ function augmented_f(
     )
     l̇ = -(ϵ ⋅ Jϵ)
     Ė = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     ṅ = if NORM_J
-        norm(Jϵ)
+        LinearAlgebra.norm(Jϵ)
     else
         zero(T)
     end
@@ -474,12 +474,12 @@ function augmented_f(
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
-        norm(ż)
+        LinearAlgebra.norm(ż)
     else
         zero(T)
     end
     du[(end - n_aug + 2)] = if NORM_J
-        norm(Jϵ)
+        LinearAlgebra.norm(Jϵ)
     else
         zero(T)
     end
@@ -505,14 +505,14 @@ function augmented_f(
     )
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(if NORM_Z
-        norm.(eachcol(ż))
+        LinearAlgebra.norm.(eachcol(ż))
     else
         zrs_Ė = similar(ż, size(ż, 2))
         ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
         zrs_Ė
     end)
     ṅ = transpose(if NORM_J
-        norm.(eachcol(ϵJ))
+        LinearAlgebra.norm.(eachcol(ϵJ))
     else
         zrs_ṅ = similar(ż, size(ż, 2))
         ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
@@ -542,12 +542,12 @@ function augmented_f(
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
-        norm.(eachcol(ż))
+        LinearAlgebra.norm.(eachcol(ż))
     else
         zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
-        norm.(eachcol(ϵJ))
+        LinearAlgebra.norm.(eachcol(ϵJ))
     else
         zero(T)
     end
@@ -573,14 +573,14 @@ function augmented_f(
     )
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(if NORM_Z
-        norm.(eachcol(ż))
+        LinearAlgebra.norm.(eachcol(ż))
     else
         zrs_Ė = similar(ż, size(ż, 2))
         ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
         zrs_Ė
     end)
     ṅ = transpose(if NORM_J
-        norm.(eachcol(Jϵ))
+        LinearAlgebra.norm.(eachcol(Jϵ))
     else
         zrs_ṅ = similar(ż, size(ż, 2))
         ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
@@ -610,12 +610,12 @@ function augmented_f(
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
-        norm.(eachcol(ż))
+        LinearAlgebra.norm.(eachcol(ż))
     else
         zero(T)
     end
     du[(end - n_aug + 2), :] .= if NORM_J
-        norm.(eachcol(Jϵ))
+        LinearAlgebra.norm.(eachcol(Jϵ))
     else
         zero(T)
     end
