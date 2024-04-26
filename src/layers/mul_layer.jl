@@ -1,5 +1,3 @@
-export MulLayer
-
 struct MulLayer{F1, F2, NVARS <: Int} <: LuxCore.AbstractExplicitLayer
     activation::F1
     nvars::NVARS

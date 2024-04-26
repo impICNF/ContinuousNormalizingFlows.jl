@@ -1,5 +1,3 @@
-export ICNF, RNODE, CondRNODE, FFJORD, CondFFJORD, Planar, CondPlanar
-
 struct Planar{
     T <: AbstractFloat,
     CM <: ComputeMode,
@@ -81,10 +79,10 @@ struct ICNF{
     NN <: LuxCore.AbstractExplicitLayer,
     NVARS <: Int,
     RESOURCE <: ComputationalResources.AbstractResource,
-    BASEDIST <: Distribution,
+    BASEDIST <: Distributions.Distribution,
     TSPAN <: NTuple{2, T},
-    STEERDIST <: Distribution,
-    EPSDIST <: Distribution,
+    STEERDIST <: Distributions.Distribution,
+    EPSDIST <: Distributions.Distribution,
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: NamedTuple,
@@ -118,7 +116,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVectorMode, false},
     mode::TestMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
@@ -139,7 +137,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVectorMode, true},
     mode::TestMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
@@ -160,7 +158,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVectorMode, false},
     mode::TestMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
@@ -181,7 +179,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVectorMode, true},
     mode::TestMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
@@ -202,7 +200,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:MatrixMode, false},
     mode::TestMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
@@ -219,7 +217,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:MatrixMode, true},
     mode::TestMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
@@ -236,7 +234,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -268,7 +266,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -300,7 +298,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -333,7 +331,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -366,7 +364,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -398,7 +396,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -430,7 +428,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -462,7 +460,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -494,7 +492,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -510,14 +508,14 @@ function augmented_f(
         norm.(eachcol(ż))
     else
         zrs_Ė = similar(ż, size(ż, 2))
-        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
         zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(ϵJ))
     else
         zrs_ṅ = similar(ż, size(ż, 2))
-        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
         zrs_ṅ
     end)
     vcat(ż, l̇, Ė, ṅ)
@@ -530,7 +528,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -562,7 +560,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
@@ -578,14 +576,14 @@ function augmented_f(
         norm.(eachcol(ż))
     else
         zrs_Ė = similar(ż, size(ż, 2))
-        @ignore_derivatives fill!(zrs_Ė, zero(T))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
         zrs_Ė
     end)
     ṅ = transpose(if NORM_J
         norm.(eachcol(Jϵ))
     else
         zrs_ṅ = similar(ż, size(ż, 2))
-        @ignore_derivatives fill!(zrs_ṅ, zero(T))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
         zrs_ṅ
     end)
     vcat(ż, l̇, Ė, ṅ)
@@ -598,7 +596,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)

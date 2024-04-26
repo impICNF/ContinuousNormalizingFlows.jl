@@ -5,12 +5,12 @@
 ) where {T}
     y, VJ = DifferentiationInterface.value_and_pullback_split(f, icnf.autodiff_backend, xs)
     z = similar(xs)
-    @ignore_derivatives fill!(z, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
-        @ignore_derivatives z[i, :] .= one(T)
+        ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[i, :, :] = VJ(z)
-        @ignore_derivatives z[i, :] .= zero(T)
+        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
 end
@@ -22,12 +22,12 @@ end
 ) where {T}
     y = f(xs)
     z = similar(xs)
-    @ignore_derivatives fill!(z, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
-        @ignore_derivatives z[i, :] .= one(T)
+        ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[:, i, :] = DifferentiationInterface.pushforward(f, icnf.autodiff_backend, xs, z)
-        @ignore_derivatives z[i, :] .= zero(T)
+        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
 end

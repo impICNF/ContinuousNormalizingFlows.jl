@@ -1,7 +1,3 @@
-export ICNFModel, ICNFDist
-
-# MLJ interface
-
 mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     m::AICNF
     loss::Function
@@ -139,9 +135,15 @@ MLJBase.metadata_pkg(
 )
 MLJBase.metadata_model(
     ICNFModel;
-    input_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
-    target_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
-    output_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
+    input_scitype = ScientificTypesBase.Table{
+        AbstractVector{ScientificTypesBase.Continuous},
+    },
+    target_scitype = ScientificTypesBase.Table{
+        AbstractVector{ScientificTypesBase.Continuous},
+    },
+    output_scitype = ScientificTypesBase.Table{
+        AbstractVector{ScientificTypesBase.Continuous},
+    },
     supports_weights = false,
     load_path = "ContinuousNormalizingFlows.ICNFModel",
 )
