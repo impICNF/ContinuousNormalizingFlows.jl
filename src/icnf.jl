@@ -126,7 +126,7 @@ function augmented_f(
         make_dyn_func(nn, p),
         z,
     )
-    l̇ = -tr(only(J))
+    l̇ = -LinearAlgebra.tr(only(J))
     vcat(ż, l̇)
 end
 
@@ -148,7 +148,7 @@ function augmented_f(
         z,
     )
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -tr(only(J))
+    du[(end - n_aug)] = -LinearAlgebra.tr(only(J))
     nothing
 end
 
@@ -168,7 +168,7 @@ function augmented_f(
         icnf.autodiff_backend,
         z,
     )
-    l̇ = -tr(J)
+    l̇ = -LinearAlgebra.tr(J)
     vcat(ż, l̇)
 end
 
@@ -190,7 +190,7 @@ function augmented_f(
         z,
     )
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -tr(J)
+    du[(end - n_aug)] = -LinearAlgebra.tr(J)
     nothing
 end
 
@@ -206,7 +206,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, make_dyn_func(nn, p), z)
-    l̇ = -transpose(tr.(J))
+    l̇ = -transpose(LinearAlgebra.tr.(J))
     vcat(ż, l̇)
 end
 
@@ -224,7 +224,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, make_dyn_func(nn, p), z)
     du[begin:(end - n_aug - 1), :] .= ż
-    du[(end - n_aug), :] .= -(tr.(J))
+    du[(end - n_aug), :] .= -(LinearAlgebra.tr.(J))
     nothing
 end
 
@@ -653,7 +653,7 @@ end
     st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
-    mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
+    Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
 end
 
 @inline function loss(
@@ -665,5 +665,5 @@ end
     st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
-    mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
+    Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
 end
