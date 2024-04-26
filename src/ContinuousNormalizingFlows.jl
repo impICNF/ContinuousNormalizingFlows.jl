@@ -70,10 +70,13 @@ include("icnf.jl")
 
 include("utils.jl")
 
-include(joinpath("cores", "core.jl"))
-include(joinpath("cores", "core_icnf.jl"))
-include(joinpath("cores", "core_cond_icnf.jl"))
-include(joinpath("cores", "dist_ext.jl"))
+include(joinpath("exts", "mlj_ext", "core.jl"))
+include(joinpath("exts", "mlj_ext", "core_icnf.jl"))
+include(joinpath("exts", "mlj_ext", "core_cond_icnf.jl"))
+
+include(joinpath("exts", "dist_ext", "core.jl"))
+include(joinpath("exts", "dist_ext", "core_icnf.jl"))
+include(joinpath("exts", "dist_ext", "core_cond_icnf.jl"))
 
 """
 Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Julia
