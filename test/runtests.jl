@@ -17,8 +17,9 @@ import AbstractDifferentiation,
     ReverseDiff,
     SciMLBase,
     TerminalLoggers,
-    Zygote
-using Test, ContinuousNormalizingFlows
+    Test,
+    Zygote,
+    ContinuousNormalizingFlows
 
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"

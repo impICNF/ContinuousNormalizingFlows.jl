@@ -11,12 +11,12 @@
     n = 2^6
     nn = Lux.Chain(Lux.Dense(n_in => n_in, tanh))
 
-    icnf = construct(
+    icnf = ContinuousNormalizingFlows.construct(
         RNODE,
         nn,
         nvars,
         naugs;
-        compute_mode = DIVecJacMatrixMode,
+        compute_mode = ContinuousNormalizingFlows.DIVecJacMatrixMode,
         tspan = (0.0f0, 13.0f0),
         steer_rate = 1.0f-1,
         λ₃ = 1.0f-2,
@@ -25,16 +25,16 @@
     ps = ComponentArrays.ComponentArray(ps)
     r = rand(icnf.rng, Float32, nvars, n)
 
-    loss(icnf, TrainMode(), r, ps, st)
+    ContinuousNormalizingFlows.loss(icnf, ContinuousNormalizingFlows.TrainMode(), r, ps, st)
     JET.test_call(
-        loss,
-        Base.typesof(icnf, TrainMode(), r, ps, st);
+        ContinuousNormalizingFlows.loss,
+        Base.typesof(icnf, ContinuousNormalizingFlows.TrainMode(), r, ps, st);
         target_modules = [ContinuousNormalizingFlows],
         mode = :sound,
     )
     JET.test_opt(
-        loss,
-        Base.typesof(icnf, TrainMode(), r, ps, st);
+        ContinuousNormalizingFlows.loss,
+        Base.typesof(icnf, ContinuousNormalizingFlows.TrainMode(), r, ps, st);
         target_modules = [ContinuousNormalizingFlows],
     )
 end
