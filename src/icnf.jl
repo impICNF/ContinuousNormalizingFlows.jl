@@ -80,7 +80,7 @@ struct ICNF{
     NORM_Z_AUG,
     NN <: LuxCore.AbstractExplicitLayer,
     NVARS <: Int,
-    RESOURCE <: AbstractResource,
+    RESOURCE <: ComputationalResources.AbstractResource,
     BASEDIST <: Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distribution,
@@ -88,7 +88,7 @@ struct ICNF{
     DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
     AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: NamedTuple,
-    RNG <: AbstractRNG,
+    RNG <: Random.AbstractRNG,
 } <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
     nn::NN
     nvars::NVARS

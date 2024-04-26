@@ -29,7 +29,7 @@ jobs:
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
-          using Pkg
+          import Pkg
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - uses: julia-actions/julia-buildpkg@v1
@@ -40,7 +40,6 @@ jobs:
       - name: Run doctests
         shell: julia --project=docs --color=yes {0}
         run: |
-          using Documenter
-          using ContinuousNormalizingFlows
-          DocMeta.setdocmeta!(ContinuousNormalizingFlows, :DocTestSetup, :(using ContinuousNormalizingFlows); recursive=true)
-          doctest(ContinuousNormalizingFlows)
+          import Documenter, ContinuousNormalizingFlows
+          Documenter.DocMeta.setdocmeta!(ContinuousNormalizingFlows, :DocTestSetup, :(using ContinuousNormalizingFlows); recursive=true)
+          Documenter.doctest(ContinuousNormalizingFlows)

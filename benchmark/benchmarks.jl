@@ -1,12 +1,12 @@
-using ContinuousNormalizingFlows,
-    ADTypes,
+import ADTypes,
     BenchmarkTools,
     ComponentArrays,
     DifferentiationInterface,
     Lux,
     PkgBenchmark,
     StableRNGs,
-    Zygote
+    Zygote,
+    ContinuousNormalizingFlows
 
 SUITE = BenchmarkGroup()
 

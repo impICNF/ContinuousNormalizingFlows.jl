@@ -1,6 +1,6 @@
 module ContinuousNormalizingFlows
 
-using AbstractDifferentiation,
+import AbstractDifferentiation,
     ADTypes,
     Base.Iterators,
     ChainRulesCore,

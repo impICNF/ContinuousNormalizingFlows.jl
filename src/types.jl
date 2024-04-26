@@ -46,7 +46,3 @@ abstract type AbstractICNF{
 # MLJ interface
 
 abstract type MLJICNF{AICNF <: AbstractICNF} <: MLJModelInterface.Unsupervised end
-
-# Distributions interface
-
-abstract type ICNFDistribution{AICNF <: AbstractICNF} <: ContinuousMultivariateDistribution end

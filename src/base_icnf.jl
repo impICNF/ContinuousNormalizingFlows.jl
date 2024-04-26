@@ -9,7 +9,7 @@ function construct(
     compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
-    resource::AbstractResource = CPU1(),
+    resource::ComputationalResources.AbstractResource = CPU1(),
     basedist::Distribution = MvNormal(
         Zeros{data_type}(nvars + naugmented),
         Eye{data_type}(nvars + naugmented),
@@ -26,7 +26,7 @@ function construct(
         save_everystep = false,
         alg = Tsit5(; thread = OrdinaryDiffEq.True()),
     ),
-    rng::AbstractRNG = rng_AT(resource),
+    rng::Random.AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1e-2)
     else
@@ -125,12 +125,12 @@ end
     icnf.tspan
 end
 
-@inline function rng_AT(::AbstractResource)
+@inline function rng_AT(::ComputationalResources.AbstractResource)
     Random.default_rng()
 end
 
 @inline function base_AT(
-    ::AbstractResource,
+    ::ComputationalResources.AbstractResource,
     ::AbstractICNF{T},
     dims...,
 ) where {T <: AbstractFloat}

@@ -41,7 +41,7 @@ function PlanarLayer(
 end
 
 function LuxCore.initialparameters(
-    rng::AbstractRNG,
+    rng::Random.AbstractRNG,
     layer::PlanarLayer{use_bias, cond},
 ) where {use_bias, cond}
     ifelse(

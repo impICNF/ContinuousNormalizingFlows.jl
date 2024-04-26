@@ -1,25 +1,24 @@
-using ContinuousNormalizingFlows
-using Test
-import AbstractDifferentiation
-import ADTypes
-import Aqua
-import ComponentArrays
-import ComputationalResources
-import CUDA
-import cuDNN
-import DataFrames
-import DifferentiationInterface
-import Distributions
-import ForwardDiff
-import JET
-import Logging
-import Lux
-import LuxCUDA
-import MLJBase
-import ReverseDiff
-import SciMLBase
-import TerminalLoggers
-import Zygote
+import AbstractDifferentiation,
+    ADTypes,
+    Aqua,
+    ComponentArrays,
+    ComputationalResources,
+    CUDA,
+    cuDNN,
+    DataFrames,
+    DifferentiationInterface,
+    Distributions,
+    ForwardDiff,
+    JET,
+    Logging,
+    Lux,
+    LuxCUDA,
+    MLJBase,
+    ReverseDiff,
+    SciMLBase,
+    TerminalLoggers,
+    Zygote
+using Test, ContinuousNormalizingFlows
 
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
