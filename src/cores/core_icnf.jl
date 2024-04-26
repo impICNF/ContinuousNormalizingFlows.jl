@@ -15,9 +15,9 @@ end
 function ICNFModel(
     m::AbstractICNF{<:AbstractFloat, CM},
     loss::Function = loss;
-    optimizers::Tuple = (Lion(),),
+    optimizers::Tuple = (Optimisers.Lion(),),
     n_epochs::Int = 300,
-    adtype::ADTypes.AbstractADType = AutoZygote(),
+    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
 ) where {CM <: ComputeMode}
@@ -27,24 +27,24 @@ end
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(transpose(MLJModelInterface.matrix(X)))
     ps, st = LuxCore.setup(model.m.rng, model.m)
-    ps = ComponentArray(ps)
-    if model.m.resource isa CUDALibs
-        gdev = gpu_device()
+    ps = ComponentArrays.ComponentArray(ps)
+    if model.m.resource isa ComputationalResources.CUDALibs
+        gdev = Lux.gpu_device()
         x = gdev(x)
         ps = gdev(ps)
         st = gdev(st)
     end
-    optfunc = OptimizationFunction(
+    optfunc = SciMLBase.OptimizationFunction(
         make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
     )
-    optprob = OptimizationProblem(optfunc, ps)
+    optprob = SciMLBase.OptimizationProblem(optfunc, ps)
 
     tst_overall = @timed for opt in model.optimizers
         tst_epochs = @timed for ep in 1:(model.n_epochs)
             if model.use_batch
                 if model.compute_mode <: VectorMode
-                    data = DataLoader(
+                    data = MLUtils.DataLoader(
                         (x,);
                         batchsize = -1,
                         shuffle = true,
@@ -53,7 +53,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
                         buffer = false,
                     )
                 elseif model.compute_mode <: MatrixMode
-                    data = DataLoader(
+                    data = MLUtils.DataLoader(
                         (x,);
                         batchsize = model.batch_size,
                         shuffle = true,
@@ -67,8 +67,9 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
             else
                 data = [(x,)]
             end
-            optprob_re = remake(optprob; u0 = ps)
-            tst_one = @timed res = solve(optprob_re, opt, data; progress = true)
+            optprob_re = SciMLBase.remake(optprob; u0 = ps)
+            tst_one =
+                @timed res = SciMLBase.solve(optprob_re, opt, data; progress = true)
             ps .= res.u
             @info(
                 "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
@@ -100,8 +101,8 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    if model.m.resource isa CUDALibs
-        gdev = gpu_device()
+    if model.m.resource isa ComputationalResources.CUDALibs
+        gdev = Lux.gpu_device()
         xnew = gdev(xnew)
     end
     (ps, st) = fitresult
@@ -121,7 +122,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
         "allocated (bytes)" = tst.bytes,
     )
 
-    DataFrame(; px = exp.(logp̂x))
+    DataFrames.DataFrame(; px = exp.(logp̂x))
 end
 
 MLJBase.metadata_pkg(
