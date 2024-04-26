@@ -1,7 +1,7 @@
 export ICNFDist, CondICNFDist
 
 abstract type ICNFDistribution{AICNF <: ContinuousNormalizingFlows.AbstractICNF} <:
-              ContinuousMultivariateDistribution end
+              Distributions.ContinuousMultivariateDistribution end
 
 function Base.length(d::ICNFDistribution)
     d.m.nvars
