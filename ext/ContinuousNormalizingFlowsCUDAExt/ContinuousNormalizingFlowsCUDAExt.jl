@@ -7,7 +7,7 @@ import CUDA, ComputationalResources, ContinuousNormalizingFlows
 end
 
 @inline function ContinuousNormalizingFlows.base_AT(
-    ::CUDA.CUDALibs,
+    ::ComputationalResources.CUDALibs,
     ::ContinuousNormalizingFlows.AbstractICNF{T},
     dims...,
 ) where {T <: AbstractFloat}
