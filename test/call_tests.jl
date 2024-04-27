@@ -1,4 +1,4 @@
-@testset "Call Tests" begin
+Test.@testset "Call Tests" begin
     mts = if GROUP == "RNODE"
         Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.RNODE]
     elseif GROUP == "FFJORD"
@@ -54,8 +54,8 @@
         gdev = Lux.gpu_device()
     end
 
-    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
-                                                                                                                                          resources,
+    Test.@testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
+                                                                                                                                               resources,
         data_type in data_types,
         compute_mode in compute_modes,
         inplace in inplaces,
@@ -156,34 +156,40 @@
             ContinuousNormalizingFlows.CondFFJORD,
             ContinuousNormalizingFlows.CondPlanar,
         }
-            @test !isnothing(
+            Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, r2, ps, st),
             )
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-                @test !isnothing(
+                Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, r2, ps, st, ndata),
                 )
             else
-                @test !isnothing(
+                Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, r2, ps, st),
                 )
             end
 
-            @test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st))
+            Test.@test !isnothing(
+                ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st),
+            )
 
             diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
             diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
         else
-            @test !isnothing(ContinuousNormalizingFlows.inference(icnf, omode, r, ps, st))
+            Test.@test !isnothing(
+                ContinuousNormalizingFlows.inference(icnf, omode, r, ps, st),
+            )
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-                @test !isnothing(
+                Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, ps, st, ndata),
                 )
             else
-                @test !isnothing(ContinuousNormalizingFlows.generate(icnf, omode, ps, st))
+                Test.@test !isnothing(
+                    ContinuousNormalizingFlows.generate(icnf, omode, ps, st),
+                )
             end
 
-            @test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
+            Test.@test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
 
             diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
             diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
@@ -195,22 +201,26 @@
             d = ContinuousNormalizingFlows.ICNFDist(icnf, omode, ps, st)
         end
 
-        @test !isnothing(Distributions.logpdf(d, r))
-        @test !isnothing(Distributions.pdf(d, r))
-        @test !isnothing(rand(d))
-        @test !isnothing(rand(d, ndata))
+        Test.@test !isnothing(Distributions.logpdf(d, r))
+        Test.@test !isnothing(Distributions.pdf(d, r))
+        Test.@test !isnothing(rand(d))
+        Test.@test !isnothing(rand(d, ndata))
 
         if (GROUP != "All") && inplace
             continue
         end
 
-        @testset "$(typeof(adb).name.name)" for adb in adb_list
-            @testset "Loss" begin
-                @testset "ps" begin
-                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
+        Test.@testset "$(typeof(adb).name.name)" for adb in adb_list
+            Test.@testset "Loss" begin
+                Test.@testset "ps" begin
+                    Test.@test !isnothing(
+                        AbstractDifferentiation.gradient(adb, diff_loss, ps),
+                    )
                 end
-                @testset "x" begin
-                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
+                Test.@testset "x" begin
+                    Test.@test !isnothing(
+                        AbstractDifferentiation.gradient(adb, diff2_loss, r),
+                    ) broken =
                         (GROUP != "All") &&
                         adb isa AbstractDifferentiation.ReverseDiffBackend &&
                         compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
@@ -218,15 +228,15 @@
                 end
             end
         end
-        @testset "$(typeof(adtype).name.name)" for adtype in adtypes
-            @testset "Loss" begin
-                @testset "ps" begin
-                    @test !isnothing(
+        Test.@testset "$(typeof(adtype).name.name)" for adtype in adtypes
+            Test.@testset "Loss" begin
+                Test.@testset "ps" begin
+                    Test.@test !isnothing(
                         DifferentiationInterface.gradient(diff_loss, adtype, ps),
                     )
                 end
-                @testset "x" begin
-                    @test !isnothing(
+                Test.@testset "x" begin
+                    Test.@test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
                     ) broken =
                         (GROUP != "All") &&

@@ -1,4 +1,4 @@
-@testset "Fit Tests" begin
+Test.@testset "Fit Tests" begin
     mts = if GROUP == "RNODE"
         Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.RNODE]
     elseif GROUP == "FFJORD"
@@ -45,8 +45,8 @@
         push!(resources, ComputationalResources.CUDALibs())
     end
 
-    @testset "$resource | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for resource in
-                                                                                                                                           resources,
+    Test.@testset "$resource | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for resource in
+                                                                                                                                                resources,
         data_type in data_types,
         compute_mode in compute_modes,
         adtype in adtypes,
@@ -143,18 +143,18 @@
                 continue
             end
 
-            @test !isnothing(MLJBase.fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, (df, df2)))
-            @test !isnothing(MLJBase.fitted_params(mach))
+            Test.@test !isnothing(MLJBase.fit!(mach))
+            Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
+            Test.@test !isnothing(MLJBase.fitted_params(mach))
 
-            @test !isnothing(
+            Test.@test !isnothing(
                 ContinuousNormalizingFlows.CondICNFDist(
                     mach,
                     ContinuousNormalizingFlows.TrainMode(),
                     r2,
                 ),
             )
-            @test !isnothing(
+            Test.@test !isnothing(
                 ContinuousNormalizingFlows.CondICNFDist(
                     mach,
                     ContinuousNormalizingFlows.TestMode(),
@@ -169,17 +169,17 @@
                 continue
             end
 
-            @test !isnothing(MLJBase.fit!(mach))
-            @test !isnothing(MLJBase.transform(mach, df))
-            @test !isnothing(MLJBase.fitted_params(mach))
+            Test.@test !isnothing(MLJBase.fit!(mach))
+            Test.@test !isnothing(MLJBase.transform(mach, df))
+            Test.@test !isnothing(MLJBase.fitted_params(mach))
 
-            @test !isnothing(
+            Test.@test !isnothing(
                 ContinuousNormalizingFlows.ICNFDist(
                     mach,
                     ContinuousNormalizingFlows.TrainMode(),
                 ),
             )
-            @test !isnothing(
+            Test.@test !isnothing(
                 ContinuousNormalizingFlows.ICNFDist(
                     mach,
                     ContinuousNormalizingFlows.TestMode(),

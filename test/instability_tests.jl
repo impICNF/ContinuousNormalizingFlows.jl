@@ -1,4 +1,4 @@
-@testset "Instability" begin
+Test.@testset "Instability" begin
     JET.test_package(
         ContinuousNormalizingFlows;
         target_modules = [ContinuousNormalizingFlows],

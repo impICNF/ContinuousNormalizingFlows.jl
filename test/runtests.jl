@@ -34,7 +34,7 @@ else
     Logging.global_logger(warnlogger)
 end
 
-@testset "Overall" begin
+Test.@testset "Overall" begin
     if GROUP == "All" ||
        GROUP in ["RNODE", "FFJORD", "Planar", "CondRNODE", "CondFFJORD", "CondPlanar"]
         CUDA.allowscalar() do
