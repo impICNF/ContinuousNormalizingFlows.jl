@@ -6,7 +6,7 @@ struct ICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
 end
 
 function ICNFDist(mach::MLJBase.Machine{<:ICNFModel}, mode::Mode)
-    (ps, st) = fitted_params(mach)
+    (ps, st) = MLJModelInterface.fitted_params(mach)
     ICNFDist(mach.model.m, mode, ps, st)
 end
 

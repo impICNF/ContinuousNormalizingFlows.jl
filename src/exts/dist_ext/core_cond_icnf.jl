@@ -11,7 +11,7 @@ function CondICNFDist(
     mode::Mode,
     ys::AbstractVecOrMat{<:Real},
 )
-    (ps, st) = fitted_params(mach)
+    (ps, st) = MLJModelInterface.fitted_params(mach)
     CondICNFDist(mach.model.m, mode, ys, ps, st)
 end
 
