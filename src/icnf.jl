@@ -245,7 +245,7 @@ function augmented_f(
         z,
     )
     ϵJ = only(VJ(ϵ))
-    l̇ = -(ϵJ ⋅ ϵ)
+    l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -278,7 +278,7 @@ function augmented_f(
     )
     ϵJ = only(VJ(ϵ))
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
+    du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -310,7 +310,7 @@ function augmented_f(
     )
     ż, Jϵ = ż_JV(ϵ)
     Jϵ = only(Jϵ)
-    l̇ = -(ϵ ⋅ Jϵ)
+    l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -344,7 +344,7 @@ function augmented_f(
     ż, Jϵ = ż_JV(ϵ)
     Jϵ = only(Jϵ)
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
+    du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -375,7 +375,7 @@ function augmented_f(
         z,
         ϵ,
     )
-    l̇ = -(ϵJ ⋅ ϵ)
+    l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -408,7 +408,7 @@ function augmented_f(
         ϵ,
     )
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -(ϵJ ⋅ ϵ)
+    du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -439,7 +439,7 @@ function augmented_f(
         z,
         ϵ,
     )
-    l̇ = -(ϵ ⋅ Jϵ)
+    l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
     else
@@ -472,7 +472,7 @@ function augmented_f(
         ϵ,
     )
     du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -(ϵ ⋅ Jϵ)
+    du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
         LinearAlgebra.norm(ż)
     else
