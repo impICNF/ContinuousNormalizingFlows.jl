@@ -20,7 +20,7 @@ jobs:
       - name: Pkg.add
         shell: julia --color=yes {0}
         run: |
-          using Pkg
+          import Pkg
           Pkg.add("CompatHelper")
       - name: CompatHelper.main
         env:
@@ -28,5 +28,5 @@ jobs:
           COMPATHELPER_PRIV: ${{ secrets.DOCUMENTER_KEY }}
         shell: julia --color=yes {0}
         run: |
-          using CompatHelper
+          import CompatHelper
           CompatHelper.main(; include_jll = true, subdirs = ["", "docs", "test", "benchmark"])

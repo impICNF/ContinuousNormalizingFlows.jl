@@ -1,12 +1,3 @@
-export TestMode,
-    TrainMode,
-    ADVecJacVectorMode,
-    ADJacVecVectorMode,
-    DIVecJacVectorMode,
-    DIJacVecVectorMode,
-    DIVecJacMatrixMode,
-    DIJacVecMatrixMode
-
 abstract type Mode end
 struct TestMode <: Mode end
 struct TrainMode <: Mode end
@@ -43,10 +34,4 @@ abstract type AbstractICNF{
     NORM_Z_AUG,
 } <: LuxCore.AbstractExplicitContainerLayer{(:nn,)} end
 
-# MLJ interface
-
 abstract type MLJICNF{AICNF <: AbstractICNF} <: MLJModelInterface.Unsupervised end
-
-# Distributions interface
-
-abstract type ICNFDistribution{AICNF <: AbstractICNF} <: ContinuousMultivariateDistribution end

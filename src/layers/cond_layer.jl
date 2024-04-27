@@ -1,5 +1,3 @@
-export CondLayer
-
 struct CondLayer{NN <: LuxCore.AbstractExplicitLayer, AT <: AbstractArray} <:
        LuxCore.AbstractExplicitContainerLayer{(:nn,)}
     nn::NN

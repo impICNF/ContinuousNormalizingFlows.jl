@@ -1,14 +1,13 @@
-using ContinuousNormalizingFlows
-using Documenter
+import Documenter, ContinuousNormalizingFlows
 
-DocMeta.setdocmeta!(
+Documenter.DocMeta.setdocmeta!(
     ContinuousNormalizingFlows,
     :DocTestSetup,
     :(using ContinuousNormalizingFlows);
     recursive = true,
 )
 
-makedocs(;
+Documenter.makedocs(;
     modules = [ContinuousNormalizingFlows],
     authors = "Hossein Pourbozorg <prbzrg@gmail.com> and contributors",
     repo = "https://github.com/impICNF/ContinuousNormalizingFlows.jl/blob/{commit}{path}#{line}",
@@ -20,4 +19,7 @@ makedocs(;
     pages = ["Home" => "index.md"],
 )
 
-deploydocs(; repo = "github.com/impICNF/ContinuousNormalizingFlows.jl", devbranch = "main")
+Documenter.deploydocs(;
+    repo = "github.com/impICNF/ContinuousNormalizingFlows.jl",
+    devbranch = "main",
+)
