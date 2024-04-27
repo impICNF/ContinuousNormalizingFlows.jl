@@ -195,7 +195,11 @@ Test.@testset "Call Tests" begin
             diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
         end
 
-        if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
+        if mt <: Union{
+            ContinuousNormalizingFlows.CondRNODE,
+            ContinuousNormalizingFlows.CondFFJORD,
+            ContinuousNormalizingFlows.CondPlanar,
+        }
             d = ContinuousNormalizingFlows.CondICNFDist(icnf, omode, r2, ps, st)
         else
             d = ContinuousNormalizingFlows.ICNFDist(icnf, omode, ps, st)
