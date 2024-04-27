@@ -1,6 +1,6 @@
 module ContinuousNormalizingFlows
 
-using AbstractDifferentiation,
+import AbstractDifferentiation,
     ADTypes,
     Base.Iterators,
     ChainRulesCore,
@@ -24,12 +24,39 @@ using AbstractDifferentiation,
     Optimisers,
     Optimization,
     OptimizationOptimisers,
+    OrdinaryDiffEq,
     Random,
-    ScientificTypes,
+    ScientificTypesBase,
+    Static,
     SciMLBase,
     SciMLSensitivity,
     Statistics,
     Zygote
+
+export construct,
+    inference,
+    generate,
+    loss,
+    ICNF,
+    RNODE,
+    CondRNODE,
+    FFJORD,
+    CondFFJORD,
+    Planar,
+    CondPlanar,
+    TestMode,
+    TrainMode,
+    ADVecJacVectorMode,
+    ADJacVecVectorMode,
+    DIVecJacVectorMode,
+    DIJacVecVectorMode,
+    DIVecJacMatrixMode,
+    DIJacVecMatrixMode,
+    ICNFModel,
+    CondICNFModel,
+    CondLayer,
+    PlanarLayer,
+    MulLayer
 
 include(joinpath("layers", "cond_layer.jl"))
 include(joinpath("layers", "planar_layer.jl"))
@@ -43,9 +70,13 @@ include("icnf.jl")
 
 include("utils.jl")
 
-include(joinpath("cores", "core.jl"))
-include(joinpath("cores", "core_icnf.jl"))
-include(joinpath("cores", "core_cond_icnf.jl"))
+include(joinpath("exts", "mlj_ext", "core.jl"))
+include(joinpath("exts", "mlj_ext", "core_icnf.jl"))
+include(joinpath("exts", "mlj_ext", "core_cond_icnf.jl"))
+
+include(joinpath("exts", "dist_ext", "core.jl"))
+include(joinpath("exts", "dist_ext", "core_icnf.jl"))
+include(joinpath("exts", "dist_ext", "core_cond_icnf.jl"))
 
 """
 Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Julia

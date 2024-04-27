@@ -21,22 +21,22 @@ jobs:
       - name: Install dependencies
         shell: julia --color=yes {0}
         run: |
-          using Pkg
+          import Pkg
           Pkg.add(["PkgBenchmark", "BenchmarkCI"])
       - name: Run benchmarks
         shell: julia --color=yes {0}
         run: |
-          using BenchmarkCI
+          import BenchmarkCI
           BenchmarkCI.judge(; baseline="origin/main", retune=true, verbose=true)
       - name: Print judgement
         shell: julia --color=yes {0}
         run: |
-          using BenchmarkCI
+          import BenchmarkCI
           BenchmarkCI.displayjudgement()
       - name: Post results
         shell: julia --color=yes {0}
         run: |
-          using BenchmarkCI
+          import BenchmarkCI
           BenchmarkCI.postjudge()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,18 +1,17 @@
 module ContinuousNormalizingFlowsCUDAExt
 
-using ContinuousNormalizingFlows, CUDA
-using ContinuousNormalizingFlows.ComputationalResources
+import CUDA, ComputationalResources, ContinuousNormalizingFlows
 
-@inline function ContinuousNormalizingFlows.rng_AT(::CUDALibs)
-    CURAND.default_rng()
+@inline function ContinuousNormalizingFlows.rng_AT(::ComputationalResources.CUDALibs)
+    CUDA.CURAND.default_rng()
 end
 
 @inline function ContinuousNormalizingFlows.base_AT(
-    ::CUDALibs,
+    ::ComputationalResources.CUDALibs,
     ::ContinuousNormalizingFlows.AbstractICNF{T},
     dims...,
 ) where {T <: AbstractFloat}
-    CuArray{T}(undef, dims...)
+    CUDA.CuArray{T}(undef, dims...)
 end
 
 end

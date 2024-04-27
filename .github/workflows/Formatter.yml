@@ -20,10 +20,10 @@ jobs:
       - name: Install JuliaFormatter and format
         shell: julia --color=yes {0}
         run: |
-          using Pkg
+          import Pkg
           Pkg.add("JuliaFormatter")
-          using JuliaFormatter
-          format(".")
+          import JuliaFormatter
+          JuliaFormatter.format(".")
 
       # https://github.com/marketplace/actions/create-pull-request
       # https://github.com/peter-evans/create-pull-request#reference-example

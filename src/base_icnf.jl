@@ -1,5 +1,3 @@
-export construct, inference, generate, loss
-
 function construct(
     aicnf::Type{<:AbstractICNF},
     nn::LuxCore.AbstractExplicitLayer,
@@ -9,21 +7,23 @@ function construct(
     compute_mode::Type{<:ComputeMode} = ADVecJacVectorMode,
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
-    resource::AbstractResource = CPU1(),
-    basedist::Distribution = MvNormal(
-        Zeros{data_type}(nvars + naugmented),
-        Eye{data_type}(nvars + naugmented),
+    resource::ComputationalResources.AbstractResource = ComputationalResources.CPU1(),
+    basedist::Distributions.Distribution = Distributions.MvNormal(
+        FillArrays.Zeros{data_type}(nvars + naugmented),
+        FillArrays.Eye{data_type}(nvars + naugmented),
     ),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     steer_rate::AbstractFloat = zero(data_type),
-    epsdist::Distribution = MvNormal(
-        Zeros{data_type}(nvars + naugmented),
-        Eye{data_type}(nvars + naugmented),
+    epsdist::Distributions.Distribution = Distributions.MvNormal(
+        FillArrays.Zeros{data_type}(nvars + naugmented),
+        FillArrays.Eye{data_type}(nvars + naugmented),
     ),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
-    autodiff_backend::ADTypes.AbstractADType = AutoZygote(),
-    sol_kwargs::NamedTuple = (save_everystep = false,),
-    rng::AbstractRNG = rng_AT(resource),
+    autodiff_backend::ADTypes.AbstractADType = ADTypes.AutoZygote(),
+    sol_kwargs::NamedTuple = (
+        save_everystep = false,
+    ),
+    rng::Random.AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1e-2)
     else
@@ -36,7 +36,7 @@ function construct(
     end,
     λ₃::AbstractFloat = zero(data_type),
 )
-    steerdist = Uniform{data_type}(-steer_rate, steer_rate)
+    steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
 
     ICNF{
         data_type,
@@ -82,18 +82,18 @@ end
     0
 end
 
-# pretty-printing
-
 function Base.show(io::IO, icnf::AbstractICNF)
     print(
         io,
         typeof(icnf),
-        "\n\tNumber of Variables: ",
+        "<",
+        "Number of Variables: ",
         icnf.nvars,
-        "\n\tNumber of Augmentations: ",
+        ", Number of Augmentations: ",
         n_augment_input(icnf),
-        "\n\tTime Span: ",
+        ", Time Span: ",
         icnf.tspan,
+        ">",
     )
 end
 
@@ -122,19 +122,27 @@ end
     icnf.tspan
 end
 
-@inline function rng_AT(::AbstractResource)
+@inline function rng_AT(::ComputationalResources.AbstractResource)
     Random.default_rng()
 end
 
 @inline function base_AT(
-    ::AbstractResource,
+    ::ComputationalResources.AbstractResource,
     ::AbstractICNF{T},
     dims...,
 ) where {T <: AbstractFloat}
     Array{T}(undef, dims...)
 end
 
-@non_differentiable base_AT(::Any...)
+ChainRulesCore.@non_differentiable base_AT(::Any...)
+
+function base_sol(
+    icnf::AbstractICNF{T, <:ComputeMode, INPLACE},
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVecOrMat{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
+    sol = SciMLBase.solve(prob; icnf.sol_kwargs...)
+    get_fsol(sol)
+end
 
 function inference_sol(
     icnf::AbstractICNF{T, <:VectorMode, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG},
@@ -142,17 +150,16 @@ function inference_sol(
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob; icnf.sol_kwargs...)
-    fsol = get_fsol(sol)
+    fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
     augs = fsol[(end - n_aug + 1):end]
-    logpz = oftype(Δlogp, logpdf(icnf.basedist, z))
+    logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     Ȧ = if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
-        norm(z_aug)
+        LinearAlgebra.norm(z_aug)
     else
         zero(T)
     end
@@ -165,20 +172,19 @@ function inference_sol(
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
     n_aug = n_augment(icnf, mode)
-    sol = solve(prob; icnf.sol_kwargs...)
-    fsol = get_fsol(sol)
+    fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
     augs = fsol[(end - n_aug + 1):end, :]
-    logpz = oftype(Δlogp, logpdf(icnf.basedist, z))
+    logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
-        norm.(eachcol(z_aug))
+        LinearAlgebra.norm.(eachcol(z_aug))
     else
         zrs_aug = similar(augs, size(augs, 2))
-        @ignore_derivatives fill!(zrs_aug, zero(T))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_aug, zero(T))
         zrs_aug
     end)
     (logp̂x, eachrow(vcat(augs, Ȧ)))
@@ -191,8 +197,7 @@ function generate_sol(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob; icnf.sol_kwargs...)
-    fsol = get_fsol(sol)
+    fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug_input - n_aug - 1)]
     z
 end
@@ -204,8 +209,7 @@ function generate_sol(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    sol = solve(prob; icnf.sol_kwargs...)
-    fsol = get_fsol(sol)
+    fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
     z
 end
@@ -228,11 +232,11 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(icnf.nn, ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -251,11 +255,11 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -273,11 +277,11 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(icnf.nn, ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -296,11 +300,11 @@ function inference_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -317,13 +321,13 @@ function generate_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.basedist, new_xs)
+    Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(icnf.nn, ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -341,13 +345,13 @@ function generate_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.basedist, new_xs)
+    Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -365,13 +369,13 @@ function generate_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
-    rand!(icnf.rng, icnf.basedist, new_xs)
+    Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(icnf.nn, ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -390,13 +394,13 @@ function generate_prob(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
-    rand!(icnf.rng, icnf.basedist, new_xs)
+    Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
-    @ignore_derivatives fill!(zrs, zero(T))
+    ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
-    rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
-    ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    Random.rand!(icnf.rng, icnf.epsdist, ϵ)
+    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -493,7 +497,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    -mean(first(inference(icnf, mode, xs, ps, st)))
+    -Statistics.mean(first(inference(icnf, mode, xs, ps, st)))
 end
 
 @inline function loss(
@@ -504,13 +508,13 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    -mean(first(inference(icnf, mode, xs, ys, ps, st)))
+    -Statistics.mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 
 @inline function make_ode_func(
     icnf::AbstractICNF{T, CM, INPLACE},
     mode::Mode,
-    nn::StatefulLuxLayer,
+    nn::Lux.StatefulLuxLayer,
     ϵ::AbstractVecOrMat{T},
 ) where {T <: AbstractFloat, CM, INPLACE}
     function ode_func_op(u, p, t)
@@ -524,7 +528,7 @@ end
     ifelse(INPLACE, ode_func_ip, ode_func_op)
 end
 
-@inline function make_dyn_func(nn::StatefulLuxLayer, ps::Any)
+@inline function make_dyn_func(nn::Lux.StatefulLuxLayer, ps::Any)
     function dyn_func(x)
         LuxCore.apply(nn, x, ps)
     end

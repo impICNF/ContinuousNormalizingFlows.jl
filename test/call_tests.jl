@@ -1,27 +1,30 @@
-@testset "Call Tests" begin
+Test.@testset "Call Tests" begin
     mts = if GROUP == "RNODE"
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[RNODE]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.RNODE]
     elseif GROUP == "FFJORD"
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[FFJORD]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.FFJORD]
     elseif GROUP == "Planar"
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[Planar]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.Planar]
     elseif GROUP == "CondRNODE"
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[CondRNODE]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.CondRNODE]
     elseif GROUP == "CondFFJORD"
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[CondFFJORD]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.CondFFJORD]
     elseif GROUP == "CondPlanar"
-        Type{<:ContinuousNormalizingFlows.AbstractICNF}[CondPlanar]
+        Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.CondPlanar]
     else
         Type{<:ContinuousNormalizingFlows.AbstractICNF}[
-            RNODE,
-            FFJORD,
-            Planar,
-            CondRNODE,
-            CondFFJORD,
-            CondPlanar,
+            ContinuousNormalizingFlows.RNODE,
+            ContinuousNormalizingFlows.FFJORD,
+            ContinuousNormalizingFlows.Planar,
+            ContinuousNormalizingFlows.CondRNODE,
+            ContinuousNormalizingFlows.CondFFJORD,
+            ContinuousNormalizingFlows.CondPlanar,
         ]
     end
-    omodes = ContinuousNormalizingFlows.Mode[TrainMode(), TestMode()]
+    omodes = ContinuousNormalizingFlows.Mode[
+        ContinuousNormalizingFlows.TrainMode(),
+        ContinuousNormalizingFlows.TestMode(),
+    ]
     ndata_ = Int[4]
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
@@ -37,12 +40,12 @@
         ADTypes.AutoForwardDiff(),
     ]
     compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ADVecJacVectorMode,
-        ADJacVecVectorMode,
-        DIVecJacVectorMode,
-        DIJacVecVectorMode,
-        DIVecJacMatrixMode,
-        DIJacVecMatrixMode,
+        ContinuousNormalizingFlows.ADVecJacVectorMode,
+        ContinuousNormalizingFlows.ADJacVecVectorMode,
+        ContinuousNormalizingFlows.DIVecJacVectorMode,
+        ContinuousNormalizingFlows.DIJacVecVectorMode,
+        ContinuousNormalizingFlows.DIVecJacMatrixMode,
+        ContinuousNormalizingFlows.DIJacVecMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
@@ -51,8 +54,8 @@
         gdev = Lux.gpu_device()
     end
 
-    @testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
-                                                                                                                                          resources,
+    Test.@testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
+                                                                                                                                               resources,
         data_type in data_types,
         compute_mode in compute_modes,
         inplace in inplaces,
@@ -75,13 +78,25 @@
         end
 
         nn = ifelse(
-            mt <: Union{CondRNODE, CondFFJORD, CondPlanar},
+            mt <: Union{
+                ContinuousNormalizingFlows.CondRNODE,
+                ContinuousNormalizingFlows.CondFFJORD,
+                ContinuousNormalizingFlows.CondPlanar,
+            },
             ifelse(
-                mt <: CondPlanar,
+                mt <: ContinuousNormalizingFlows.CondPlanar,
                 ifelse(
                     aug_steer,
-                    Lux.Chain(PlanarLayer(nvars * 2, tanh; n_cond = nvars)),
-                    Lux.Chain(PlanarLayer(nvars, tanh; n_cond = nvars)),
+                    Lux.Chain(
+                        ContinuousNormalizingFlows.PlanarLayer(
+                            nvars * 2,
+                            tanh;
+                            n_cond = nvars,
+                        ),
+                    ),
+                    Lux.Chain(
+                        ContinuousNormalizingFlows.PlanarLayer(nvars, tanh; n_cond = nvars),
+                    ),
                 ),
                 ifelse(
                     aug_steer,
@@ -90,11 +105,11 @@
                 ),
             ),
             ifelse(
-                mt <: Planar,
+                mt <: ContinuousNormalizingFlows.Planar,
                 ifelse(
                     aug_steer,
-                    Lux.Chain(PlanarLayer(nvars * 2, tanh)),
-                    Lux.Chain(PlanarLayer(nvars, tanh)),
+                    Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2, tanh)),
+                    Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars, tanh)),
                 ),
                 ifelse(
                     aug_steer,
@@ -105,7 +120,7 @@
         )
         icnf = ifelse(
             aug_steer,
-            construct(
+            ContinuousNormalizingFlows.construct(
                 mt,
                 nn,
                 nvars,
@@ -117,7 +132,15 @@
                 steer_rate = convert(data_type, 1e-1),
                 λ₃ = convert(data_type, 1e-2),
             ),
-            construct(mt, nn, nvars; data_type, compute_mode, inplace, resource),
+            ContinuousNormalizingFlows.construct(
+                mt,
+                nn,
+                nvars;
+                data_type,
+                compute_mode,
+                inplace,
+                resource,
+            ),
         )
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -128,54 +151,80 @@
             st = gdev(st)
         end
 
-        if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
-            @test !isnothing(inference(icnf, omode, r, r2, ps, st))
+        if mt <: Union{
+            ContinuousNormalizingFlows.CondRNODE,
+            ContinuousNormalizingFlows.CondFFJORD,
+            ContinuousNormalizingFlows.CondPlanar,
+        }
+            Test.@test !isnothing(
+                ContinuousNormalizingFlows.inference(icnf, omode, r, r2, ps, st),
+            )
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-                @test !isnothing(generate(icnf, omode, r2, ps, st, ndata))
+                Test.@test !isnothing(
+                    ContinuousNormalizingFlows.generate(icnf, omode, r2, ps, st, ndata),
+                )
             else
-                @test !isnothing(generate(icnf, omode, r2, ps, st))
+                Test.@test !isnothing(
+                    ContinuousNormalizingFlows.generate(icnf, omode, r2, ps, st),
+                )
             end
 
-            @test !isnothing(loss(icnf, omode, r, r2, ps, st))
+            Test.@test !isnothing(
+                ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st),
+            )
 
-            diff_loss = x -> loss(icnf, omode, r, r2, x, st)
-            diff2_loss = x -> loss(icnf, omode, x, r2, ps, st)
+            diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
+            diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
         else
-            @test !isnothing(inference(icnf, omode, r, ps, st))
+            Test.@test !isnothing(
+                ContinuousNormalizingFlows.inference(icnf, omode, r, ps, st),
+            )
             if compute_mode <: ContinuousNormalizingFlows.MatrixMode
-                @test !isnothing(generate(icnf, omode, ps, st, ndata))
+                Test.@test !isnothing(
+                    ContinuousNormalizingFlows.generate(icnf, omode, ps, st, ndata),
+                )
             else
-                @test !isnothing(generate(icnf, omode, ps, st))
+                Test.@test !isnothing(
+                    ContinuousNormalizingFlows.generate(icnf, omode, ps, st),
+                )
             end
 
-            @test !isnothing(loss(icnf, omode, r, ps, st))
+            Test.@test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
 
-            diff_loss = x -> loss(icnf, omode, r, x, st)
-            diff2_loss = x -> loss(icnf, omode, x, ps, st)
+            diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
+            diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
         end
 
-        if mt <: Union{CondRNODE, CondFFJORD, CondPlanar}
-            d = CondICNFDist(icnf, omode, r2, ps, st)
+        if mt <: Union{
+            ContinuousNormalizingFlows.CondRNODE,
+            ContinuousNormalizingFlows.CondFFJORD,
+            ContinuousNormalizingFlows.CondPlanar,
+        }
+            d = ContinuousNormalizingFlows.CondICNFDist(icnf, omode, r2, ps, st)
         else
-            d = ICNFDist(icnf, omode, ps, st)
+            d = ContinuousNormalizingFlows.ICNFDist(icnf, omode, ps, st)
         end
 
-        @test !isnothing(Distributions.logpdf(d, r))
-        @test !isnothing(Distributions.pdf(d, r))
-        @test !isnothing(rand(d))
-        @test !isnothing(rand(d, ndata))
+        Test.@test !isnothing(Distributions.logpdf(d, r))
+        Test.@test !isnothing(Distributions.pdf(d, r))
+        Test.@test !isnothing(rand(d))
+        Test.@test !isnothing(rand(d, ndata))
 
         if (GROUP != "All") && inplace
             continue
         end
 
-        @testset "$(typeof(adb).name.name)" for adb in adb_list
-            @testset "Loss" begin
-                @testset "ps" begin
-                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff_loss, ps))
+        Test.@testset "$(typeof(adb).name.name)" for adb in adb_list
+            Test.@testset "Loss" begin
+                Test.@testset "ps" begin
+                    Test.@test !isnothing(
+                        AbstractDifferentiation.gradient(adb, diff_loss, ps),
+                    )
                 end
-                @testset "x" begin
-                    @test !isnothing(AbstractDifferentiation.gradient(adb, diff2_loss, r)) broken =
+                Test.@testset "x" begin
+                    Test.@test !isnothing(
+                        AbstractDifferentiation.gradient(adb, diff2_loss, r),
+                    ) broken =
                         (GROUP != "All") &&
                         adb isa AbstractDifferentiation.ReverseDiffBackend &&
                         compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
@@ -183,15 +232,15 @@
                 end
             end
         end
-        @testset "$(typeof(adtype).name.name)" for adtype in adtypes
-            @testset "Loss" begin
-                @testset "ps" begin
-                    @test !isnothing(
+        Test.@testset "$(typeof(adtype).name.name)" for adtype in adtypes
+            Test.@testset "Loss" begin
+                Test.@testset "ps" begin
+                    Test.@test !isnothing(
                         DifferentiationInterface.gradient(diff_loss, adtype, ps),
                     )
                 end
-                @testset "x" begin
-                    @test !isnothing(
+                Test.@testset "x" begin
+                    Test.@test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
                     ) broken =
                         (GROUP != "All") &&

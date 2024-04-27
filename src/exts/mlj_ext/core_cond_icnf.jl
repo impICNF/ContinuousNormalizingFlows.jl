@@ -1,8 +1,4 @@
-export ICNFModel, ICNFDist
-
-# MLJ interface
-
-mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
+mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     m::AICNF
     loss::Function
 
@@ -16,40 +12,42 @@ mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     compute_mode::Type{<:ComputeMode}
 end
 
-function ICNFModel(
+function CondICNFModel(
     m::AbstractICNF{<:AbstractFloat, CM},
     loss::Function = loss;
-    optimizers::Tuple = (Lion(),),
+    optimizers::Tuple = (Optimisers.Lion(),),
     n_epochs::Int = 300,
-    adtype::ADTypes.AbstractADType = AutoZygote(),
+    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
 ) where {CM <: ComputeMode}
-    ICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, CM)
+    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, CM)
 end
 
-function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
+function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
+    X, Y = XY
     x = collect(transpose(MLJModelInterface.matrix(X)))
+    y = collect(transpose(MLJModelInterface.matrix(Y)))
     ps, st = LuxCore.setup(model.m.rng, model.m)
-    ps = ComponentArray(ps)
-    if model.m.resource isa CUDALibs
-        gdev = gpu_device()
+    ps = ComponentArrays.ComponentArray(ps)
+    if model.m.resource isa ComputationalResources.CUDALibs
+        gdev = Lux.gpu_device()
         x = gdev(x)
+        y = gdev(y)
         ps = gdev(ps)
         st = gdev(st)
     end
-    optfunc = OptimizationFunction(
+    optfunc = SciMLBase.OptimizationFunction(
         make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
     )
-    optprob = OptimizationProblem(optfunc, ps)
-
+    optprob = SciMLBase.OptimizationProblem(optfunc, ps)
     tst_overall = @timed for opt in model.optimizers
         tst_epochs = @timed for ep in 1:(model.n_epochs)
             if model.use_batch
                 if model.compute_mode <: VectorMode
-                    data = DataLoader(
-                        (x,);
+                    data = MLUtils.DataLoader(
+                        (x, y);
                         batchsize = -1,
                         shuffle = true,
                         partial = true,
@@ -57,8 +55,8 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
                         buffer = false,
                     )
                 elseif model.compute_mode <: MatrixMode
-                    data = DataLoader(
-                        (x,);
+                    data = MLUtils.DataLoader(
+                        (x, y);
                         batchsize = model.batch_size,
                         shuffle = true,
                         partial = true,
@@ -69,10 +67,11 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
                     error("Not Implemented")
                 end
             else
-                data = [(x,)]
+                data = [(x, y)]
             end
-            optprob_re = remake(optprob; u0 = ps)
-            tst_one = @timed res = solve(optprob_re, opt, data; progress = true)
+            optprob_re = SciMLBase.remake(optprob; u0 = ps)
+            tst_one =
+                @timed res = SciMLBase.solve(optprob_re, opt, data; progress = true)
             ps .= res.u
             @info(
                 "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
@@ -102,22 +101,28 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     fitresult, cache, report
 end
 
-function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
+function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
+    Xnew, Ynew = XYnew
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    if model.m.resource isa CUDALibs
-        gdev = gpu_device()
+    ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
+    if model.m.resource isa ComputationalResources.CUDALibs
+        gdev = Lux.gpu_device()
         xnew = gdev(xnew)
+        ynew = gdev(ynew)
     end
     (ps, st) = fitresult
 
     tst = @timed if model.compute_mode <: VectorMode
-        logp̂x = broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
+        logp̂x = broadcast(
+            (x, y) -> first(inference(model.m, TestMode(), x, y, ps, st)),
+            eachcol(xnew),
+            eachcol(ynew),
+        )
     elseif model.compute_mode <: MatrixMode
-        logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
+        logp̂x = first(inference(model.m, TestMode(), xnew, ynew, ps, st))
     else
         error("Not Implemented")
     end
-
     @info(
         "Transforming",
         "elapsed time (seconds)" = tst.time,
@@ -125,11 +130,11 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
         "allocated (bytes)" = tst.bytes,
     )
 
-    DataFrame(; px = exp.(logp̂x))
+    DataFrames.DataFrame(; px = exp.(logp̂x))
 end
 
 MLJBase.metadata_pkg(
-    ICNFModel;
+    CondICNFModel;
     package_name = "ContinuousNormalizingFlows",
     package_uuid = "00b1973d-5b2e-40bf-8604-5c9c1d8f50ac",
     package_url = "https://github.com/impICNF/ContinuousNormalizingFlows.jl",
@@ -138,61 +143,17 @@ MLJBase.metadata_pkg(
     is_wrapper = false,
 )
 MLJBase.metadata_model(
-    ICNFModel;
-    input_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
-    target_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
-    output_scitype = Table{AbstractVector{ScientificTypes.Continuous}},
+    CondICNFModel;
+    input_scitype = Tuple{
+        ScientificTypesBase.Table{AbstractVector{ScientificTypesBase.Continuous}},
+        ScientificTypesBase.Table{AbstractVector{ScientificTypesBase.Continuous}},
+    },
+    target_scitype = ScientificTypesBase.Table{
+        AbstractVector{ScientificTypesBase.Continuous},
+    },
+    output_scitype = ScientificTypesBase.Table{
+        AbstractVector{ScientificTypesBase.Continuous},
+    },
     supports_weights = false,
-    load_path = "ContinuousNormalizingFlows.ICNFModel",
+    load_path = "ContinuousNormalizingFlows.CondICNFModel",
 )
-
-# Distributions interface
-
-struct ICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
-    m::AICNF
-    mode::Mode
-    ps::Any
-    st::NamedTuple
-end
-
-function ICNFDist(mach::Machine{<:ICNFModel}, mode::Mode)
-    (ps, st) = fitted_params(mach)
-    ICNFDist(mach.model.m, mode, ps, st)
-end
-
-function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        first(inference(d.m, d.mode, x, d.ps, d.st))
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        first(Distributions._logpdf(d, hcat(x)))
-    else
-        error("Not Implemented")
-    end
-end
-function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        Distributions._logpdf.(d, eachcol(A))
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        first(inference(d.m, d.mode, A, d.ps, d.st))
-    else
-        error("Not Implemented")
-    end
-end
-function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        x .= generate(d.m, d.mode, d.ps, d.st)
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        x .= Distributions._rand!(rng, d, hcat(x))
-    else
-        error("Not Implemented")
-    end
-end
-function Distributions._rand!(rng::AbstractRNG, d::ICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        A .= hcat(Distributions._rand!.(rng, d, eachcol(A))...)
-    elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
-        A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
-    else
-        error("Not Implemented")
-    end
-end

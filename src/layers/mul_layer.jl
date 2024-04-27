@@ -1,5 +1,3 @@
-export MulLayer
-
 struct MulLayer{F1, F2, NVARS <: Int} <: LuxCore.AbstractExplicitLayer
     activation::F1
     nvars::NVARS
@@ -20,7 +18,7 @@ function MulLayer(
     )
 end
 
-function LuxCore.initialparameters(rng::AbstractRNG, m::MulLayer)
+function LuxCore.initialparameters(rng::Random.AbstractRNG, m::MulLayer)
     (weight = m.init_weight(rng, m.nvars, m.nvars),)
 end
 

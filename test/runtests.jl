@@ -1,25 +1,25 @@
-using ContinuousNormalizingFlows
-using Test
-using AbstractDifferentiation: AbstractDifferentiation
-using ADTypes: ADTypes
-using Aqua: Aqua
-using ComponentArrays: ComponentArrays
-using ComputationalResources: ComputationalResources
-using CUDA: CUDA
-using cuDNN: cuDNN
-using DataFrames: DataFrames
-using DifferentiationInterface: DifferentiationInterface
-using Distributions: Distributions
-using ForwardDiff: ForwardDiff
-using JET: JET
-using Logging: Logging
-using Lux: Lux
-using LuxCUDA: LuxCUDA
-using MLJBase: MLJBase
-using ReverseDiff: ReverseDiff
-using SciMLBase: SciMLBase
-using TerminalLoggers: TerminalLoggers
-using Zygote: Zygote
+import AbstractDifferentiation,
+    ADTypes,
+    Aqua,
+    ComponentArrays,
+    ComputationalResources,
+    CUDA,
+    cuDNN,
+    DataFrames,
+    DifferentiationInterface,
+    Distributions,
+    ForwardDiff,
+    JET,
+    Logging,
+    Lux,
+    LuxCUDA,
+    MLJBase,
+    ReverseDiff,
+    SciMLBase,
+    TerminalLoggers,
+    Test,
+    Zygote,
+    ContinuousNormalizingFlows
 
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
@@ -34,7 +34,7 @@ else
     Logging.global_logger(warnlogger)
 end
 
-@testset "Overall" begin
+Test.@testset "Overall" begin
     if GROUP == "All" ||
        GROUP in ["RNODE", "FFJORD", "Planar", "CondRNODE", "CondFFJORD", "CondPlanar"]
         CUDA.allowscalar() do
