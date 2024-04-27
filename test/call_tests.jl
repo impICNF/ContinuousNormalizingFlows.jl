@@ -105,7 +105,7 @@ Test.@testset "Call Tests" begin
                 ),
             ),
             ifelse(
-                mt <: Planar,
+                mt <: ContinuousNormalizingFlows.Planar,
                 ifelse(
                     aug_steer,
                     Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2, tanh)),

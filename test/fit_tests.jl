@@ -32,12 +32,12 @@ Test.@testset "Fit Tests" begin
         ADTypes.AutoForwardDiff(),
     ]
     compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ADVecJacVectorMode,
-        ADJacVecVectorMode,
-        DIVecJacVectorMode,
-        DIJacVecVectorMode,
-        DIVecJacMatrixMode,
-        DIJacVecMatrixMode,
+        ContinuousNormalizingFlows.ADVecJacVectorMode,
+        ContinuousNormalizingFlows.ADJacVecVectorMode,
+        ContinuousNormalizingFlows.DIVecJacVectorMode,
+        ContinuousNormalizingFlows.DIJacVecVectorMode,
+        ContinuousNormalizingFlows.DIVecJacMatrixMode,
+        ContinuousNormalizingFlows.DIJacVecMatrixMode,
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
