@@ -12,7 +12,7 @@ Test.@testset "Instability" begin
     nn = Lux.Chain(Lux.Dense(n_in => n_in, tanh))
 
     icnf = ContinuousNormalizingFlows.construct(
-        RNODE,
+        ContinuousNormalizingFlows.RNODE,
         nn,
         nvars,
         naugs;
