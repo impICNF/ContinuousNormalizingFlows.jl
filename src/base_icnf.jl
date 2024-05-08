@@ -233,9 +233,9 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -256,9 +256,9 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -278,9 +278,9 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -301,9 +301,9 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -324,9 +324,9 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -348,9 +348,9 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -372,9 +372,9 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(icnf.nn, ps, st)
+    nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -397,9 +397,9 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = Lux.StatefulLuxLayer(CondLayer(icnf.nn, ys), ps, st)
+    nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, ϵ),
+        make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -512,26 +512,19 @@ end
 @inline function make_ode_func(
     icnf::AbstractICNF{T, CM, INPLACE},
     mode::Mode,
-    nn::Lux.StatefulLuxLayer,
+    nn::LuxCore.AbstractExplicitLayer,
+    st::NamedTuple,
     ϵ::AbstractVecOrMat{T},
 ) where {T <: AbstractFloat, CM, INPLACE}
     function ode_func_op(u, p, t)
-        augmented_f(u, p, t, icnf, mode, nn, ϵ)
+        augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
     end
 
     function ode_func_ip(du, u, p, t)
-        augmented_f(du, u, p, t, icnf, mode, nn, ϵ)
+        augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
     end
 
     ifelse(INPLACE, ode_func_ip, ode_func_op)
-end
-
-@inline function make_dyn_func(nn::Lux.StatefulLuxLayer, ps::Any)
-    function dyn_func(x)
-        LuxCore.apply(nn, x, ps)
-    end
-
-    dyn_func
 end
 
 @inline function (icnf::AbstractICNF{T, CM, INPLACE, false})(

@@ -1,7 +1,7 @@
 name = "ContinuousNormalizingFlows"
 uuid = "00b1973d-5b2e-40bf-8604-5c9c1d8f50ac"
 authors = ["Hossein Pourbozorg <prbzrg@gmail.com> and contributors"]
-version = "0.22.1"
+version = "0.22.3"
 
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
@@ -50,7 +50,7 @@ ComputationalResources = "0.3"
 DataFrames = "1"
 Dates = "1"
 DifferentialEquations = "7"
-DifferentiationInterface = "0.1, 0.2"
+DifferentiationInterface = "0.1, 0.2, 0.3"
 Distributions = "0.25"
 DistributionsAD = "0.6"
 FillArrays = "1"
