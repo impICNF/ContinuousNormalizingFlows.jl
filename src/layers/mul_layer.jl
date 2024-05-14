@@ -31,5 +31,5 @@ function LuxCore.outputsize(m::MulLayer)
 end
 
 @inline function (m::MulLayer)(x::AbstractVecOrMat, ps::Any, st::NamedTuple)
-    apply_act(m.activation, Octavian.matmul(ps.weight, x)), st
+    m.activation.(Octavian.matmul(ps.weight, x)), st
 end
