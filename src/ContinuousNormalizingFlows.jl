@@ -58,7 +58,6 @@ export construct,
     PlanarLayer,
     MulLayer
 
-include(joinpath("layers", "base_layer.jl"))
 include(joinpath("layers", "cond_layer.jl"))
 include(joinpath("layers", "planar_layer.jl"))
 include(joinpath("layers", "mul_layer.jl"))
