@@ -210,10 +210,6 @@ Test.@testset "Call Tests" begin
         Test.@test !isnothing(rand(d))
         Test.@test !isnothing(rand(d, ndata))
 
-        if (GROUP != "All") && inplace
-            continue
-        end
-
         Test.@testset "$(typeof(adb).name.name)" for adb in adb_list
             Test.@testset "Loss" begin
                 Test.@testset "ps" begin
