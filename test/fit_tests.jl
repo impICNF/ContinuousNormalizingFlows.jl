@@ -139,10 +139,6 @@ Test.@testset "Fit Tests" begin
             model = ContinuousNormalizingFlows.CondICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, (df, df2))
 
-            if (GROUP != "All") && inplace
-                continue
-            end
-
             Test.@test !isnothing(MLJBase.fit!(mach))
             Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
             Test.@test !isnothing(MLJBase.fitted_params(mach))
@@ -164,10 +160,6 @@ Test.@testset "Fit Tests" begin
         else
             model = ContinuousNormalizingFlows.ICNFModel(icnf; n_epochs, adtype)
             mach = MLJBase.machine(model, df)
-
-            if (GROUP != "All") && inplace
-                continue
-            end
 
             Test.@test !isnothing(MLJBase.fit!(mach))
             Test.@test !isnothing(MLJBase.transform(mach, df))
