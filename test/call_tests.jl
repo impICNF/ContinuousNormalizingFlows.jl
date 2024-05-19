@@ -172,6 +172,7 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st),
             )
+            Test.@test !isnothing(icnf((r, r2), ps, st))
 
             diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
             diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
@@ -190,6 +191,7 @@ Test.@testset "Call Tests" begin
             end
 
             Test.@test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
+            Test.@test !isnothing(icnf(r, ps, st))
 
             diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
             diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
