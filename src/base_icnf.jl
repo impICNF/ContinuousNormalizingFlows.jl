@@ -199,8 +199,7 @@ function generate_sol(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     fsol = base_sol(icnf, prob)
-    z = fsol[begin:(end - n_aug_input - n_aug - 1)]
-    z
+    fsol[begin:(end - n_aug_input - n_aug - 1)]
 end
 
 function generate_sol(
@@ -211,8 +210,7 @@ function generate_sol(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     fsol = base_sol(icnf, prob)
-    z = fsol[begin:(end - n_aug_input - n_aug - 1), :]
-    z
+    fsol[begin:(end - n_aug_input - n_aug - 1), :]
 end
 
 @inline function get_fsol(sol::SciMLBase.AbstractODESolution)

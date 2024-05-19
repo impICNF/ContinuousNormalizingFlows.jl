@@ -96,7 +96,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     fitresult = (ps, st)
     cache = nothing
     report = (stats = tst_overall,)
-    fitresult, cache, report
+    (fitresult, cache, report)
 end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
