@@ -3,13 +3,13 @@
     f::Lux.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 ) where {T}
-    y, VJ = DifferentiationInterface.value_and_pullback_split(f, icnf.autodiff_backend, xs)
+    y = f(xs)
     z = similar(xs)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = VJ(z)
+        res[i, :, :] = DifferentiationInterface.pullback(f, icnf.autodiff_backend, xs, z)
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
