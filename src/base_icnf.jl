@@ -20,10 +20,7 @@ function construct(
     ),
     differentiation_backend::AbstractDifferentiation.AbstractBackend = AbstractDifferentiation.ZygoteBackend(),
     autodiff_backend::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    sol_kwargs::NamedTuple = (
-        save_everystep = false,
-        alg = OrdinaryDiffEq.Tsit5(; thread = Static.True()),
-    ),
+    sol_kwargs::NamedTuple = (save_everystep = false,),
     rng::Random.AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1e-2)
