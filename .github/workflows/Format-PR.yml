@@ -3,6 +3,6 @@ on:
   pull_request:
 jobs:
   code-style:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: julia-actions/julia-format@v3
