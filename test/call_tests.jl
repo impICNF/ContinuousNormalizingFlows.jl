@@ -163,7 +163,7 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, r2, ps, st),
             )
-            if compute_mode <: ContinuousNormalizingFlows.MatrixMode
+            if compute_mode isa ContinuousNormalizingFlows.MatrixMode
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, r2, ps, st, ndata),
                 )
@@ -184,7 +184,7 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, ps, st),
             )
-            if compute_mode <: ContinuousNormalizingFlows.MatrixMode
+            if compute_mode isa ContinuousNormalizingFlows.MatrixMode
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, ps, st, ndata),
                 )
@@ -229,7 +229,7 @@ Test.@testset "Call Tests" begin
                     ) broken =
                         (GROUP != "All") &&
                         adb isa AbstractDifferentiation.ReverseDiffBackend &&
-                        compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
+                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
                         VERSION >= v"1.10"
                 end
             end
@@ -247,7 +247,7 @@ Test.@testset "Call Tests" begin
                     ) broken =
                         (GROUP != "All") &&
                         adtype isa ADTypes.AutoReverseDiff &&
-                        compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
+                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
                         VERSION >= v"1.10"
                 end
             end
