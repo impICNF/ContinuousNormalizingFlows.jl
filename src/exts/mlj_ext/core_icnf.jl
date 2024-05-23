@@ -41,7 +41,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     tst_overall = @timed for opt in model.optimizers
         tst_epochs = @timed for ep in 1:(model.n_epochs)
             if model.use_batch
-                if model.m.compute_mode <: VectorMode
+                if model.m.compute_mode isa VectorMode
                     data = MLUtils.DataLoader(
                         (x,);
                         batchsize = -1,
@@ -50,7 +50,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
                         parallel = false,
                         buffer = false,
                     )
-                elseif model.m.compute_mode <: MatrixMode
+                elseif model.m.compute_mode isa MatrixMode
                     data = MLUtils.DataLoader(
                         (x,);
                         batchsize = model.batch_size,
@@ -105,9 +105,9 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     end
     (ps, st) = fitresult
 
-    tst = @timed if model.m.compute_mode <: VectorMode
+    tst = @timed if model.m.compute_mode isa VectorMode
         logp̂x = broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
-    elseif model.m.compute_mode <: MatrixMode
+    elseif model.m.compute_mode isa MatrixMode
         logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
     else
         error("Not Implemented")

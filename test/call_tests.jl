@@ -73,10 +73,10 @@ Test.@testset "Call Tests" begin
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        if compute_mode <: ContinuousNormalizingFlows.VectorMode
+        if compute_mode isa ContinuousNormalizingFlows.VectorMode
             r = convert.(data_type, rand(data_dist, nvars))
             r2 = convert.(data_type, rand(data_dist2, nvars))
-        elseif compute_mode <: ContinuousNormalizingFlows.MatrixMode
+        elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
             r = convert.(data_type, rand(data_dist, nvars, ndata))
             r2 = convert.(data_type, rand(data_dist2, nvars, ndata))
         end
