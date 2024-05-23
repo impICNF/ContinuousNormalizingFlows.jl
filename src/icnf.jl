@@ -83,8 +83,6 @@ struct ICNF{
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distributions.Distribution,
     EPSDIST <: Distributions.Distribution,
-    DIFFERENTIATION_BACKEND <: AbstractDifferentiation.AbstractBackend,
-    AUTODIFF_BACKEND <: ADTypes.AbstractADType,
     SOL_KWARGS <: NamedTuple,
     RNG <: Random.AbstractRNG,
 } <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
@@ -92,13 +90,12 @@ struct ICNF{
     nvars::NVARS
     naugmented::NVARS
 
+    compute_mode::CM
     resource::RESOURCE
     basedist::BASEDIST
     tspan::TSPAN
     steerdist::STEERDIST
     epsdist::EPSDIST
-    differentiation_backend::DIFFERENTIATION_BACKEND
-    autodiff_backend::AUTODIFF_BACKEND
     sol_kwargs::SOL_KWARGS
     rng::RNG
     λ₁::T
@@ -123,7 +120,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = AbstractDifferentiation.value_and_jacobian(icnf.differentiation_backend, snn, z)
+    ż, J = AbstractDifferentiation.value_and_jacobian(icnf.compute_mode.adback, snn, z)
     l̇ = -LinearAlgebra.tr(only(J))
     vcat(ż, l̇)
 end
@@ -142,7 +139,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = AbstractDifferentiation.value_and_jacobian(icnf.differentiation_backend, snn, z)
+    ż, J = AbstractDifferentiation.value_and_jacobian(icnf.compute_mode.adback, snn, z)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.tr(only(J))
     nothing
@@ -161,7 +158,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.autodiff_backend, z)
+    ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.compute_mode.adback, z)
     l̇ = -LinearAlgebra.tr(J)
     vcat(ż, l̇)
 end
@@ -180,7 +177,7 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.autodiff_backend, z)
+    ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.compute_mode.adback, z)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.tr(J)
     nothing
@@ -238,7 +235,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
-        icnf.differentiation_backend,
+        icnf.compute_mode.adback,
         snn,
         z,
     )
@@ -272,7 +269,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, VJ = AbstractDifferentiation.value_and_pullback_function(
-        icnf.differentiation_backend,
+        icnf.compute_mode.adback,
         snn,
         z,
     )
@@ -306,7 +303,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
-        icnf.differentiation_backend,
+        icnf.compute_mode.adback,
         snn,
         z,
     )
@@ -341,7 +338,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż_JV = AbstractDifferentiation.value_and_pushforward_function(
-        icnf.differentiation_backend,
+        icnf.compute_mode.adback,
         snn,
         z,
     )
@@ -375,7 +372,8 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, ϵJ = DifferentiationInterface.value_and_pullback(snn, icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ =
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
     l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
@@ -404,7 +402,8 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, ϵJ = DifferentiationInterface.value_and_pullback(snn, icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ =
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -434,7 +433,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.autodiff_backend, z, ϵ)
+        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
     l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
@@ -464,7 +463,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.autodiff_backend, z, ϵ)
+        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -493,7 +492,8 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
-    ż, ϵJ = DifferentiationInterface.value_and_pullback(snn, icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ =
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(if NORM_Z
         LinearAlgebra.norm.(eachcol(ż))
@@ -526,7 +526,8 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
-    ż, ϵJ = DifferentiationInterface.value_and_pullback(snn, icnf.autodiff_backend, z, ϵ)
+    ż, ϵJ =
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
@@ -556,7 +557,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.autodiff_backend, z, ϵ)
+        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(if NORM_Z
         LinearAlgebra.norm.(eachcol(ż))
@@ -590,7 +591,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.autodiff_backend, z, ϵ)
+        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z

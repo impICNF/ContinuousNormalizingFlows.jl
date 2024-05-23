@@ -9,7 +9,7 @@
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = DifferentiationInterface.pullback(f, icnf.autodiff_backend, xs, z)
+        res[i, :, :] = DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, z)
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
@@ -26,7 +26,8 @@ end
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[:, i, :] = DifferentiationInterface.pushforward(f, icnf.autodiff_backend, xs, z)
+        res[:, i, :] =
+            DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, z)
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
@@ -37,7 +38,7 @@ end
     f::Lux.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 ) where {T}
-    y, J = DifferentiationInterface.value_and_jacobian(f, icnf.autodiff_backend, xs)
+    y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
     y, split_jac(J, size(xs, 1))
 end
 

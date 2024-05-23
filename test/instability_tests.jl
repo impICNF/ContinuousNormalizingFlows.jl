@@ -16,7 +16,7 @@ Test.@testset "Instability" begin
         nn,
         nvars,
         naugs;
-        compute_mode = ContinuousNormalizingFlows.DIVecJacMatrixMode,
+        compute_mode = ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         tspan = (0.0f0, 13.0f0),
         steer_rate = 1.0f-1,
         λ₃ = 1.0f-2,

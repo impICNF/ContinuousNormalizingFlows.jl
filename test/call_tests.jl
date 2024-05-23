@@ -39,13 +39,17 @@ Test.@testset "Call Tests" begin
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
     ]
-    compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ContinuousNormalizingFlows.ADVecJacVectorMode,
-        ContinuousNormalizingFlows.ADJacVecVectorMode,
-        ContinuousNormalizingFlows.DIVecJacVectorMode,
-        ContinuousNormalizingFlows.DIJacVecVectorMode,
-        ContinuousNormalizingFlows.DIVecJacMatrixMode,
-        ContinuousNormalizingFlows.DIJacVecMatrixMode,
+    compute_modes = ContinuousNormalizingFlows.ComputeMode[
+        ContinuousNormalizingFlows.ADVecJacVectorMode(
+            AbstractDifferentiation.ZygoteBackend(),
+        ),
+        ContinuousNormalizingFlows.ADJacVecVectorMode(
+            AbstractDifferentiation.ZygoteBackend(),
+        ),
+        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
@@ -69,10 +73,10 @@ Test.@testset "Call Tests" begin
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
         data_dist2 =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
-        if compute_mode <: ContinuousNormalizingFlows.VectorMode
+        if compute_mode isa ContinuousNormalizingFlows.VectorMode
             r = convert.(data_type, rand(data_dist, nvars))
             r2 = convert.(data_type, rand(data_dist2, nvars))
-        elseif compute_mode <: ContinuousNormalizingFlows.MatrixMode
+        elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
             r = convert.(data_type, rand(data_dist, nvars, ndata))
             r2 = convert.(data_type, rand(data_dist2, nvars, ndata))
         end
@@ -159,7 +163,7 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, r2, ps, st),
             )
-            if compute_mode <: ContinuousNormalizingFlows.MatrixMode
+            if compute_mode isa ContinuousNormalizingFlows.MatrixMode
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, r2, ps, st, ndata),
                 )
@@ -180,7 +184,7 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, ps, st),
             )
-            if compute_mode <: ContinuousNormalizingFlows.MatrixMode
+            if compute_mode isa ContinuousNormalizingFlows.MatrixMode
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.generate(icnf, omode, ps, st, ndata),
                 )
@@ -225,7 +229,7 @@ Test.@testset "Call Tests" begin
                     ) broken =
                         (GROUP != "All") &&
                         adb isa AbstractDifferentiation.ReverseDiffBackend &&
-                        compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
+                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
                         VERSION >= v"1.10"
                 end
             end
@@ -243,7 +247,7 @@ Test.@testset "Call Tests" begin
                     ) broken =
                         (GROUP != "All") &&
                         adtype isa ADTypes.AutoReverseDiff &&
-                        compute_mode <: ContinuousNormalizingFlows.MatrixMode &&
+                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
                         VERSION >= v"1.10"
                 end
             end
