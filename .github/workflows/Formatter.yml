@@ -24,9 +24,6 @@ jobs:
           Pkg.add("JuliaFormatter")
           import JuliaFormatter
           JuliaFormatter.format(".")
-
-      # https://github.com/marketplace/actions/create-pull-request
-      # https://github.com/peter-evans/create-pull-request#reference-example
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
