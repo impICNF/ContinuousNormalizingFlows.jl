@@ -39,13 +39,17 @@ Test.@testset "Call Tests" begin
         ADTypes.AutoReverseDiff(),
         ADTypes.AutoForwardDiff(),
     ]
-    compute_modes = Type{<:ContinuousNormalizingFlows.ComputeMode}[
-        ContinuousNormalizingFlows.ADVecJacVectorMode,
-        ContinuousNormalizingFlows.ADJacVecVectorMode,
-        ContinuousNormalizingFlows.DIVecJacVectorMode,
-        ContinuousNormalizingFlows.DIJacVecVectorMode,
-        ContinuousNormalizingFlows.DIVecJacMatrixMode,
-        ContinuousNormalizingFlows.DIJacVecMatrixMode,
+    compute_modes = ContinuousNormalizingFlows.ComputeMode[
+        ContinuousNormalizingFlows.ADVecJacVectorMode(
+            AbstractDifferentiation.ZygoteBackend(),
+        ),
+        ContinuousNormalizingFlows.ADJacVecVectorMode(
+            AbstractDifferentiation.ZygoteBackend(),
+        ),
+        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]

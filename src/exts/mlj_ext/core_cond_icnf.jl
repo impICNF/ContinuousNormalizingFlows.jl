@@ -8,20 +8,18 @@ mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
 
     use_batch::Bool
     batch_size::Int
-
-    compute_mode::Type{<:ComputeMode}
 end
 
 function CondICNFModel(
-    m::AbstractICNF{<:AbstractFloat, CM},
+    m::AbstractICNF,
     loss::Function = loss;
     optimizers::Tuple = (Optimisers.Lion(),),
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
-) where {CM <: ComputeMode}
-    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, CM)
+)
+    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -45,7 +43,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     tst_overall = @timed for opt in model.optimizers
         tst_epochs = @timed for ep in 1:(model.n_epochs)
             if model.use_batch
-                if model.compute_mode <: VectorMode
+                if model.m.compute_mode <: VectorMode
                     data = MLUtils.DataLoader(
                         (x, y);
                         batchsize = -1,
@@ -54,7 +52,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
                         parallel = false,
                         buffer = false,
                     )
-                elseif model.compute_mode <: MatrixMode
+                elseif model.m.compute_mode <: MatrixMode
                     data = MLUtils.DataLoader(
                         (x, y);
                         batchsize = model.batch_size,
@@ -112,13 +110,13 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     end
     (ps, st) = fitresult
 
-    tst = @timed if model.compute_mode <: VectorMode
+    tst = @timed if model.m.compute_mode <: VectorMode
         logp̂x = broadcast(
             (x, y) -> first(inference(model.m, TestMode(), x, y, ps, st)),
             eachcol(xnew),
             eachcol(ynew),
         )
-    elseif model.compute_mode <: MatrixMode
+    elseif model.m.compute_mode <: MatrixMode
         logp̂x = first(inference(model.m, TestMode(), xnew, ynew, ps, st))
     else
         error("Not Implemented")

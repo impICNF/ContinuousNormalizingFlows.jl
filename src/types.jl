@@ -2,21 +2,35 @@ abstract type Mode end
 struct TestMode <: Mode end
 struct TrainMode <: Mode end
 
-abstract type ComputeMode end
-abstract type VectorMode <: ComputeMode end
-abstract type MatrixMode <: ComputeMode end
+abstract type ComputeMode{ADBack} end
+abstract type VectorMode{ADBack} <: ComputeMode{ADBack} end
+abstract type MatrixMode{ADBack} <: ComputeMode{ADBack} end
 
-abstract type ADVectorMode <: VectorMode end
-struct ADVecJacVectorMode <: ADVectorMode end
-struct ADJacVecVectorMode <: ADVectorMode end
+abstract type ADVectorMode{ADBack} <: VectorMode{ADBack} end
+struct ADVecJacVectorMode{ADBack <: AbstractDifferentiation.AbstractBackend} <:
+       ADVectorMode{ADBack}
+    adback::ADBack
+end
+struct ADJacVecVectorMode{ADBack <: AbstractDifferentiation.AbstractBackend} <:
+       ADVectorMode{ADBack}
+    adback::ADBack
+end
 
-abstract type DIVectorMode <: VectorMode end
-struct DIVecJacVectorMode <: DIVectorMode end
-struct DIJacVecVectorMode <: DIVectorMode end
+abstract type DIVectorMode{ADBack} <: VectorMode{ADBack} end
+struct DIVecJacVectorMode{ADBack <: ADTypes.AbstractADType} <: DIVectorMode{ADBack}
+    adback::ADBack
+end
+struct DIJacVecVectorMode{ADBack <: ADTypes.AbstractADType} <: DIVectorMode{ADBack}
+    adback::ADBack
+end
 
-abstract type DIMatrixMode <: MatrixMode end
-struct DIVecJacMatrixMode <: DIMatrixMode end
-struct DIJacVecMatrixMode <: DIMatrixMode end
+abstract type DIMatrixMode{ADBack} <: MatrixMode{ADBack} end
+struct DIVecJacMatrixMode{ADBack <: ADTypes.AbstractADType} <: DIMatrixMode{ADBack}
+    adback::ADBack
+end
+struct DIJacVecMatrixMode{ADBack <: ADTypes.AbstractADType} <: DIMatrixMode{ADBack}
+    adback::ADBack
+end
 
 Base.Base.@deprecate_binding SDVecJacMatrixMode DIVecJacMatrixMode true
 Base.Base.@deprecate_binding SDJacVecMatrixMode DIJacVecMatrixMode true

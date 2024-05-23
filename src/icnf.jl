@@ -92,6 +92,7 @@ struct ICNF{
     nvars::NVARS
     naugmented::NVARS
 
+    compute_mode::CM
     resource::RESOURCE
     basedist::BASEDIST
     tspan::TSPAN
