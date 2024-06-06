@@ -7,6 +7,7 @@ import AbstractDifferentiation,
     cuDNN,
     DataFrames,
     DifferentiationInterface,
+    Distances,
     Distributions,
     ForwardDiff,
     JET,
@@ -48,5 +49,9 @@ Test.@testset "Overall" begin
 
     if GROUP == "All" || GROUP == "Instability"
         include("instability_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "Regression"
+        include("regression_tests.jl")
     end
 end
