@@ -4,7 +4,7 @@ Test.@testset "Regression Tests" begin
     naugs = nvars
     n_in = nvars + naugs
     n = 2^10
-    nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
+    nn = Lux.Chain(Lux.Dense(n_in => 3 * n_in, tanh), Lux.Dense(3 * n_in => n_in, tanh))
 
     icnf = ContinuousNormalizingFlows.construct(
         ContinuousNormalizingFlows.RNODE,
