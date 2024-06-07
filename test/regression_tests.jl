@@ -25,14 +25,14 @@ Test.@testset "Regression Tests" begin
     r = convert.(Float32, r)
 
     df = DataFrames.DataFrame(transpose(r), :auto)
-    model = ICNFModel(icnf) # use defaults
+    model = ContinuousNormalizingFlows.ICNFModel(icnf)
 
-    mach = machine(model, df)
-    fit!(mach)
+    mach = MLJBase.machine(model, df)
+    MLJBase.fit!(mach)
 
-    d = ICNFDist(mach, TestMode()) # alternative way
-    actual_pdf = pdf.(data_dist, r)
-    estimated_pdf = pdf(d, r)
+    d = ContinuousNormalizingFlows.ICNFDist(mach, ContinuousNormalizingFlows.TestMode())
+    actual_pdf = Distributions.pdf.(data_dist, r)
+    estimated_pdf = Distributions.pdf(d, r)
 
     mad_ = Distances.meanad(estimated_pdf, actual_pdf)
     msd_ = Distances.msd(estimated_pdf, actual_pdf)
