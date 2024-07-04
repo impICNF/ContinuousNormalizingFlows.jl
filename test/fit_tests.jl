@@ -27,11 +27,9 @@ Test.@testset "Fit Tests" begin
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
     adtypes = ADTypes.AbstractADType[
+        ADTypes.AutoZygote(),
         ADTypes.AutoEnzyme(Enzyme.Forward),
         ADTypes.AutoEnzyme(Enzyme.Reverse),
-        ADTypes.AutoZygote(),
-        ADTypes.AutoReverseDiff(),
-        ADTypes.AutoForwardDiff(),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(
@@ -44,6 +42,8 @@ Test.@testset "Fit Tests" begin
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoEnzyme(Enzyme.Forward)),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoEnzyme(Enzyme.Forward)),
     ]

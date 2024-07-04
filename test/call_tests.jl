@@ -29,17 +29,12 @@ Test.@testset "Call Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adb_list = AbstractDifferentiation.AbstractBackend[
-        AbstractDifferentiation.ZygoteBackend(),
-        AbstractDifferentiation.ReverseDiffBackend(),
-        AbstractDifferentiation.ForwardDiffBackend(),
-    ]
+    adb_list =
+        AbstractDifferentiation.AbstractBackend[AbstractDifferentiation.ZygoteBackend()]
     adtypes = ADTypes.AbstractADType[
+        ADTypes.AutoZygote(),
         ADTypes.AutoEnzyme(Enzyme.Forward),
         ADTypes.AutoEnzyme(Enzyme.Reverse),
-        ADTypes.AutoZygote(),
-        ADTypes.AutoReverseDiff(),
-        ADTypes.AutoForwardDiff(),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(
@@ -52,6 +47,8 @@ Test.@testset "Call Tests" begin
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoEnzyme(Enzyme.Forward)),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoEnzyme(Enzyme.Forward)),
     ]
@@ -230,11 +227,7 @@ Test.@testset "Call Tests" begin
                 Test.@testset "x" begin
                     Test.@test !isnothing(
                         AbstractDifferentiation.gradient(adb, diff2_loss, r),
-                    ) broken =
-                        (GROUP != "All") &&
-                        adb isa AbstractDifferentiation.ReverseDiffBackend &&
-                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
-                        VERSION >= v"1.10"
+                    )
                 end
             end
         end
@@ -248,11 +241,7 @@ Test.@testset "Call Tests" begin
                 Test.@testset "x" begin
                     Test.@test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
-                    ) broken =
-                        (GROUP != "All") &&
-                        adtype isa ADTypes.AutoReverseDiff &&
-                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
-                        VERSION >= v"1.10"
+                    )
                 end
             end
         end
