@@ -30,6 +30,8 @@ if (GROUP == "All")
     Logging.global_logger(debuglogger)
 end
 
+Enzyme.API.runtimeActivity!(true)
+
 Test.@testset "Overall" begin
     if GROUP == "All" ||
        GROUP in ["RNODE", "FFJORD", "Planar", "CondRNODE", "CondFFJORD", "CondPlanar"]
