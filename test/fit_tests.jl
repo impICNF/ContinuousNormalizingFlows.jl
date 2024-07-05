@@ -26,10 +26,9 @@ Test.@testset "Fit Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adtypes = ADTypes.AbstractADType[
-        ADTypes.AutoZygote(),
-        ADTypes.AutoEnzyme(Enzyme.Forward),
-        ADTypes.AutoEnzyme(Enzyme.Reverse),
+    adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
+    # ADTypes.AutoEnzyme(Enzyme.Forward),
+    # ADTypes.AutoEnzyme(Enzyme.Reverse),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(

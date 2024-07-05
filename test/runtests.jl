@@ -30,7 +30,7 @@ if (GROUP == "All")
     Logging.global_logger(debuglogger)
 end
 
-Enzyme.API.runtimeActivity!(true)
+# Enzyme.API.runtimeActivity!(true)
 
 Test.@testset "Overall" begin
     if GROUP == "All" ||

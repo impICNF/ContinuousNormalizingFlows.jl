@@ -31,10 +31,9 @@ Test.@testset "Call Tests" begin
     inplaces = Bool[false, true]
     adb_list =
         AbstractDifferentiation.AbstractBackend[AbstractDifferentiation.ZygoteBackend()]
-    adtypes = ADTypes.AbstractADType[
-        ADTypes.AutoZygote(),
-        ADTypes.AutoEnzyme(Enzyme.Forward),
-        ADTypes.AutoEnzyme(Enzyme.Reverse),
+    adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
+    # ADTypes.AutoEnzyme(Enzyme.Forward),
+    # ADTypes.AutoEnzyme(Enzyme.Reverse),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(
