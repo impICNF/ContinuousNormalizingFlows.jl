@@ -29,6 +29,8 @@ Test.@testset "Fit Tests" begin
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
     # ADTypes.AutoEnzyme(Enzyme.Forward),
     # ADTypes.AutoEnzyme(Enzyme.Reverse),
+    # ADTypes.AutoReverseDiff(),
+    # ADTypes.AutoForwardDiff(),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(

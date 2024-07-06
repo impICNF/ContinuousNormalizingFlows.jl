@@ -30,10 +30,15 @@ Test.@testset "Call Tests" begin
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
     adb_list =
-        AbstractDifferentiation.AbstractBackend[AbstractDifferentiation.ZygoteBackend()]
+        AbstractDifferentiation.AbstractBackend[AbstractDifferentiation.ZygoteBackend(),
+        # AbstractDifferentiation.ReverseDiffBackend(),
+        # AbstractDifferentiation.ForwardDiffBackend(),
+        ]
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
     # ADTypes.AutoEnzyme(Enzyme.Forward),
     # ADTypes.AutoEnzyme(Enzyme.Reverse),
+    # ADTypes.AutoReverseDiff(),
+    # ADTypes.AutoForwardDiff(),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(
