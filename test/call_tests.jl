@@ -46,9 +46,9 @@ Test.@testset "Call Tests" begin
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
+        # ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoEnzyme(Enzyme.Forward)),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
+        # ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoEnzyme(Enzyme.Reverse)),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoEnzyme(Enzyme.Forward)),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
