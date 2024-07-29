@@ -10,6 +10,7 @@ import AbstractDifferentiation,
     Distances,
     Distributions,
     ForwardDiff,
+    GPUArraysCore,
     JET,
     Logging,
     Lux,
@@ -39,7 +40,7 @@ end
 Test.@testset "Overall" begin
     if GROUP == "All" ||
        GROUP in ["RNODE", "FFJORD", "Planar", "CondRNODE", "CondFFJORD", "CondPlanar"]
-        CUDA.allowscalar() do
+        GPUArraysCore.allowscalar() do
             include("smoke_tests.jl")
         end
     end
