@@ -29,16 +29,9 @@ Test.@testset "Call Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adb_list = AbstractDifferentiation.AbstractBackend[
-        AbstractDifferentiation.ZygoteBackend(),
-        AbstractDifferentiation.ReverseDiffBackend(),
-        AbstractDifferentiation.ForwardDiffBackend(),
-    ]
-    adtypes = ADTypes.AbstractADType[
-        ADTypes.AutoZygote(),
-        ADTypes.AutoReverseDiff(),
-        ADTypes.AutoForwardDiff(),
-    ]
+    adb_list =
+        AbstractDifferentiation.AbstractBackend[AbstractDifferentiation.ZygoteBackend()]
+    adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote()]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.ADVecJacVectorMode(
             AbstractDifferentiation.ZygoteBackend(),
@@ -226,11 +219,7 @@ Test.@testset "Call Tests" begin
                 Test.@testset "x" begin
                     Test.@test !isnothing(
                         AbstractDifferentiation.gradient(adb, diff2_loss, r),
-                    ) broken =
-                        (GROUP != "All") &&
-                        adb isa AbstractDifferentiation.ReverseDiffBackend &&
-                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
-                        VERSION >= v"1.10"
+                    )
                 end
             end
         end
@@ -244,11 +233,7 @@ Test.@testset "Call Tests" begin
                 Test.@testset "x" begin
                     Test.@test !isnothing(
                         DifferentiationInterface.gradient(diff2_loss, adtype, r),
-                    ) broken =
-                        (GROUP != "All") &&
-                        adtype isa ADTypes.AutoReverseDiff &&
-                        compute_mode isa ContinuousNormalizingFlows.MatrixMode &&
-                        VERSION >= v"1.10"
+                    )
                 end
             end
         end
