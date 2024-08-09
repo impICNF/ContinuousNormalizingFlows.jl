@@ -7,6 +7,7 @@ import AbstractDifferentiation,
     cuDNN,
     DataFrames,
     DifferentiationInterface,
+    Distances,
     Distributions,
     GPUArraysCore,
     JET,
@@ -15,6 +16,7 @@ import AbstractDifferentiation,
     LuxCUDA,
     MLJBase,
     SciMLBase,
+    StableRNGs,
     TerminalLoggers,
     Test,
     Zygote,
@@ -47,5 +49,9 @@ Test.@testset "Overall" begin
 
     if GROUP == "All" || GROUP == "Instability"
         include("instability_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "Regression"
+        include("regression_tests.jl")
     end
 end
