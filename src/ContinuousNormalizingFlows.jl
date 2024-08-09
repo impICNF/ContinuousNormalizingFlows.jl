@@ -19,7 +19,6 @@ import AbstractDifferentiation,
     MLJModelInterface,
     MLUtils,
     NNlib,
-    Octavian,
     Optimisers,
     Optimization,
     OptimizationOptimisers,
@@ -53,8 +52,7 @@ export construct,
     ICNFModel,
     CondICNFModel,
     CondLayer,
-    PlanarLayer,
-    MulLayer
+    PlanarLayer
 
 include(joinpath("layers", "cond_layer.jl"))
 include(joinpath("layers", "planar_layer.jl"))
