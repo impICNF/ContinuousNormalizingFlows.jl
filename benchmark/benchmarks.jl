@@ -21,7 +21,7 @@ SUITE["main"]["no_inplace"]["AD-1-order"] = BenchmarkTools.BenchmarkGroup(["grad
 SUITE["main"]["inplace"]["direct"] = BenchmarkTools.BenchmarkGroup(["direct"])
 SUITE["main"]["inplace"]["AD-1-order"] = BenchmarkTools.BenchmarkGroup(["gradient"])
 
-rng = StableRNGs.StableRNG(1)
+rng = StableRNGs.StableRNG(12345)
 nvars = 2^3
 naugs = nvars
 n_in = nvars + naugs

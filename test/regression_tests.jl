@@ -1,5 +1,5 @@
 Test.@testset "Regression Tests" begin
-    rng = StableRNGs.StableRNG(1)
+    rng = StableRNGs.StableRNG(12345)
     nvars = 2^3
     naugs = nvars
     n_in = nvars + naugs
