@@ -18,7 +18,17 @@ function construct(
         FillArrays.Zeros{data_type}(nvars + naugmented),
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
-    sol_kwargs::NamedTuple = (save_everystep = false,),
+    suggested_sol_kwargs::Bool = false,
+    sol_kwargs::NamedTuple = if suggested_sol_kwargs
+        (;
+            save_everystep = false,
+            reltol = sqrt(eps(one(Float32))),
+            abstol = eps(one(Float32)),
+            maxiters = typemax(Int32),
+        )
+    else
+        (;)
+    end,
     rng::Random.AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1e-2)
