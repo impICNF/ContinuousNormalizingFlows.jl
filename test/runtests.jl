@@ -8,6 +8,7 @@ import AbstractDifferentiation,
     DataFrames,
     DifferentiationInterface,
     Distributions,
+    Enzyme,
     GPUArraysCore,
     JET,
     Logging,
@@ -20,6 +21,8 @@ import AbstractDifferentiation,
     Zygote,
     ContinuousNormalizingFlows
 
+Enzyme.API.runtimeActivity!(true)
+
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
 
@@ -28,9 +31,6 @@ if (GROUP == "All")
 
     debuglogger = TerminalLoggers.TerminalLogger(stderr, Logging.Debug)
     Logging.global_logger(debuglogger)
-else
-    warnlogger = TerminalLoggers.TerminalLogger(stderr, Logging.Warn)
-    Logging.global_logger(warnlogger)
 end
 
 Test.@testset "Overall" begin

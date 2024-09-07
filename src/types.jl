@@ -32,12 +32,6 @@ struct DIJacVecMatrixMode{ADBack <: ADTypes.AbstractADType} <: DIMatrixMode{ADBa
     adback::ADBack
 end
 
-Base.Base.@deprecate_binding SDVecJacMatrixMode DIVecJacMatrixMode true
-Base.Base.@deprecate_binding SDJacVecMatrixMode DIJacVecMatrixMode true
-
-Base.Base.@deprecate_binding ZygoteVectorMode DIVecJacVectorMode true
-Base.Base.@deprecate_binding ZygoteMatrixMode DIVecJacMatrixMode true
-
 abstract type AbstractICNF{
     T <: AbstractFloat,
     CM <: ComputeMode,
