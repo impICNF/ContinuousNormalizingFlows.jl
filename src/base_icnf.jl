@@ -1,10 +1,12 @@
 function construct(
     aicnf::Type{<:AbstractICNF},
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::ComputeMode = ADVecJacVectorMode(AbstractDifferentiation.ZygoteBackend()),
+    compute_mode::ComputeMode = DIJacVecMatrixMode(
+        ADTypes.AutoEnzyme(; function_annotation = Enzyme.Const),
+    ),
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
     resource::ComputationalResources.AbstractResource = ComputationalResources.CPU1(),
@@ -515,7 +517,7 @@ end
 @inline function make_ode_func(
     icnf::AbstractICNF{T, CM, INPLACE},
     mode::Mode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVecOrMat{T},
 ) where {T <: AbstractFloat, CM, INPLACE}

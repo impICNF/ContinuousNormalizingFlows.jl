@@ -76,7 +76,7 @@ struct ICNF{
     NORM_Z,
     NORM_J,
     NORM_Z_AUG,
-    NN <: LuxCore.AbstractExplicitLayer,
+    NN <: LuxCore.AbstractLuxLayer,
     NVARS <: Int,
     RESOURCE <: ComputationalResources.AbstractResource,
     BASEDIST <: Distributions.Distribution,
@@ -111,47 +111,9 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:ADVectorMode, false},
-    mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
-    st::NamedTuple,
-    ϵ::AbstractVector{T},
-) where {T <: AbstractFloat}
-    n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
-    z = u[begin:(end - n_aug - 1)]
-    ż, J = AbstractDifferentiation.value_and_jacobian(icnf.compute_mode.adback, snn, z)
-    l̇ = -LinearAlgebra.tr(only(J))
-    vcat(ż, l̇)
-end
-
-function augmented_f(
-    du::Any,
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{T, <:ADVectorMode, true},
-    mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
-    st::NamedTuple,
-    ϵ::AbstractVector{T},
-) where {T <: AbstractFloat}
-    n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
-    z = u[begin:(end - n_aug - 1)]
-    ż, J = AbstractDifferentiation.value_and_jacobian(icnf.compute_mode.adback, snn, z)
-    du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -LinearAlgebra.tr(only(J))
-    nothing
-end
-
-function augmented_f(
-    u::Any,
-    p::Any,
-    ::Any,
     icnf::ICNF{T, <:DIVectorMode, false},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
@@ -170,7 +132,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVectorMode, true},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
@@ -189,7 +151,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:MatrixMode, false},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
@@ -208,7 +170,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:MatrixMode, true},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
@@ -225,147 +187,9 @@ function augmented_f(
     u::Any,
     p::Any,
     ::Any,
-    icnf::ICNF{T, <:ADVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
-    mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
-    st::NamedTuple,
-    ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
-    n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
-    z = u[begin:(end - n_aug - 1)]
-    ż, VJ = AbstractDifferentiation.value_and_pullback_function(
-        icnf.compute_mode.adback,
-        snn,
-        z,
-    )
-    ϵJ = only(VJ(ϵ))
-    l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
-    Ė = if NORM_Z
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    ṅ = if NORM_J
-        LinearAlgebra.norm(ϵJ)
-    else
-        zero(T)
-    end
-    vcat(ż, l̇, Ė, ṅ)
-end
-
-function augmented_f(
-    du::Any,
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{T, <:ADVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
-    mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
-    st::NamedTuple,
-    ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
-    n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
-    z = u[begin:(end - n_aug - 1)]
-    ż, VJ = AbstractDifferentiation.value_and_pullback_function(
-        icnf.compute_mode.adback,
-        snn,
-        z,
-    )
-    ϵJ = only(VJ(ϵ))
-    du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
-    du[(end - n_aug + 1)] = if NORM_Z
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2)] = if NORM_J
-        LinearAlgebra.norm(ϵJ)
-    else
-        zero(T)
-    end
-    nothing
-end
-
-function augmented_f(
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{T, <:ADJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
-    mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
-    st::NamedTuple,
-    ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
-    n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
-    z = u[begin:(end - n_aug - 1)]
-    ż_JV = AbstractDifferentiation.value_and_pushforward_function(
-        icnf.compute_mode.adback,
-        snn,
-        z,
-    )
-    ż, Jϵ = ż_JV(ϵ)
-    Jϵ = only(Jϵ)
-    l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
-    Ė = if NORM_Z
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    ṅ = if NORM_J
-        LinearAlgebra.norm(Jϵ)
-    else
-        zero(T)
-    end
-    vcat(ż, l̇, Ė, ṅ)
-end
-
-function augmented_f(
-    du::Any,
-    u::Any,
-    p::Any,
-    ::Any,
-    icnf::ICNF{T, <:ADJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
-    mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
-    st::NamedTuple,
-    ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
-    n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
-    z = u[begin:(end - n_aug - 1)]
-    ż_JV = AbstractDifferentiation.value_and_pushforward_function(
-        icnf.compute_mode.adback,
-        snn,
-        z,
-    )
-    ż, Jϵ = ż_JV(ϵ)
-    Jϵ = only(Jϵ)
-    du[begin:(end - n_aug - 1)] .= ż
-    du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
-    du[(end - n_aug + 1)] = if NORM_Z
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2)] = if NORM_J
-        LinearAlgebra.norm(Jϵ)
-    else
-        zero(T)
-    end
-    nothing
-end
-
-function augmented_f(
-    u::Any,
-    p::Any,
-    ::Any,
     icnf::ICNF{T, <:DIVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -395,7 +219,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -425,7 +249,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -455,7 +279,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -485,7 +309,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -519,7 +343,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -549,7 +373,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -583,7 +407,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
