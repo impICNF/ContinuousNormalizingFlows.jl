@@ -63,7 +63,7 @@ function LuxCore.parameterlength(m::PlanarLayer{use_bias, cond}) where {use_bias
     m.nvars + ifelse(cond, (m.nvars + m.n_cond), m.nvars) + ifelse(use_bias, 1, 0)
 end
 
-function LuxCore.outputsize(m::PlanarLayer, ::Any, ::AbstractRNG)
+function LuxCore.outputsize(m::PlanarLayer, ::Any, ::Random.AbstractRNG)
     (m.nvars,)
 end
 
