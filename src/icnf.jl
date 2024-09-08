@@ -76,7 +76,7 @@ struct ICNF{
     NORM_Z,
     NORM_J,
     NORM_Z_AUG,
-    NN <: LuxCore.AbstractExplicitLayer,
+    NN <: LuxCore.AbstractLuxLayer,
     NVARS <: Int,
     RESOURCE <: ComputationalResources.AbstractResource,
     BASEDIST <: Distributions.Distribution,
@@ -113,7 +113,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVectorMode, false},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
@@ -132,7 +132,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVectorMode, true},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
@@ -151,7 +151,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVectorMode, false},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
@@ -170,7 +170,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVectorMode, true},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
@@ -189,7 +189,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:MatrixMode, false},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
@@ -208,7 +208,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:MatrixMode, true},
     mode::TestMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
@@ -227,7 +227,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -261,7 +261,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -295,7 +295,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -330,7 +330,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:ADJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -365,7 +365,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -395,7 +395,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -425,7 +425,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -455,7 +455,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -485,7 +485,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -519,7 +519,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -549,7 +549,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
@@ -583,7 +583,7 @@ function augmented_f(
     ::Any,
     icnf::ICNF{T, <:DIJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
     mode::TrainMode,
-    nn::LuxCore.AbstractExplicitLayer,
+    nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
