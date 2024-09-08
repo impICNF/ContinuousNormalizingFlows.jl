@@ -1,7 +1,6 @@
 module ContinuousNormalizingFlows
 
-import AbstractDifferentiation,
-    ADTypes,
+import ADTypes,
     Base.Iterators,
     ChainRulesCore,
     ComponentArrays,
@@ -43,8 +42,6 @@ export construct,
     CondPlanar,
     TestMode,
     TrainMode,
-    ADVecJacVectorMode,
-    ADJacVecVectorMode,
     DIVecJacVectorMode,
     DIJacVecVectorMode,
     DIVecJacMatrixMode,

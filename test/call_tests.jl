@@ -29,16 +29,8 @@ Test.@testset "Call Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adb_list =
-        AbstractDifferentiation.AbstractBackend[AbstractDifferentiation.ZygoteBackend()]
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote()]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
-        ContinuousNormalizingFlows.ADVecJacVectorMode(
-            AbstractDifferentiation.ZygoteBackend(),
-        ),
-        ContinuousNormalizingFlows.ADJacVecVectorMode(
-            AbstractDifferentiation.ZygoteBackend(),
-        ),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
@@ -209,20 +201,6 @@ Test.@testset "Call Tests" begin
         Test.@test !isnothing(rand(d))
         Test.@test !isnothing(rand(d, ndata))
 
-        Test.@testset "$(typeof(adb).name.name)" for adb in adb_list
-            Test.@testset "Loss" begin
-                Test.@testset "ps" begin
-                    Test.@test !isnothing(
-                        AbstractDifferentiation.gradient(adb, diff_loss, ps),
-                    )
-                end
-                Test.@testset "x" begin
-                    Test.@test !isnothing(
-                        AbstractDifferentiation.gradient(adb, diff2_loss, r),
-                    )
-                end
-            end
-        end
         Test.@testset "$(typeof(adtype).name.name)" for adtype in adtypes
             Test.@testset "Loss" begin
                 Test.@testset "ps" begin
