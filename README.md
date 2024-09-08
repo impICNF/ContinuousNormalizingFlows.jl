@@ -43,7 +43,7 @@ n_in = nvars + naugs # with augmentation
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Lux, ADTypes, Zygote #, CUDA, ComputationalResources
+using ContinuousNormalizingFlows, Lux, ADTypes, Enzyme #, CUDA, ComputationalResources
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 # icnf = construct(RNODE, nn, nvars) # use defaults
 icnf = construct(
@@ -51,7 +51,7 @@ icnf = construct(
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
-    compute_mode = DIVecJacMatrixMode(AutoZygote()), # process data in batches
+    compute_mode = DIJacVecMatrixMode(AutoEnzyme(; function_annotation = Enzyme.Const)), # process data in batches
     tspan = (0.0f0, 13.0f0), # have bigger time span
     steer_rate = 1.0f-1, # add random noise to end of the time span
     # resource = CUDALibs(), # process data by GPU
