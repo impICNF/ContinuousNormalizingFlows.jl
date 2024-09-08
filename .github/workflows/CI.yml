@@ -26,6 +26,7 @@ jobs:
           - CondRNODE
           - CondFFJORD
           - CondPlanar
+          - Regression
         version:
           - '1'
           # - '1.9'
