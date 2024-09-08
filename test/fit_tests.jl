@@ -28,12 +28,6 @@ Test.@testset "Fit Tests" begin
     inplaces = Bool[false, true]
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote()]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
-        ContinuousNormalizingFlows.ADVecJacVectorMode(
-            AbstractDifferentiation.ZygoteBackend(),
-        ),
-        ContinuousNormalizingFlows.ADJacVecVectorMode(
-            AbstractDifferentiation.ZygoteBackend(),
-        ),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),

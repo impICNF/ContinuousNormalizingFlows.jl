@@ -6,16 +6,6 @@ abstract type ComputeMode{ADBack} end
 abstract type VectorMode{ADBack} <: ComputeMode{ADBack} end
 abstract type MatrixMode{ADBack} <: ComputeMode{ADBack} end
 
-abstract type ADVectorMode{ADBack} <: VectorMode{ADBack} end
-struct ADVecJacVectorMode{ADBack <: AbstractDifferentiation.AbstractBackend} <:
-       ADVectorMode{ADBack}
-    adback::ADBack
-end
-struct ADJacVecVectorMode{ADBack <: AbstractDifferentiation.AbstractBackend} <:
-       ADVectorMode{ADBack}
-    adback::ADBack
-end
-
 abstract type DIVectorMode{ADBack} <: VectorMode{ADBack} end
 struct DIVecJacVectorMode{ADBack <: ADTypes.AbstractADType} <: DIVectorMode{ADBack}
     adback::ADBack
