@@ -1,5 +1,5 @@
 struct CondLayer{NN <: LuxCore.AbstractLuxLayer, AT <: AbstractArray} <:
-       LuxCore.AbstractLuxContainerLayer{(:nn,)}
+       LuxCore.AbstractLuxWrapperLayer{:nn}
     nn::NN
     ys::AT
 end

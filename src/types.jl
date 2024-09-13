@@ -30,6 +30,6 @@ abstract type AbstractICNF{
     AUGMENTED,
     STEER,
     NORM_Z_AUG,
-} <: LuxCore.AbstractLuxContainerLayer{(:nn,)} end
+} <: LuxCore.AbstractLuxWrapperLayer{:nn} end
 
 abstract type MLJICNF{AICNF <: AbstractICNF} <: MLJModelInterface.Unsupervised end
