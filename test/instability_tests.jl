@@ -1,9 +1,5 @@
 Test.@testset "Instability" begin
-    JET.test_package(
-        ContinuousNormalizingFlows;
-        target_modules = [ContinuousNormalizingFlows],
-        mode = :sound,
-    )
+    JET.test_package(ContinuousNormalizingFlows; mode = :sound)
 
     nvars = 2^3
     naugs = nvars
@@ -31,12 +27,10 @@ Test.@testset "Instability" begin
     JET.test_call(
         ContinuousNormalizingFlows.loss,
         Base.typesof(icnf, ContinuousNormalizingFlows.TrainMode(), r, ps, st);
-        target_modules = [ContinuousNormalizingFlows],
         mode = :sound,
     )
     JET.test_opt(
         ContinuousNormalizingFlows.loss,
         Base.typesof(icnf, ContinuousNormalizingFlows.TrainMode(), r, ps, st);
-        target_modules = [ContinuousNormalizingFlows],
     )
 end
