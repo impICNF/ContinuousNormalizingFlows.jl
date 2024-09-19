@@ -37,5 +37,6 @@ Test.@testset "Instability" begin
     JET.test_opt(
         ContinuousNormalizingFlows.loss,
         Base.typesof(icnf, ContinuousNormalizingFlows.TrainMode(), r, ps, st);
+        target_modules = [ContinuousNormalizingFlows],
     )
 end
