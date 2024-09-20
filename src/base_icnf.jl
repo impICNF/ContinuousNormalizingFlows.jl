@@ -33,12 +33,12 @@ function construct(
     end,
     rng::Random.AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
-        convert(data_type, 1e-2)
+        convert(data_type, 1.0e-2)
     else
         zero(data_type)
     end,
     λ₂::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
-        convert(data_type, 1e-2)
+        convert(data_type, 1.0e-2)
     else
         zero(data_type)
     end,

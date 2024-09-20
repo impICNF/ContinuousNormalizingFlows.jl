@@ -130,8 +130,8 @@ Test.@testset "Call Tests" begin
                 compute_mode,
                 inplace,
                 resource,
-                steer_rate = convert(data_type, 1e-1),
-                λ₃ = convert(data_type, 1e-2),
+                steer_rate = convert(data_type, 1.0e-1),
+                λ₃ = convert(data_type, 1.0e-2),
             ),
             ContinuousNormalizingFlows.construct(
                 mt,
