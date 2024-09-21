@@ -36,7 +36,32 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
     )
-    optprob = SciMLBase.OptimizationProblem(optfunc, ps)
+    if model.use_batch
+        if model.m.compute_mode isa VectorMode
+            data = MLUtils.DataLoader(
+                (x,);
+                batchsize = -1,
+                shuffle = true,
+                partial = true,
+                parallel = false,
+                buffer = false,
+            )
+        elseif model.m.compute_mode isa MatrixMode
+            data = MLUtils.DataLoader(
+                (x,);
+                batchsize = model.batch_size,
+                shuffle = true,
+                partial = true,
+                parallel = false,
+                buffer = false,
+            )
+        else
+            error("Not Implemented")
+        end
+    else
+        data = [(x,)]
+    end
+    optprob = SciMLBase.OptimizationProblem(optfunc, ps, data)
 
     tst_overall = @timed for opt in model.optimizers
         tst_epochs = @timed for ep in 1:(model.n_epochs)
@@ -65,9 +90,8 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
             else
                 data = [(x,)]
             end
-            optprob_re = SciMLBase.remake(optprob; u0 = ps)
-            tst_one =
-                @timed res = SciMLBase.solve(optprob_re, opt, data; progress = true)
+            optprob_re = SciMLBase.remake(optprob; u0 = ps, p = data)
+            tst_one = @timed res = SciMLBase.solve(optprob_re, opt; progress = true)
             ps .= res.u
             @info(
                 "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
