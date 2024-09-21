@@ -35,74 +35,36 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         ps = gdev(ps)
         st = gdev(st)
     end
+    if model.m.compute_mode isa VectorMode
+        data = MLUtils.DataLoader((x, y); batchsize = -1, shuffle = true, partial = true)
+    elseif model.m.compute_mode isa MatrixMode
+        data = MLUtils.DataLoader(
+            (x, y);
+            batchsize = if model.use_batch
+                model.batch_size
+            else
+                max(size(x, 2), size(y, 2))
+            end,
+            shuffle = true,
+            partial = true,
+        )
+    else
+        error("Not Implemented")
+    end
     optfunc = SciMLBase.OptimizationFunction(
         make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
     )
-    if model.use_batch
-        if model.m.compute_mode isa VectorMode
-            data = MLUtils.DataLoader(
-                (x, y);
-                batchsize = -1,
-                shuffle = true,
-                partial = true,
-                parallel = false,
-                buffer = false,
-            )
-        elseif model.m.compute_mode isa MatrixMode
-            data = MLUtils.DataLoader(
-                (x, y);
-                batchsize = model.batch_size,
-                shuffle = true,
-                partial = true,
-                parallel = false,
-                buffer = false,
-            )
-        else
-            error("Not Implemented")
-        end
-    else
-        data = [(x, y)]
-    end
     optprob = SciMLBase.OptimizationProblem(optfunc, ps, data)
     tst_overall = @timed for opt in model.optimizers
-        tst_epochs = @timed for ep in 1:(model.n_epochs)
-            if model.use_batch
-                if model.m.compute_mode isa VectorMode
-                    data = MLUtils.DataLoader(
-                        (x, y);
-                        batchsize = -1,
-                        shuffle = true,
-                        partial = true,
-                        parallel = false,
-                        buffer = false,
-                    )
-                elseif model.m.compute_mode isa MatrixMode
-                    data = MLUtils.DataLoader(
-                        (x, y);
-                        batchsize = model.batch_size,
-                        shuffle = true,
-                        partial = true,
-                        parallel = false,
-                        buffer = false,
-                    )
-                else
-                    error("Not Implemented")
-                end
-            else
-                data = [(x, y)]
-            end
-            optprob_re = SciMLBase.remake(optprob; u0 = ps, p = data)
-            tst_one = @timed res = SciMLBase.solve(optprob_re, opt; progress = true)
-            ps .= res.u
-            @info(
-                "Fitting (epoch: $ep of $(model.n_epochs)) - $(typeof(opt).name.name)",
-                "elapsed time (seconds)" = tst_one.time,
-                "garbage collection time (seconds)" = tst_one.gctime,
-                "allocated (bytes)" = tst_one.bytes,
-                "final loss value" = res.objective,
-            )
-        end
+        optprob_re = SciMLBase.remake(optprob; u0 = ps)
+        tst_epochs = @timed res = SciMLBase.solve(
+            optprob_re,
+            opt;
+            progress = true,
+            epochs = model.n_epochs,
+        )
+        ps .= res.u
         @info(
             "Fitting (all epochs) - $(typeof(opt).name.name)",
             "elapsed time (seconds)" = tst_epochs.time,
