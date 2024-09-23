@@ -9,11 +9,13 @@ end
     st::NamedTuple,
     loss_::Function,
 ) where {T, CM, INPLACE, COND}
-    function opt_loss_org(u, p, xs)
+    function opt_loss_org(u, p, data)
+        xs, = data
         loss_(icnf, mode, xs, u, st)
     end
 
-    function opt_loss_cond(u, p, xs, ys)
+    function opt_loss_cond(u, p, data)
+        xs, ys = data
         loss_(icnf, mode, xs, ys, u, st)
     end
 
