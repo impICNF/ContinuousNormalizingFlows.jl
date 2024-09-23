@@ -52,7 +52,6 @@ Test.@testset "Call Tests" begin
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
     if CUDA.has_cuda_gpu() && USE_GPU
         push!(resources, ComputationalResources.CUDALibs())
-        gdev = Lux.gpu_device()
     end
 
     Test.@testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
@@ -145,13 +144,15 @@ Test.@testset "Call Tests" begin
         )
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        if resource isa ComputationalResources.CUDALibs
-            r = gdev(r)
-            r2 = gdev(r2)
-            ps = gdev(ps)
-            st = gdev(st)
+        tdev = if resource isa ComputationalResources.CUDALibs
+            Lux.gpu_device()
+        else
+            Lux.cpu_device()
         end
-
+        r = tdev(r)
+        r2 = tdev(r2)
+        ps = tdev(ps)
+        st = tdev(st)
         if mt <: Union{
             ContinuousNormalizingFlows.CondRNODE,
             ContinuousNormalizingFlows.CondFFJORD,

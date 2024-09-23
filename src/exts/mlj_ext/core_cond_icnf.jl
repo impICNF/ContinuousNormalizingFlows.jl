@@ -26,19 +26,21 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     X, Y = XY
     x = collect(transpose(MLJModelInterface.matrix(X)))
     y = collect(transpose(MLJModelInterface.matrix(Y)))
+    tdev = if model.m.resource isa ComputationalResources.CUDALibs
+        Lux.gpu_device()
+    else
+        Lux.cpu_device()
+    end
     ps, st = LuxCore.setup(model.m.rng, model.m)
     ps = ComponentArrays.ComponentArray(ps)
-    if model.m.resource isa ComputationalResources.CUDALibs
-        gdev = Lux.gpu_device()
-        x = gdev(x)
-        y = gdev(y)
-        ps = gdev(ps)
-        st = gdev(st)
-    end
-    if model.m.compute_mode isa VectorMode
-        data = MLUtils.DataLoader((x, y); batchsize = -1, shuffle = true, partial = true)
+    x = tdev(x)
+    y = tdev(y)
+    ps = tdev(ps)
+    st = tdev(st)
+    data = if model.m.compute_mode isa VectorMode
+        MLUtils.DataLoader((x, y); batchsize = -1, shuffle = true, partial = true)
     elseif model.m.compute_mode isa MatrixMode
-        data = MLUtils.DataLoader(
+        MLUtils.DataLoader(
             (x, y);
             batchsize = if model.use_batch
                 model.batch_size
@@ -51,6 +53,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     else
         error("Not Implemented")
     end
+    data = tdev(data)
     optfunc = SciMLBase.OptimizationFunction(
         make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
@@ -89,11 +92,13 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     Xnew, Ynew = XYnew
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
-    if model.m.resource isa ComputationalResources.CUDALibs
-        gdev = Lux.gpu_device()
-        xnew = gdev(xnew)
-        ynew = gdev(ynew)
+    tdev = if model.m.resource isa ComputationalResources.CUDALibs
+        Lux.gpu_device()
+    else
+        Lux.cpu_device()
     end
+    xnew = tdev(xnew)
+    ynew = tdev(ynew)
     (ps, st) = fitresult
 
     tst = @timed if model.m.compute_mode isa VectorMode
