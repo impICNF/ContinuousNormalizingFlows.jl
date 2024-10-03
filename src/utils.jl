@@ -9,7 +9,8 @@
     res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, z)
+        res[i, :, :] =
+            DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (z,))
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)
@@ -27,7 +28,7 @@ end
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[:, i, :] =
-            DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, z)
+            DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (z,))
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     y, eachslice(copy(res); dims = 3)

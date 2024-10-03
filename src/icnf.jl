@@ -197,7 +197,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ =
-        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
     l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
@@ -227,7 +227,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ =
-        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -256,8 +256,12 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        snn,
+        icnf.compute_mode.adback,
+        z,
+        (ϵ,),
+    )
     l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
@@ -286,8 +290,12 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
-    ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        snn,
+        icnf.compute_mode.adback,
+        z,
+        (ϵ,),
+    )
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -317,7 +325,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ =
-        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(if NORM_Z
         LinearAlgebra.norm.(eachcol(ż))
@@ -351,7 +359,7 @@ function augmented_f(
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ =
-        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, ϵ)
+        DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
@@ -380,8 +388,12 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
-    ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        snn,
+        icnf.compute_mode.adback,
+        z,
+        (ϵ,),
+    )
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(if NORM_Z
         LinearAlgebra.norm.(eachcol(ż))
@@ -414,8 +426,12 @@ function augmented_f(
     n_aug = n_augment(icnf, mode)
     snn = Lux.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
-    ż, Jϵ =
-        DifferentiationInterface.value_and_pushforward(snn, icnf.compute_mode.adback, z, ϵ)
+    ż, Jϵ = DifferentiationInterface.value_and_pushforward(
+        snn,
+        icnf.compute_mode.adback,
+        z,
+        (ϵ,),
+    )
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
