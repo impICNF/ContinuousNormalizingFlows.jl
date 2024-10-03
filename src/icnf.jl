@@ -198,6 +198,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
+    ϵJ = only(ϵJ)
     l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
@@ -228,6 +229,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
+    ϵJ = only(ϵJ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -262,6 +264,7 @@ function augmented_f(
         z,
         (ϵ,),
     )
+    Jϵ = only(Jϵ)
     l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
     Ė = if NORM_Z
         LinearAlgebra.norm(ż)
@@ -296,6 +299,7 @@ function augmented_f(
         z,
         (ϵ,),
     )
+    Jϵ = only(Jϵ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
     du[(end - n_aug + 1)] = if NORM_Z
@@ -326,6 +330,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
+    ϵJ = only(ϵJ)
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
     Ė = transpose(if NORM_Z
         LinearAlgebra.norm.(eachcol(ż))
@@ -360,6 +365,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
+    ϵJ = only(ϵJ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
@@ -394,6 +400,7 @@ function augmented_f(
         z,
         (ϵ,),
     )
+    Jϵ = only(Jϵ)
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
     Ė = transpose(if NORM_Z
         LinearAlgebra.norm.(eachcol(ż))
@@ -432,6 +439,7 @@ function augmented_f(
         z,
         (ϵ,),
     )
+    Jϵ = only(Jϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
     du[(end - n_aug + 1), :] .= if NORM_Z
