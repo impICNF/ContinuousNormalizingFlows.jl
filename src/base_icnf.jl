@@ -5,7 +5,10 @@ function construct(
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::ComputeMode = DIJacVecMatrixMode(
-        ADTypes.AutoEnzyme(; mode = Enzyme.Forward, function_annotation = Enzyme.Const),
+        ADTypes.AutoEnzyme(;
+            mode = set_runtime_activity(Enzyme.Forward),
+            function_annotation = Enzyme.Const,
+        ),
     ),
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
