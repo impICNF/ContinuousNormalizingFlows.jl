@@ -22,8 +22,6 @@ import ADTypes,
     Zygote,
     ContinuousNormalizingFlows
 
-Enzyme.API.runtimeActivity!(true)
-
 GROUP = get(ENV, "GROUP", "All")
 USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
 

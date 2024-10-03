@@ -9,8 +9,6 @@ import ADTypes,
     Zygote,
     ContinuousNormalizingFlows
 
-Enzyme.API.runtimeActivity!(true)
-
 SUITE = BenchmarkTools.BenchmarkGroup()
 
 SUITE["main"] = BenchmarkTools.BenchmarkGroup(["package", "simple"])
