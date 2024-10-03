@@ -6,7 +6,7 @@ function construct(
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::ComputeMode = DIJacVecMatrixMode(
         ADTypes.AutoEnzyme(;
-            mode = set_runtime_activity(Enzyme.Forward),
+            mode = Enzyme.set_runtime_activity(Enzyme.Forward),
             function_annotation = Enzyme.Const,
         ),
     ),

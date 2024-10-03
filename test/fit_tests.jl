@@ -34,25 +34,25 @@ Test.@testset "Fit Tests" begin
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(
             ADTypes.AutoEnzyme(;
-                mode = set_runtime_activity(Enzyme.Reverse),
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
             ),
         ),
         ContinuousNormalizingFlows.DIJacVecVectorMode(
             ADTypes.AutoEnzyme(;
-                mode = set_runtime_activity(Enzyme.Forward),
+                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,
             ),
         ),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
-                mode = set_runtime_activity(Enzyme.Reverse),
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
             ),
         ),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
-                mode = set_runtime_activity(Enzyme.Forward),
+                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,
             ),
         ),

@@ -36,7 +36,7 @@ icnf = ContinuousNormalizingFlows.construct(
     naugs;
     compute_mode = ContinuousNormalizingFlows.DIJacVecMatrixMode(
         ADTypes.AutoEnzyme(;
-            mode = set_runtime_activity(Enzyme.Forward),
+            mode = Enzyme.set_runtime_activity(Enzyme.Forward),
             function_annotation = Enzyme.Const,
         ),
     ),
@@ -87,7 +87,7 @@ icnf2 = ContinuousNormalizingFlows.construct(
     inplace = true,
     compute_mode = ContinuousNormalizingFlows.DIJacVecMatrixMode(
         ADTypes.AutoEnzyme(;
-            mode = set_runtime_activity(Enzyme.Forward),
+            mode = Enzyme.set_runtime_activity(Enzyme.Forward),
             function_annotation = Enzyme.Const,
         ),
     ),
