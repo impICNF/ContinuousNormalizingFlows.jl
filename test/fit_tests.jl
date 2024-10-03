@@ -33,16 +33,16 @@ Test.@testset "Fit Tests" begin
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(
-            ADTypes.AutoEnzyme(; function_annotation = Enzyme.Const),
+            ADTypes.AutoEnzyme(; mode = Enzyme.Reverse, function_annotation = Enzyme.Const),
         ),
         ContinuousNormalizingFlows.DIJacVecVectorMode(
-            ADTypes.AutoEnzyme(; function_annotation = Enzyme.Const),
+            ADTypes.AutoEnzyme(; mode = Enzyme.Forward, function_annotation = Enzyme.Const),
         ),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
-            ADTypes.AutoEnzyme(; function_annotation = Enzyme.Const),
+            ADTypes.AutoEnzyme(; mode = Enzyme.Reverse, function_annotation = Enzyme.Const),
         ),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(; function_annotation = Enzyme.Const),
+            ADTypes.AutoEnzyme(; mode = Enzyme.Forward, function_annotation = Enzyme.Const),
         ),
     ]
     data_types = Type{<:AbstractFloat}[Float32]

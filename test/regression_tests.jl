@@ -12,7 +12,7 @@ Test.@testset "Regression Tests" begin
         nvars,
         naugs;
         compute_mode = ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(; function_annotation = Enzyme.Const),
+            ADTypes.AutoEnzyme(; mode = Enzyme.Forward, function_annotation = Enzyme.Const),
         ),
         tspan = (0.0f0, 13.0f0),
         steer_rate = 1.0f-1,

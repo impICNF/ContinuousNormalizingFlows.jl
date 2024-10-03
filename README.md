@@ -50,7 +50,7 @@ icnf = construct(
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
-    # compute_mode = DIJacVecMatrixMode(AutoEnzyme(; function_annotation = Enzyme.Const)), # process data in batches and use Enzyme
+    # compute_mode = DIJacVecMatrixMode(AutoEnzyme(; mode = Enzyme.Forward, function_annotation = Enzyme.Const)), # process data in batches and use Enzyme
     # inplace = true, # use the inplace version of functions
     # resource = CUDALibs(), # process data by GPU
     tspan = (0.0f0, 13.0f0), # have bigger time span
