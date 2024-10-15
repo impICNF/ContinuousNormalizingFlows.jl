@@ -8,6 +8,7 @@ mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
 
     use_batch::Bool
     batch_size::Int
+    sol_kwargs::NamedTuple
 end
 
 function CondICNFModel(
@@ -18,8 +19,9 @@ function CondICNFModel(
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
+    sol_kwargs::NamedTuple = (;),
 )
-    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size)
+    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -64,8 +66,8 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         tst_epochs = @timed res = SciMLBase.solve(
             optprob_re,
             opt;
-            progress = true,
             epochs = model.n_epochs,
+            model.sol_kwargs...,
         )
         ps .= res.u
         @info(
