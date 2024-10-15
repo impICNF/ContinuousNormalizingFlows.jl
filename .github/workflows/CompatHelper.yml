@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/install-juliaup@v2
         with:
-          version: '1'
-          arch: x64
-          show-versioninfo: true
+          channel: '1'
       - uses: julia-actions/cache@v2
       - name: Pkg.add
         shell: julia --color=yes {0}
