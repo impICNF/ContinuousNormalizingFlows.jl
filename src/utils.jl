@@ -46,9 +46,7 @@ end
 
 @inline function split_jac(x::AbstractMatrix{<:Real}, sz::Integer)
     (
-        x[i:j, i:j] for (i, j) in zip(
-            firstindex(x, 1):sz:lastindex(x, 1),
-            (firstindex(x, 1) + sz - 1):sz:lastindex(x, 1),
-        )
+        x[i:j, i:j] for (i, j) in
+        zip(firstindex(x, 1):sz:lastindex(x, 1), (firstindex(x, 1)+sz-1):sz:lastindex(x, 1))
     )
 end
