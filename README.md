@@ -58,6 +58,13 @@ icnf = construct(
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
+    sol_kwargs = (;
+        progress = true,
+        save_everystep = false,
+        reltol = sqrt(eps(one(Float32))),
+        abstol = eps(one(Float32)),
+        maxiters = typemax(Int32),
+    ), # pass to the solver
 )
 
 # Data
@@ -76,6 +83,9 @@ model = ICNFModel(
     # adtype = AutoZygote(),
     # use_batch = true,
     # batch_size = 32,
+    sol_kwargs = (;
+        progress = true,
+    ), # pass to the solver
 )
 mach = machine(model, df)
 fit!(mach)
