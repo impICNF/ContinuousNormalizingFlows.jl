@@ -3,9 +3,9 @@ on:
   schedule:
     - cron: '0 0 * * *'
   push:
-      branches:
-        - 'main'
-      tags: ['*']
+    branches:
+      - 'main'
+    tags: ['*']
 jobs:
   CompatHelper:
     runs-on: ubuntu-latest
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1'
+          channel: 'release'
       - uses: julia-actions/cache@v2
       - name: Pkg.add
         shell: julia --color=yes {0}

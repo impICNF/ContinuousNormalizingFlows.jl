@@ -23,8 +23,8 @@ jobs:
           - Quality
           - Instability
         version:
-          - '1'
-          # - '1.9'
+          - 'release'
+          # - 'lts'
           # - 'nightly'
         os:
           - ubuntu-latest

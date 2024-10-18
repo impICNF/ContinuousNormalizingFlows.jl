@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: julia-actions/install-juliaup@v2
       with:
-        channel: '1'
+        channel: 'release'
     - uses: julia-actions/cache@v2
     - uses: julia-actions/julia-buildpkg@v1
     - uses: julia-actions/julia-invalidations@v1
