@@ -13,8 +13,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
-  docs:
-    name: Documentation
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

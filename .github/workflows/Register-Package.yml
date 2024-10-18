@@ -6,7 +6,7 @@ on:
         description: Version to register or component to bump
         required: true
 jobs:
-  register:
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: julia-actions/RegisterAction@latest

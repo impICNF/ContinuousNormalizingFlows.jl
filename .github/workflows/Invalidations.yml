@@ -5,7 +5,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
-  evaluate:
+  run:
     if: github.base_ref == github.event.repository.default_branch
     runs-on: ubuntu-latest
     steps:

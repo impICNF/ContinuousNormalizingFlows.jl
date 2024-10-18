@@ -13,8 +13,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
-  test:
-    name: ${{ matrix.group }} Tests - Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ github.event_name }}
+  run:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
