@@ -23,8 +23,8 @@ jobs:
           - Instability
         version:
           - 'release'
-          # - 'lts'
-          # - 'nightly'
+          - 'lts'
+          - 'nightly'
         os:
           - ubuntu-latest
           # - macOS-latest
