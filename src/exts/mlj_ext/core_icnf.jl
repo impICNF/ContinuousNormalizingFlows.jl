@@ -16,7 +16,9 @@ function ICNFModel(
     loss::Function = loss;
     optimizers::Tuple = (Optimisers.Lion(),),
     n_epochs::Int = 300,
-    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
+    adtype::ADTypes.AbstractADType = ADTypes.AutoEnzyme(;
+        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+    ),
     use_batch::Bool = true,
     batch_size::Int = 32,
     sol_kwargs::NamedTuple = (;),
