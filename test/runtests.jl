@@ -2,18 +2,14 @@ import ADTypes,
     Aqua,
     ComponentArrays,
     ComputationalResources,
-    CUDA,
-    cuDNN,
     DataFrames,
     DifferentiationInterface,
     Distances,
     Distributions,
     Enzyme,
-    GPUArraysCore,
     JET,
     Logging,
     Lux,
-    LuxCUDA,
     MLJBase,
     SciMLBase,
     StableRNGs,
@@ -23,7 +19,6 @@ import ADTypes,
     ContinuousNormalizingFlows
 
 GROUP = get(ENV, "GROUP", "All")
-USE_GPU = get(ENV, "USE_GPU", "Yes") == "Yes"
 
 if (GROUP == "All")
     GC.enable_logging(true)
@@ -35,9 +30,7 @@ end
 Test.@testset "Overall" begin
     if GROUP == "All" ||
        GROUP in ["RNODE", "FFJORD", "Planar", "CondRNODE", "CondFFJORD", "CondPlanar"]
-        GPUArraysCore.allowscalar() do
-            include("smoke_tests.jl")
-        end
+        include("smoke_tests.jl")
     end
 
     if GROUP == "All" || GROUP == "Quality"

@@ -59,9 +59,6 @@ Test.@testset "Fit Tests" begin
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
-    if CUDA.has_cuda_gpu() && USE_GPU
-        push!(resources, ComputationalResources.CUDALibs())
-    end
 
     Test.@testset "$resource | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for resource in
                                                                                                                                                 resources,
