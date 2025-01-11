@@ -74,13 +74,13 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase #, Zygote, ADTypes, OptimizationOptimisers
+using DataFrames, MLJBase #, Enzyme, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
     # optimizers = (Lion(),),
     # n_epochs = 300,
-    # adtype = AutoZygote(),
+    # adtype = AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
     # use_batch = true,
     # batch_size = 32,
     sol_kwargs = (; progress = true,), # pass to the solver
