@@ -16,9 +16,9 @@ Test.@testset "Instability" begin
         nn,
         nvars,
         naugs;
-        compute_mode = ContinuousNormalizingFlows.DIJacVecMatrixMode(
+        compute_mode = ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
             ),
         ),
