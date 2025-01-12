@@ -26,12 +26,10 @@ Test.@testset "Fit Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote()]
+    adtypes = ADTypes.AbstractADType[ADTypes.AutoEnzyme(;
+        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+    )]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
-        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
