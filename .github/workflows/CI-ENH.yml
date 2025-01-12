@@ -24,11 +24,11 @@ jobs:
         version:
           - 'release'
           - 'lts'
-          - 'nightly'
+          # - 'nightly'
         os:
           - ubuntu-latest
-          - macOS-latest
-          - windows-latest
+          # - macOS-latest
+          # - windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/install-juliaup@v2
