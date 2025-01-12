@@ -59,12 +59,18 @@ diff_loss_tn(ps)
 diff_loss_tt(ps)
 DifferentiationInterface.gradient(
     diff_loss_tn,
-    ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+    ADTypes.AutoEnzyme(;
+        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        function_annotation = Enzyme.Const,
+    ),
     ps,
 )
 DifferentiationInterface.gradient(
     diff_loss_tt,
-    ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+    ADTypes.AutoEnzyme(;
+        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        function_annotation = Enzyme.Const,
+    ),
     ps,
 )
 GC.gc()
@@ -76,13 +82,19 @@ SUITE["main"]["no_inplace"]["direct"]["test"] =
 SUITE["main"]["no_inplace"]["AD-1-order"]["train"] =
     BenchmarkTools.@benchmarkable DifferentiationInterface.gradient(
         diff_loss_tn,
-        ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+        ADTypes.AutoEnzyme(;
+            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+            function_annotation = Enzyme.Const,
+        ),
         ps,
     )
 SUITE["main"]["no_inplace"]["AD-1-order"]["test"] =
     BenchmarkTools.@benchmarkable DifferentiationInterface.gradient(
         diff_loss_tt,
-        ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+        ADTypes.AutoEnzyme(;
+            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+            function_annotation = Enzyme.Const,
+        ),
         ps,
     )
 
@@ -115,12 +127,18 @@ diff_loss_tn2(ps)
 diff_loss_tt2(ps)
 DifferentiationInterface.gradient(
     diff_loss_tn2,
-    ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+    ADTypes.AutoEnzyme(;
+        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        function_annotation = Enzyme.Const,
+    ),
     ps,
 )
 DifferentiationInterface.gradient(
     diff_loss_tt2,
-    ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+    ADTypes.AutoEnzyme(;
+        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        function_annotation = Enzyme.Const,
+    ),
     ps,
 )
 GC.gc()
@@ -131,12 +149,18 @@ SUITE["main"]["inplace"]["direct"]["test"] = BenchmarkTools.@benchmarkable diff_
 SUITE["main"]["inplace"]["AD-1-order"]["train"] =
     BenchmarkTools.@benchmarkable DifferentiationInterface.gradient(
         diff_loss_tn2,
-        ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+        ADTypes.AutoEnzyme(;
+            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+            function_annotation = Enzyme.Const,
+        ),
         ps,
     )
 SUITE["main"]["inplace"]["AD-1-order"]["test"] =
     BenchmarkTools.@benchmarkable DifferentiationInterface.gradient(
         diff_loss_tt2,
-        ADTypes.AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+        ADTypes.AutoEnzyme(;
+            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+            function_annotation = Enzyme.Const,
+        ),
         ps,
     )

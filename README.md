@@ -80,7 +80,7 @@ model = ICNFModel(
     icnf;
     # optimizers = (Lion(),),
     # n_epochs = 300,
-    # adtype = AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse)),
+    # adtype = AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse), function_annotation = Enzyme.Const),
     # use_batch = true,
     # batch_size = 32,
     sol_kwargs = (; progress = true,), # pass to the solver

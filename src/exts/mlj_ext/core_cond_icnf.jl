@@ -18,6 +18,7 @@ function CondICNFModel(
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = ADTypes.AutoEnzyme(;
         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        function_annotation = Enzyme.Const,
     ),
     use_batch::Bool = true,
     batch_size::Int = 32,

@@ -29,9 +29,16 @@ Test.@testset "Call Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adtypes = ADTypes.AbstractADType[ADTypes.AutoEnzyme(;
-        mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-    )]
+    adtypes = ADTypes.AbstractADType[
+        ADTypes.AutoEnzyme(;
+            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+            function_annotation = Enzyme.Const,
+        ),
+        ADTypes.AutoEnzyme(;
+            mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+            function_annotation = Enzyme.Const,
+        ),
+    ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.DIVecJacVectorMode(
             ADTypes.AutoEnzyme(;
