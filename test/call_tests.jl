@@ -190,8 +190,12 @@ Test.@testset "Call Tests" begin
             )
             Test.@test !isnothing(icnf((r, r2), ps, st))
 
-            diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
-            diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
+            diff_loss = function (x)
+                ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
+            end
+            diff2_loss = function (x)
+                ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
+            end
         else
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, ps, st),
@@ -209,8 +213,12 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
             Test.@test !isnothing(icnf(r, ps, st))
 
-            diff_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
-            diff2_loss = x -> ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
+            diff_loss = function (x)
+                ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
+            end
+            diff2_loss = function (x)
+                ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
+            end
         end
 
         if mt <: Union{

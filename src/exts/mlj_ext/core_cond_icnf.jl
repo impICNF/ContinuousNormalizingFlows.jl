@@ -108,7 +108,9 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
 
     tst = @timed if model.m.compute_mode isa VectorMode
         logp̂x = broadcast(
-            (x, y) -> first(inference(model.m, TestMode(), x, y, ps, st)),
+            function (x, y)
+                first(inference(model.m, TestMode(), x, y, ps, st))
+            end,
             eachcol(xnew),
             eachcol(ynew),
         )

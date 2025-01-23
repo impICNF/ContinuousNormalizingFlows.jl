@@ -102,7 +102,9 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     (ps, st) = fitresult
 
     tst = @timed if model.m.compute_mode isa VectorMode
-        logp̂x = broadcast(x -> first(inference(model.m, TestMode(), x, ps, st)), eachcol(xnew))
+        logp̂x = broadcast(function (x)
+                first(inference(model.m, TestMode(), x, ps, st))
+            end, eachcol(xnew))
     elseif model.m.compute_mode isa MatrixMode
         logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
     else
