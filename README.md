@@ -50,7 +50,7 @@ icnf = construct(
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
-    # compute_mode = DIVecJacMatrixMode(AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse), function_annotation = Enzyme.Const)), # process data in batches and use Enzyme
+    # compute_mode = DIJacVecMatrixMode(AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Forward), function_annotation = Enzyme.Const)), # process data in batches and use Enzyme
     # inplace = true, # use the inplace version of functions
     # resource = CUDALibs(), # process data by GPU
     tspan = (0.0f0, 13.0f0), # have bigger time span
@@ -74,13 +74,13 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase #, Enzyme, ADTypes, OptimizationOptimisers
+using DataFrames, MLJBase #, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
     # optimizers = (Lion(),),
     # n_epochs = 300,
-    # adtype = AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse), function_annotation = Enzyme.Const),
+    # adtype = AutoZygote(),
     # use_batch = true,
     # batch_size = 32,
     sol_kwargs = (; progress = true,), # pass to the solver

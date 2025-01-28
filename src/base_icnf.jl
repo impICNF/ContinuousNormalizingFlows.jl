@@ -4,9 +4,9 @@ function construct(
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::ComputeMode = DIVecJacMatrixMode(
+    compute_mode::ComputeMode = DIJacVecMatrixMode(
         ADTypes.AutoEnzyme(;
-            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+            mode = Enzyme.set_runtime_activity(Enzyme.Forward),
             function_annotation = Enzyme.Const,
         ),
     ),
