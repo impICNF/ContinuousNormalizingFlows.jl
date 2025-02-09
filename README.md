@@ -43,14 +43,14 @@ n_in = nvars + naugs # with augmentation
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Lux, ADTypes #, Enzyme, CUDA, ComputationalResources
+using ContinuousNormalizingFlows, Lux, ADTypes #, Zygote, CUDA, ComputationalResources
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
     RNODE,
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
-    # compute_mode = DIVecJacMatrixMode(AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse), function_annotation = Enzyme.Const)), # process data in batches and use Enzyme
+    # compute_mode = DIVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     # inplace = true, # use the inplace version of functions
     # resource = CUDALibs(), # process data by GPU
     tspan = (0.0f0, 13.0f0), # have bigger time span
@@ -74,13 +74,13 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase #, Enzyme, ADTypes, OptimizationOptimisers
+using DataFrames, MLJBase #, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
     # optimizers = (Lion(),),
     # n_epochs = 300,
-    # adtype = AutoEnzyme(; mode = Enzyme.set_runtime_activity(Enzyme.Reverse), function_annotation = Enzyme.Const),
+    # adtype = AutoZygote(),
     # use_batch = true,
     # batch_size = 32,
     sol_kwargs = (; progress = true,), # pass to the solver

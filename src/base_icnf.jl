@@ -4,12 +4,7 @@ function construct(
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::ComputeMode = DIVecJacMatrixMode(
-        ADTypes.AutoEnzyme(;
-            mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-            function_annotation = Enzyme.Const,
-        ),
-    ),
+    compute_mode::ComputeMode = DIVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
     resource::ComputationalResources.AbstractResource = ComputationalResources.CPU1(),
