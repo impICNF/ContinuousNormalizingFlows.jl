@@ -455,6 +455,134 @@ function augmented_f(
     nothing
 end
 
+function augmented_f(
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:LuxVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn::LuxCore.AbstractLuxLayer,
+    st::NamedTuple,
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = snn(z)
+    ϵJ = Lux.vector_jacobian_product(snn, icnf.compute_mode.adback, z, ϵ)
+    l̇ = -sum(ϵJ .* ϵ; dims = 1)
+    Ė = transpose(if NORM_Z
+        LinearAlgebra.norm.(eachcol(ż))
+    else
+        zrs_Ė = similar(ż, size(ż, 2))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
+    end)
+    ṅ = transpose(if NORM_J
+        LinearAlgebra.norm.(eachcol(ϵJ))
+    else
+        zrs_ṅ = similar(ż, size(ż, 2))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
+    end)
+    vcat(ż, l̇, Ė, ṅ)
+end
+
+function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:LuxVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn::LuxCore.AbstractLuxLayer,
+    st::NamedTuple,
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = snn(z)
+    ϵJ = Lux.vector_jacobian_product(snn, icnf.compute_mode.adback, z, ϵ)
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
+    du[(end - n_aug + 1), :] .= if NORM_Z
+        LinearAlgebra.norm.(eachcol(ż))
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2), :] .= if NORM_J
+        LinearAlgebra.norm.(eachcol(ϵJ))
+    else
+        zero(T)
+    end
+    nothing
+end
+
+function augmented_f(
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:LuxJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn::LuxCore.AbstractLuxLayer,
+    st::NamedTuple,
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = snn(z)
+    Jϵ = Lux.jacobian_vector_product(snn, icnf.compute_mode.adback, z, ϵ)
+    l̇ = -sum(ϵ .* Jϵ; dims = 1)
+    Ė = transpose(if NORM_Z
+        LinearAlgebra.norm.(eachcol(ż))
+    else
+        zrs_Ė = similar(ż, size(ż, 2))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
+        zrs_Ė
+    end)
+    ṅ = transpose(if NORM_J
+        LinearAlgebra.norm.(eachcol(Jϵ))
+    else
+        zrs_ṅ = similar(ż, size(ż, 2))
+        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
+        zrs_ṅ
+    end)
+    vcat(ż, l̇, Ė, ṅ)
+end
+
+function augmented_f(
+    du::Any,
+    u::Any,
+    p::Any,
+    ::Any,
+    icnf::ICNF{T, <:LuxJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    mode::TrainMode,
+    nn::LuxCore.AbstractLuxLayer,
+    st::NamedTuple,
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
+    n_aug = n_augment(icnf, mode)
+    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    z = u[begin:(end - n_aug - 1), :]
+    ż = snn(z)
+    Jϵ = Lux.jacobian_vector_product(snn, icnf.compute_mode.adback, z, ϵ)
+    du[begin:(end - n_aug - 1), :] .= ż
+    du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
+    du[(end - n_aug + 1), :] .= if NORM_Z
+        LinearAlgebra.norm.(eachcol(ż))
+    else
+        zero(T)
+    end
+    du[(end - n_aug + 2), :] .= if NORM_J
+        LinearAlgebra.norm.(eachcol(Jϵ))
+    else
+        zero(T)
+    end
+    nothing
+end
+
 @inline function loss(
     icnf::ICNF{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
