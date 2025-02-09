@@ -38,7 +38,9 @@ Test.@testset "Fit Tests" begin
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
