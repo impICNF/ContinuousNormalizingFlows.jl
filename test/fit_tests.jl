@@ -37,6 +37,7 @@ Test.@testset "Fit Tests" begin
     # ),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
+        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
@@ -65,7 +66,6 @@ Test.@testset "Fit Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
