@@ -52,3 +52,13 @@ end
         )
     )
 end
+
+@inline function jacobian_batched(
+    icnf::AbstractICNF{T, <:LuxMatrixMode},
+    f::Lux.StatefulLuxLayer,
+    xs::AbstractMatrix{<:Real},
+) where {T}
+    y = f(xs)
+    J = Lux.batched_jacobian(f, icnf.compute_mode.adback, xs)
+    y, eachslice(J; dims = 3)
+end

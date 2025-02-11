@@ -22,6 +22,14 @@ struct DIJacVecMatrixMode{ADBack <: ADTypes.AbstractADType} <: DIMatrixMode{ADBa
     adback::ADBack
 end
 
+abstract type LuxMatrixMode{ADBack} <: MatrixMode{ADBack} end
+struct LuxVecJacMatrixMode{ADBack <: ADTypes.AbstractADType} <: LuxMatrixMode{ADBack}
+    adback::ADBack
+end
+struct LuxJacVecMatrixMode{ADBack <: ADTypes.AbstractADType} <: LuxMatrixMode{ADBack}
+    adback::ADBack
+end
+
 abstract type AbstractICNF{
     T <: AbstractFloat,
     CM <: ComputeMode,

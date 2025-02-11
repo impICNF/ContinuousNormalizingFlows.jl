@@ -37,6 +37,7 @@ Test.@testset "Fit Tests" begin
     # ),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
+        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
