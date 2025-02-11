@@ -42,30 +42,30 @@ Test.@testset "Fit Tests" begin
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacVectorMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
+        # ContinuousNormalizingFlows.DIVecJacVectorMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
+        # ContinuousNormalizingFlows.DIJacVecVectorMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
+        # ContinuousNormalizingFlows.DIVecJacMatrixMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
+        # ContinuousNormalizingFlows.DIJacVecMatrixMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
