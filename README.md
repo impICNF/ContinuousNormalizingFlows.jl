@@ -50,7 +50,7 @@ icnf = construct(
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
-    # compute_mode = DIVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
+    # compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     # inplace = true, # use the inplace version of functions
     # resource = CUDALibs(), # process data by GPU
     tspan = (0.0f0, 13.0f0), # have bigger time span
