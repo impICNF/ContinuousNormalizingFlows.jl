@@ -19,15 +19,11 @@ function construct(
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
     sol_kwargs::NamedTuple = (;
-        alg = OrdinaryDiffEqDefault.Vern6(),
-        sensealg = SciMLSensitivity.QuadratureAdjoint(;
+        alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
+        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             autodiff = true,
             autojacvec = SciMLSensitivity.ZygoteVJP(),
         ),
-        save_everystep = false,
-        reltol = sqrt(eps(one(Float32))),
-        abstol = eps(one(Float32)),
-        maxiters = typemax(Int32),
     ),
     rng::Random.AbstractRNG = rng_AT(resource),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
