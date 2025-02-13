@@ -4,7 +4,7 @@ function construct(
     nvars::Int,
     naugmented::Int = 0;
     data_type::Type{<:AbstractFloat} = Float32,
-    compute_mode::ComputeMode = DIVecJacMatrixMode(ADTypes.AutoZygote()),
+    compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
     resource::ComputationalResources.AbstractResource = ComputationalResources.CPU1(),
