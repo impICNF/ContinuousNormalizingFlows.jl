@@ -19,6 +19,7 @@ function construct(
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
     sol_kwargs::NamedTuple = (;
+        alg = OrdinaryDiffEqDefault.Vern6(),
         sensealg = SciMLSensitivity.QuadratureAdjoint(;
             autodiff = true,
             autojacvec = SciMLSensitivity.ZygoteVJP(),
