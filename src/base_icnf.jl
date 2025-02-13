@@ -75,21 +75,6 @@ end
     0
 end
 
-function Base.show(io::IO, icnf::AbstractICNF)
-    print(
-        io,
-        typeof(icnf),
-        "<",
-        "Number of Variables: ",
-        icnf.nvars,
-        ", Number of Augmentations: ",
-        n_augment_input(icnf),
-        ", Time Span: ",
-        icnf.tspan,
-        ">",
-    )
-end
-
 @inline function n_augment_input(
     icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, COND, true},
 ) where {INPLACE, COND}
