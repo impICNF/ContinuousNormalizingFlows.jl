@@ -20,8 +20,7 @@ function construct(
     ),
     sol_kwargs::NamedTuple = (;
         alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
-            autodiff = true,
+        sensealg = SciMLSensitivity.BacksolveAdjoint(;
             autojacvec = SciMLSensitivity.ZygoteVJP(),
         ),
     ),
