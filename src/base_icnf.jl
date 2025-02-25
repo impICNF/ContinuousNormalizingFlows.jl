@@ -75,6 +75,10 @@ function construct(
     )
 end
 
+function Base.show(io::IO, icnf::AbstractICNF)
+    print(io, typeof(icnf))
+end
+
 @inline function n_augment(::AbstractICNF, ::Mode)
     0
 end
