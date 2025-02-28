@@ -68,10 +68,10 @@ Test.@testset "Fit Tests" begin
         # ),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
-    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
+    devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
 
-    Test.@testset "$resource | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for resource in
-                                                                                                                                                resources,
+    Test.@testset "$device | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for device in
+                                                                                                                                              devices,
         data_type in data_types,
         compute_mode in compute_modes,
         adtype in adtypes,
@@ -142,7 +142,7 @@ Test.@testset "Fit Tests" begin
                 data_type,
                 compute_mode,
                 inplace,
-                resource,
+                device,
                 steer_rate = convert(data_type, 1.0e-1),
                 λ₃ = convert(data_type, 1.0e-2),
             ),
@@ -153,7 +153,7 @@ Test.@testset "Fit Tests" begin
                 data_type,
                 compute_mode,
                 inplace,
-                resource,
+                device,
             ),
         )
         if mt <: Union{

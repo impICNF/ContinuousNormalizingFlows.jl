@@ -78,7 +78,7 @@ struct ICNF{
     NORM_Z_AUG,
     NN <: LuxCore.AbstractLuxLayer,
     NVARS <: Int,
-    RESOURCE <: ComputationalResources.AbstractResource,
+    DEVICE <: MLDataDevices.AbstractDevice,
     BASEDIST <: Distributions.Distribution,
     TSPAN <: NTuple{2, T},
     STEERDIST <: Distributions.Distribution,
@@ -91,7 +91,7 @@ struct ICNF{
     naugmented::NVARS
 
     compute_mode::CM
-    resource::RESOURCE
+    device::DEVICE
     basedist::BASEDIST
     tspan::TSPAN
     steerdist::STEERDIST
