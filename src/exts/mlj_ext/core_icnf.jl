@@ -26,16 +26,11 @@ end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    tdev = if model.m.resource isa ComputationalResources.CUDALibs
-        Lux.gpu_device()
-    else
-        Lux.cpu_device()
-    end
     ps, st = LuxCore.setup(model.m.rng, model.m)
     ps = ComponentArrays.ComponentArray(ps)
-    x = tdev(x)
-    ps = tdev(ps)
-    st = tdev(st)
+    x = model.m.device(x)
+    ps = model.m.device(ps)
+    st = model.m.device(st)
     data = if model.m.compute_mode isa VectorMode
         MLUtils.DataLoader((x,); batchsize = -1, shuffle = true, partial = true)
     elseif model.m.compute_mode isa MatrixMode
@@ -52,7 +47,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     else
         error("Not Implemented")
     end
-    data = tdev(data)
+    data = model.m.device(data)
     optfunc = SciMLBase.OptimizationFunction(
         make_opt_loss(model.m, TrainMode(), st, model.loss),
         model.adtype,
@@ -90,12 +85,7 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    tdev = if model.m.resource isa ComputationalResources.CUDALibs
-        Lux.gpu_device()
-    else
-        Lux.cpu_device()
-    end
-    xnew = tdev(xnew)
+    xnew = model.m.device(xnew)
     (ps, st) = fitresult
 
     tst = @timed if model.m.compute_mode isa VectorMode

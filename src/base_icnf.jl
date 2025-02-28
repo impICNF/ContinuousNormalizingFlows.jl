@@ -7,7 +7,7 @@ function construct(
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
-    resource::ComputationalResources.AbstractResource = ComputationalResources.CPU1(),
+    device::MLDataDevices.AbstractDevice = MLDataDevices.cpu_device(),
     basedist::Distributions.Distribution = Distributions.MvNormal(
         FillArrays.Zeros{data_type}(nvars + naugmented),
         FillArrays.Eye{data_type}(nvars + naugmented),
@@ -23,7 +23,7 @@ function construct(
             autojacvec = SciMLSensitivity.ZygoteVJP(),
         ),
     ),
-    rng::Random.AbstractRNG = rng_AT(resource),
+    rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1.0e-2)
     else
@@ -50,7 +50,7 @@ function construct(
         !iszero(λ₃),
         typeof(nn),
         typeof(nvars),
-        typeof(resource),
+        typeof(device),
         typeof(basedist),
         typeof(tspan),
         typeof(steerdist),
@@ -62,7 +62,7 @@ function construct(
         nvars,
         naugmented,
         compute_mode,
-        resource,
+        device,
         basedist,
         tspan,
         steerdist,
@@ -108,16 +108,8 @@ end
     icnf.tspan
 end
 
-@inline function rng_AT(::ComputationalResources.AbstractResource)
-    Random.default_rng()
-end
-
-@inline function base_AT(
-    ::ComputationalResources.AbstractResource,
-    ::AbstractICNF{T},
-    dims...,
-) where {T <: AbstractFloat}
-    Array{T}(undef, dims...)
+@inline function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
+    icnf.device(Array{T}(undef, dims...))
 end
 
 ChainRulesCore.@non_differentiable base_AT(::Any...)
@@ -217,7 +209,7 @@ function inference_prob(
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -240,7 +232,7 @@ function inference_prob(
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -262,7 +254,7 @@ function inference_prob(
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -285,7 +277,7 @@ function inference_prob(
     n_aug_input = n_augment_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, size(xs, 2))
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -304,11 +296,11 @@ function generate_prob(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    new_xs = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -328,11 +320,11 @@ function generate_prob(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    new_xs = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input)
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -352,11 +344,11 @@ function generate_prob(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
+    new_xs = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
@@ -377,11 +369,11 @@ function generate_prob(
 ) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
-    new_xs = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
+    new_xs = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
-    ϵ = base_AT(icnf.resource, icnf, icnf.nvars + n_aug_input, n)
+    ϵ = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
     SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(

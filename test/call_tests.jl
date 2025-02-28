@@ -71,10 +71,10 @@ Test.@testset "Call Tests" begin
         # ),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
-    resources = ComputationalResources.AbstractResource[ComputationalResources.CPU1()]
+    devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
 
-    Test.@testset "$resource | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for resource in
-                                                                                                                                               resources,
+    Test.@testset "$device | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for device in
+                                                                                                                                             devices,
         data_type in data_types,
         compute_mode in compute_modes,
         inplace in inplaces,
@@ -147,7 +147,7 @@ Test.@testset "Call Tests" begin
                 data_type,
                 compute_mode,
                 inplace,
-                resource,
+                device,
                 steer_rate = convert(data_type, 1.0e-1),
                 λ₃ = convert(data_type, 1.0e-2),
             ),
@@ -158,20 +158,15 @@ Test.@testset "Call Tests" begin
                 data_type,
                 compute_mode,
                 inplace,
-                resource,
+                device,
             ),
         )
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        tdev = if resource isa ComputationalResources.CUDALibs
-            Lux.gpu_device()
-        else
-            Lux.cpu_device()
-        end
-        r = tdev(r)
-        r2 = tdev(r2)
-        ps = tdev(ps)
-        st = tdev(st)
+        r = device(r)
+        r2 = device(r2)
+        ps = device(ps)
+        st = device(st)
         if mt <: Union{
             ContinuousNormalizingFlows.CondRNODE,
             ContinuousNormalizingFlows.CondFFJORD,
