@@ -5,5 +5,5 @@ struct CondLayer{NN <: LuxCore.AbstractLuxLayer, AT <: AbstractArray} <:
 end
 
 @inline function (m::CondLayer)(z::AbstractVecOrMat, ps::Any, st::NamedTuple)
-    LuxCore.apply(m.nn, vcat(z, m.ys), ps, st)
+    return LuxCore.apply(m.nn, vcat(z, m.ys), ps, st)
 end

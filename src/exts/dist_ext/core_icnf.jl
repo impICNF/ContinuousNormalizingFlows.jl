@@ -7,11 +7,11 @@ end
 
 function ICNFDist(mach::MLJBase.Machine{<:ICNFModel}, mode::Mode)
     (ps, st) = MLJModelInterface.fitted_params(mach)
-    ICNFDist(mach.model.m, mode, ps, st)
+    return ICNFDist(mach.model.m, mode, ps, st)
 end
 
 function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
+    return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ps, d.st))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(Distributions._logpdf(d, hcat(x)))
@@ -21,7 +21,7 @@ function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
 end
 
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
+    return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         Distributions._logpdf.(d, eachcol(A))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ps, d.st))
@@ -35,7 +35,7 @@ function Distributions._rand!(
     d::ICNFDist,
     x::AbstractVector{<:Real},
 )
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
+    return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         x .= generate(d.m, d.mode, d.ps, d.st)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         x .= Distributions._rand!(rng, d, hcat(x))
@@ -48,7 +48,7 @@ function Distributions._rand!(
     d::ICNFDist,
     A::AbstractMatrix{<:Real},
 )
-    if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
+    return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         A .= hcat(Distributions._rand!.(rng, d, eachcol(A))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))

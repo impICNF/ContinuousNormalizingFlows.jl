@@ -19,8 +19,10 @@ jobs:
         shell: julia --color=yes {0}
         run: |
           import Pkg
-          Pkg.add("JuliaFormatter")
-          import JuliaFormatter
+          Pkg.add(["JuliaFormatter", "Runic"])
+          import JuliaFormatter, Runic
+          JuliaFormatter.format(".")
+          Runic.main(["--inplace", "."])
           JuliaFormatter.format(".")
       - name: Create Pull Request
         id: cpr

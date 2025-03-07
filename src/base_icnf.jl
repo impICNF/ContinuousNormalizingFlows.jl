@@ -38,7 +38,7 @@ function construct(
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
 
-    ICNF{
+    return ICNF{
         data_type,
         typeof(compute_mode),
         inplace,
@@ -76,21 +76,21 @@ function construct(
 end
 
 function Base.show(io::IO, icnf::AbstractICNF)
-    print(io, typeof(icnf))
+    return print(io, typeof(icnf))
 end
 
 @inline function n_augment(::AbstractICNF, ::Mode)
-    0
+    return 0
 end
 
 @inline function n_augment_input(
     icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, COND, true},
 ) where {INPLACE, COND}
-    icnf.naugmented
+    return icnf.naugmented
 end
 
 @inline function n_augment_input(::AbstractICNF)
-    0
+    return 0
 end
 
 @inline function steer_tspan(
@@ -101,15 +101,15 @@ end
     Δt = abs(t₁ - t₀)
     r = convert(T, rand(icnf.rng, icnf.steerdist))
     t₁_new = muladd(Δt, r, t₁)
-    (t₀, t₁_new)
+    return (t₀, t₁_new)
 end
 
 @inline function steer_tspan(icnf::AbstractICNF, ::Mode)
-    icnf.tspan
+    return icnf.tspan
 end
 
 @inline function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
-    icnf.device(Array{T}(undef, dims...))
+    return icnf.device(Array{T}(undef, dims...))
 end
 
 ChainRulesCore.@non_differentiable base_AT(::Any...)
@@ -119,7 +119,7 @@ function base_sol(
     prob::SciMLBase.AbstractODEProblem{<:AbstractVecOrMat{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE}
     sol = SciMLBase.solve(prob; icnf.sol_kwargs...)
-    get_fsol(sol)
+    return get_fsol(sol)
 end
 
 function inference_sol(
@@ -141,7 +141,7 @@ function inference_sol(
     else
         zero(T)
     end
-    (logp̂x, vcat(augs, Ȧ))
+    return (logp̂x, vcat(augs, Ȧ))
 end
 
 function inference_sol(
@@ -165,7 +165,7 @@ function inference_sol(
         ChainRulesCore.@ignore_derivatives fill!(zrs_aug, zero(T))
         zrs_aug
     end)
-    (logp̂x, eachrow(vcat(augs, Ȧ)))
+    return (logp̂x, eachrow(vcat(augs, Ȧ)))
 end
 
 function generate_sol(
@@ -176,7 +176,7 @@ function generate_sol(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     fsol = base_sol(icnf, prob)
-    fsol[begin:(end - n_aug_input - n_aug - 1)]
+    return fsol[begin:(end - n_aug_input - n_aug - 1)]
 end
 
 function generate_sol(
@@ -187,15 +187,15 @@ function generate_sol(
     n_aug = n_augment(icnf, mode)
     n_aug_input = n_augment_input(icnf)
     fsol = base_sol(icnf, prob)
-    fsol[begin:(end - n_aug_input - n_aug - 1), :]
+    return fsol[begin:(end - n_aug_input - n_aug - 1), :]
 end
 
 @inline function get_fsol(sol::SciMLBase.AbstractODESolution)
-    last(sol.u)
+    return last(sol.u)
 end
 
 @inline function get_fsol(sol::AbstractArray{T, N}) where {T, N}
-    selectdim(sol, N, lastindex(sol, N))
+    return selectdim(sol, N, lastindex(sol, N))
 end
 
 function inference_prob(
@@ -212,7 +212,7 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -235,7 +235,7 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -257,7 +257,7 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -280,7 +280,7 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
@@ -303,7 +303,7 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -327,7 +327,7 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -351,7 +351,7 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -376,7 +376,7 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
+    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
         make_ode_func(icnf, mode, nn, st, ϵ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
@@ -391,7 +391,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ps, st))
+    return inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ps, st))
 end
 
 @inline function inference(
@@ -402,7 +402,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ys, ps, st))
+    return inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ys, ps, st))
 end
 
 @inline function generate(
@@ -411,7 +411,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st))
+    return generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st))
 end
 
 @inline function generate(
@@ -421,7 +421,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st))
+    return generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st))
 end
 
 @inline function generate(
@@ -431,7 +431,7 @@ end
     st::NamedTuple,
     n::Int,
 )
-    generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st, n))
+    return generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st, n))
 end
 
 @inline function generate(
@@ -442,7 +442,7 @@ end
     st::NamedTuple,
     n::Int,
 )
-    generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st, n))
+    return generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st, n))
 end
 
 @inline function loss(
@@ -452,7 +452,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    -first(inference(icnf, mode, xs, ps, st))
+    return -first(inference(icnf, mode, xs, ps, st))
 end
 
 @inline function loss(
@@ -463,7 +463,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    -first(inference(icnf, mode, xs, ys, ps, st))
+    return -first(inference(icnf, mode, xs, ys, ps, st))
 end
 
 @inline function loss(
@@ -473,7 +473,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    -Statistics.mean(first(inference(icnf, mode, xs, ps, st)))
+    return -Statistics.mean(first(inference(icnf, mode, xs, ps, st)))
 end
 
 @inline function loss(
@@ -484,7 +484,7 @@ end
     ps::Any,
     st::NamedTuple,
 )
-    -Statistics.mean(first(inference(icnf, mode, xs, ys, ps, st)))
+    return -Statistics.mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 
 @inline function make_ode_func(
@@ -495,14 +495,14 @@ end
     ϵ::AbstractVecOrMat{T},
 ) where {T <: AbstractFloat, CM, INPLACE}
     function ode_func_op(u, p, t)
-        augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
+        return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
     end
 
     function ode_func_ip(du, u, p, t)
-        augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
+        return augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
     end
 
-    ifelse(INPLACE, ode_func_ip, ode_func_op)
+    return ifelse(INPLACE, ode_func_ip, ode_func_op)
 end
 
 @inline function (icnf::AbstractICNF{T, CM, INPLACE, false})(
@@ -510,7 +510,7 @@ end
     ps::Any,
     st::NamedTuple,
 ) where {T, CM, INPLACE}
-    first(inference(icnf, TrainMode(), xs, ps, st)), st
+    return first(inference(icnf, TrainMode(), xs, ps, st)), st
 end
 
 @inline function (icnf::AbstractICNF{T, CM, INPLACE, true})(
@@ -519,5 +519,5 @@ end
     st::NamedTuple,
 ) where {T, CM, INPLACE}
     xs, ys = xs_ys
-    first(inference(icnf, TrainMode(), xs, ys, ps, st)), st
+    return first(inference(icnf, TrainMode(), xs, ys, ps, st)), st
 end

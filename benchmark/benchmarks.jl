@@ -44,10 +44,22 @@ ps = ComponentArrays.ComponentArray(ps)
 r = rand(icnf.rng, Float32, nvars, n)
 
 function diff_loss_tn(x)
-    ContinuousNormalizingFlows.loss(icnf, ContinuousNormalizingFlows.TrainMode(), r, x, st)
+    return ContinuousNormalizingFlows.loss(
+        icnf,
+        ContinuousNormalizingFlows.TrainMode(),
+        r,
+        x,
+        st,
+    )
 end
 function diff_loss_tt(x)
-    ContinuousNormalizingFlows.loss(icnf, ContinuousNormalizingFlows.TestMode(), r, x, st)
+    return ContinuousNormalizingFlows.loss(
+        icnf,
+        ContinuousNormalizingFlows.TestMode(),
+        r,
+        x,
+        st,
+    )
 end
 
 diff_loss_tn(ps)
@@ -87,10 +99,22 @@ icnf2 = ContinuousNormalizingFlows.construct(
 )
 
 function diff_loss_tn2(x)
-    ContinuousNormalizingFlows.loss(icnf2, ContinuousNormalizingFlows.TrainMode(), r, x, st)
+    return ContinuousNormalizingFlows.loss(
+        icnf2,
+        ContinuousNormalizingFlows.TrainMode(),
+        r,
+        x,
+        st,
+    )
 end
 function diff_loss_tt2(x)
-    ContinuousNormalizingFlows.loss(icnf2, ContinuousNormalizingFlows.TestMode(), r, x, st)
+    return ContinuousNormalizingFlows.loss(
+        icnf2,
+        ContinuousNormalizingFlows.TestMode(),
+        r,
+        x,
+        st,
+    )
 end
 
 diff_loss_tn2(ps)

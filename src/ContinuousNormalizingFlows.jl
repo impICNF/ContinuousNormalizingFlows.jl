@@ -1,11 +1,9 @@
 module ContinuousNormalizingFlows
 
 import ADTypes,
-    Base.Iterators,
     ChainRulesCore,
     ComponentArrays,
     DataFrames,
-    Dates,
     DifferentiationInterface,
     Distributions,
     DistributionsAD,

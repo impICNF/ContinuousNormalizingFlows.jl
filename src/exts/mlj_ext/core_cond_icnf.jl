@@ -21,7 +21,16 @@ function CondICNFModel(
     batch_size::Int = 32,
     sol_kwargs::NamedTuple = (;),
 )
-    CondICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, sol_kwargs)
+    return CondICNFModel(
+        m,
+        loss,
+        optimizers,
+        n_epochs,
+        adtype,
+        use_batch,
+        batch_size,
+        sol_kwargs,
+    )
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -82,7 +91,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     fitresult = (ps, st)
     cache = nothing
     report = (stats = tst_overall,)
-    (fitresult, cache, report)
+    return (fitresult, cache, report)
 end
 
 function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
@@ -96,7 +105,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     tst = @timed if model.m.compute_mode isa VectorMode
         logp̂x = broadcast(
             function (x, y)
-                first(inference(model.m, TestMode(), x, y, ps, st))
+                return first(inference(model.m, TestMode(), x, y, ps, st))
             end,
             eachcol(xnew),
             eachcol(ynew),
@@ -113,7 +122,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
         "allocated (bytes)" = tst.bytes,
     )
 
-    DataFrames.DataFrame(; px = exp.(logp̂x))
+    return DataFrames.DataFrame(; px = exp.(logp̂x))
 end
 
 MLJBase.metadata_pkg(
