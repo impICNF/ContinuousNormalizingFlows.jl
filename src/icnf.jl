@@ -104,7 +104,7 @@ struct ICNF{
 end
 
 @inline function n_augment(::ICNF, ::TrainMode)
-    2
+    return 2
 end
 
 function augmented_f(
@@ -122,7 +122,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1)]
     ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.compute_mode.adback, z)
     l̇ = -LinearAlgebra.tr(J)
-    vcat(ż, l̇)
+    return vcat(ż, l̇)
 end
 
 function augmented_f(
@@ -142,7 +142,7 @@ function augmented_f(
     ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.compute_mode.adback, z)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.tr(J)
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -160,7 +160,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, snn, z)
     l̇ = -transpose(LinearAlgebra.tr.(J))
-    vcat(ż, l̇)
+    return vcat(ż, l̇)
 end
 
 function augmented_f(
@@ -180,7 +180,7 @@ function augmented_f(
     ż, J = jacobian_batched(icnf, snn, z)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -(LinearAlgebra.tr.(J))
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -210,7 +210,7 @@ function augmented_f(
     else
         zero(T)
     end
-    vcat(ż, l̇, Ė, ṅ)
+    return vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -242,7 +242,7 @@ function augmented_f(
     else
         zero(T)
     end
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -276,7 +276,7 @@ function augmented_f(
     else
         zero(T)
     end
-    vcat(ż, l̇, Ė, ṅ)
+    return vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -312,7 +312,7 @@ function augmented_f(
     else
         zero(T)
     end
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -346,7 +346,7 @@ function augmented_f(
         ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
         zrs_ṅ
     end)
-    vcat(ż, l̇, Ė, ṅ)
+    return vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -378,7 +378,7 @@ function augmented_f(
     else
         zero(T)
     end
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -416,7 +416,7 @@ function augmented_f(
         ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
         zrs_ṅ
     end)
-    vcat(ż, l̇, Ė, ṅ)
+    return vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -452,7 +452,7 @@ function augmented_f(
     else
         zero(T)
     end
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -485,7 +485,7 @@ function augmented_f(
         ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
         zrs_ṅ
     end)
-    vcat(ż, l̇, Ė, ṅ)
+    return vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -516,7 +516,7 @@ function augmented_f(
     else
         zero(T)
     end
-    nothing
+    return nothing
 end
 
 function augmented_f(
@@ -549,7 +549,7 @@ function augmented_f(
         ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
         zrs_ṅ
     end)
-    vcat(ż, l̇, Ė, ṅ)
+    return vcat(ż, l̇, Ė, ṅ)
 end
 
 function augmented_f(
@@ -580,7 +580,7 @@ function augmented_f(
     else
         zero(T)
     end
-    nothing
+    return nothing
 end
 
 @inline function loss(
@@ -591,7 +591,7 @@ end
     st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
-    -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
+    return -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
 end
 
 @inline function loss(
@@ -603,7 +603,7 @@ end
     st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
-    -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
+    return -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
 end
 
 @inline function loss(
@@ -614,7 +614,7 @@ end
     st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ps, st)
-    Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
+    return Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
 end
 
 @inline function loss(
@@ -626,5 +626,5 @@ end
     st::NamedTuple,
 )
     logp̂x, (Ė, ṅ, Ȧ) = inference(icnf, mode, xs, ys, ps, st)
-    Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
+    return Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
 end
