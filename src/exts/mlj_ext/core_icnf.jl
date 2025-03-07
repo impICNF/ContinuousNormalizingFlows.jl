@@ -21,7 +21,16 @@ function ICNFModel(
     batch_size::Int = 32,
     sol_kwargs::NamedTuple = (;),
 )
-    ICNFModel(m, loss, optimizers, n_epochs, adtype, use_batch, batch_size, sol_kwargs)
+    return ICNFModel(
+        m,
+        loss,
+        optimizers,
+        n_epochs,
+        adtype,
+        use_batch,
+        batch_size,
+        sol_kwargs,
+    )
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -80,7 +89,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     fitresult = (ps, st)
     cache = nothing
     report = (stats = tst_overall,)
-    (fitresult, cache, report)
+    return (fitresult, cache, report)
 end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
@@ -89,9 +98,12 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     (ps, st) = fitresult
 
     tst = @timed if model.m.compute_mode isa VectorMode
-        logp̂x = broadcast(function (x)
-                first(inference(model.m, TestMode(), x, ps, st))
-            end, eachcol(xnew))
+        logp̂x = broadcast(
+            function (x)
+                return first(inference(model.m, TestMode(), x, ps, st))
+            end,
+            eachcol(xnew),
+        )
     elseif model.m.compute_mode isa MatrixMode
         logp̂x = first(inference(model.m, TestMode(), xnew, ps, st))
     else
@@ -105,7 +117,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
         "allocated (bytes)" = tst.bytes,
     )
 
-    DataFrames.DataFrame(; px = exp.(logp̂x))
+    return DataFrames.DataFrame(; px = exp.(logp̂x))
 end
 
 MLJBase.metadata_pkg(

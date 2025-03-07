@@ -191,10 +191,10 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(icnf((r, r2), ps, st))
 
             diff_loss = function (x)
-                ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
+                return ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
             end
             diff2_loss = function (x)
-                ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
+                return ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
             end
         else
             Test.@test !isnothing(
@@ -214,10 +214,10 @@ Test.@testset "Call Tests" begin
             Test.@test !isnothing(icnf(r, ps, st))
 
             diff_loss = function (x)
-                ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
+                return ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
             end
             diff2_loss = function (x)
-                ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
+                return ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
             end
         end
 
