@@ -18,7 +18,11 @@ function construct(
         FillArrays.Zeros{data_type}(nvars + naugmented),
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
-    sol_kwargs::NamedTuple = (;),
+    sol_kwargs::NamedTuple = (;
+        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
+            autojacvec = SciMLSensitivity.ZygoteVJP(),
+        ),
+    ),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1.0e-2)
