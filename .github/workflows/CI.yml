@@ -4,8 +4,9 @@ on:
     - cron: '0 0 * * 0'
   push:
       branches:
-        - 'main'
-      tags: ['*']
+        - main
+      tags:
+        - v*
   pull_request:
   release:
   workflow_dispatch:
@@ -27,9 +28,9 @@ jobs:
           - CondPlanar
           - Regression
         version:
-          - 'release'
-          - 'lts'
-          # - 'nightly'
+          - release
+          - lts
+          # - nightly
         os:
           - ubuntu-latest
           # - macOS-latest
