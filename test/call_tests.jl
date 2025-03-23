@@ -41,10 +41,11 @@ Test.@testset "Call Tests" begin
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         # ContinuousNormalizingFlows.DIVecJacVectorMode(
         #     ADTypes.AutoEnzyme(;
         #         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
