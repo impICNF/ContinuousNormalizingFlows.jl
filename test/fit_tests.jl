@@ -26,22 +26,25 @@ Test.@testset "Fit Tests" begin
     nvars_ = Int[2]
     aug_steers = Bool[false, true]
     inplaces = Bool[false, true]
-    adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
-    # ADTypes.AutoEnzyme(;
-    #     mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-    #     function_annotation = Enzyme.Const,
-    # ),
-    # ADTypes.AutoEnzyme(;
-    #     mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-    #     function_annotation = Enzyme.Const,
-    # ),
+    adtypes = ADTypes.AbstractADType[
+        ADTypes.AutoZygote(),
+        ADTypes.AutoForwardDiff(),
+        # ADTypes.AutoEnzyme(;
+        #     mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+        #     function_annotation = Enzyme.Const,
+        # ),
+        # ADTypes.AutoEnzyme(;
+        #     mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+        #     function_annotation = Enzyme.Const,
+        # ),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         # ContinuousNormalizingFlows.DIVecJacVectorMode(
         #     ADTypes.AutoEnzyme(;
         #         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),

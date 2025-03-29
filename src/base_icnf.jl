@@ -19,6 +19,11 @@ function construct(
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
     sol_kwargs::NamedTuple = (;
+        progress = true,
+        save_everystep = false,
+        reltol = sqrt(eps(one(data_type))),
+        abstol = eps(one(data_type)),
+        maxiters = typemax(Int),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             autojacvec = SciMLSensitivity.ZygoteVJP(),
         ),
