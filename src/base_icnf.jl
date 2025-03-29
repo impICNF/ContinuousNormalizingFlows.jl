@@ -18,7 +18,14 @@ function construct(
         FillArrays.Zeros{data_type}(nvars + naugmented),
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
-    sol_kwargs::NamedTuple = (;),
+    sol_kwargs::NamedTuple = (;
+        progress = true,
+        save_everystep = false,
+        reltol = sqrt(eps(one(data_type))),
+        abstol = eps(one(data_type)),
+        maxiters = typemax(Int),
+        alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
+    ),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
         convert(data_type, 1.0e-2)
