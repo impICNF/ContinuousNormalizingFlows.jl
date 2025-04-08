@@ -76,8 +76,8 @@ Test.@testset "Call Tests" begin
     data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
 
-    Test.@testset "$device | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $omode | $mt" for device in
-                                                                                                                                             devices,
+    Test.@testset "$device | $data_type | $compute_mode | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | ndata = $ndata | $omode | $mt" for device in
+                                                                                                                                                              devices,
         data_type in data_types,
         compute_mode in compute_modes,
         inplace in inplaces,
@@ -239,19 +239,9 @@ Test.@testset "Call Tests" begin
         Test.@test !isnothing(rand(d))
         Test.@test !isnothing(rand(d, ndata))
 
-        Test.@testset "$(typeof(adtype).name.name)" for adtype in adtypes
-            Test.@testset "Loss" begin
-                Test.@testset "ps" begin
-                    Test.@test !isnothing(
-                        DifferentiationInterface.gradient(diff_loss, adtype, ps),
-                    )
-                end
-                Test.@testset "x" begin
-                    Test.@test !isnothing(
-                        DifferentiationInterface.gradient(diff2_loss, adtype, r),
-                    )
-                end
-            end
+        Test.@testset "$adtype on loss" for adtype in adtypes
+            Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
+            Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
         end
     end
 end

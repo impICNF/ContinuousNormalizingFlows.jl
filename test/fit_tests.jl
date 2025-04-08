@@ -73,8 +73,8 @@ Test.@testset "Fit Tests" begin
     data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
 
-    Test.@testset "$device | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | $mt" for device in
-                                                                                                                                              devices,
+    Test.@testset "$device | $data_type | $compute_mode | $adtype | inplace = $inplace | aug & steer = $aug_steer | nvars = $nvars | ndata = $ndata | n_epochs = $n_epochs | $mt" for device in
+                                                                                                                                                                                      devices,
         data_type in data_types,
         compute_mode in compute_modes,
         adtype in adtypes,
