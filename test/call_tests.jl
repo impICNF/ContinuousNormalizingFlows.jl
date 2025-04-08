@@ -55,7 +55,8 @@ Test.@testset "Call Tests" begin
         ),
         ContinuousNormalizingFlows.DIJacVecVectorMode(
             ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                mode = Enzyme.Forward,
+                # mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,
             ),
         ),
@@ -67,7 +68,8 @@ Test.@testset "Call Tests" begin
         ),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                mode = Enzyme.Forward,
+                # mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,
             ),
         ),
