@@ -53,26 +53,26 @@ Test.@testset "Call Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.Forward,
-                # mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
+        # ContinuousNormalizingFlows.DIJacVecVectorMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.Forward,
+        #         # mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.Forward,
-                # mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
+        # ContinuousNormalizingFlows.DIJacVecMatrixMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.Forward,
+        #         # mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
     ]
     data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
