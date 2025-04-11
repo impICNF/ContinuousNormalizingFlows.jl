@@ -4,11 +4,14 @@ Test.@testset "Smoke Tests" begin
         ContinuousNormalizingFlows.TrainMode(),
         ContinuousNormalizingFlows.TestMode(),
     ]
-    ndata_ = Int[4]
-    nvars_ = Int[2]
-    inplaces = Bool[false, true]
-    conds = Bool[false, true]
     planars = Bool[false, true]
+    conds = Bool[false, true]
+    inplaces = Bool[false, true]
+    nvars_ = Int[2]
+    ndata_ = Int[4]
+    n_epochs_ = Int[2]
+    data_types = Type{<:AbstractFloat}[Float32]
+    devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
     adtypes = ADTypes.AbstractADType[
         ADTypes.AutoZygote(),
         ADTypes.AutoForwardDiff(),
@@ -53,8 +56,6 @@ Test.@testset "Smoke Tests" begin
         #     ),
         # ),
     ]
-    data_types = Type{<:AbstractFloat}[Float32]
-    devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
 
     Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
                                                                                                                                                                      devices,
