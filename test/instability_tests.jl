@@ -12,13 +12,15 @@ Test.@testset "Instability" begin
     nn = Lux.Chain(Lux.Dense(n_in => n_in, tanh))
 
     icnf = ContinuousNormalizingFlows.construct(
-        ContinuousNormalizingFlows.RNODE,
+        ContinuousNormalizingFlows.ICNF,
         nn,
         nvars,
         naugs;
         compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
         tspan = (0.0f0, 13.0f0),
         steer_rate = 1.0f-1,
+        λ₁ = 1.0f-2,
+        λ₂ = 1.0f-2,
         λ₃ = 1.0f-2,
     )
     ps, st = Lux.setup(icnf.rng, icnf)
