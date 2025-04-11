@@ -106,6 +106,7 @@ Test.@testset "Smoke Tests" begin
             data_type,
             compute_mode,
             inplace,
+            cond,
             device,
             steer_rate = convert(data_type, 1.0e-1),
             λ₁ = convert(data_type, 1.0e-2),
