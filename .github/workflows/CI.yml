@@ -20,13 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         group:
-          - RNODE
-          - FFJORD
-          - Planar
-          - CondRNODE
-          - CondFFJORD
-          - CondPlanar
+          - Smoke
           - Regression
+          - Quality
+          - Instability
         version:
           - release
           - lts
