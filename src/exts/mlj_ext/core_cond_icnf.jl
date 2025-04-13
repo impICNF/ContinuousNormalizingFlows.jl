@@ -19,7 +19,7 @@ function CondICNFModel(
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
-    sol_kwargs::NamedTuple = (; progress = true),
+    sol_kwargs::NamedTuple = (;),
 )
     return CondICNFModel(
         m,
