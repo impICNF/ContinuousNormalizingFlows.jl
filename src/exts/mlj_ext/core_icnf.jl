@@ -19,7 +19,7 @@ function ICNFModel(
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     use_batch::Bool = true,
     batch_size::Int = 32,
-    sol_kwargs::NamedTuple = (;),
+    sol_kwargs::NamedTuple = (; progress = true),
 )
     return ICNFModel(
         m,
