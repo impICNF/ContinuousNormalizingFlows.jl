@@ -1,3 +1,12 @@
+---
+name: Report a new issue
+about: Report a new issue
+title: ''
+labels: ''
+assignees: 'prbzrg'
+
+---
+
 **Describe the issue**
 
 A clear and concise description of what the issue is.

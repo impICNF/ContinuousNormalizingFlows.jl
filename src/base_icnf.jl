@@ -39,7 +39,11 @@ function construct(
     else
         zero(data_type)
     end,
-    λ₃::AbstractFloat = zero(data_type),
+    λ₃::AbstractFloat = if naugmented >= nvars
+        convert(data_type, 1.0e-2)
+    else
+        zero(data_type)
+    end,
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
 
