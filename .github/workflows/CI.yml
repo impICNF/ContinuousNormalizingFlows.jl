@@ -20,7 +20,10 @@ jobs:
       fail-fast: false
       matrix:
         group:
-          - Smoke
+          - SmokeXOut
+          - SmokeXIn
+          - SmokeXYOut
+          - SmokeXYIn
           - Regression
           - Quality
           - Instability

@@ -4,9 +4,18 @@ Test.@testset "Smoke Tests" begin
         ContinuousNormalizingFlows.TrainMode(),
         ContinuousNormalizingFlows.TestMode(),
     ]
+    conds, inplaces = if GROUP == "SmokeXOut"
+        Bool[false], Bool[false]
+    elseif GROUP == "SmokeXIn"
+        Bool[false], Bool[true]
+    elseif GROUP == "SmokeXYOut"
+        Bool[true], Bool[false]
+    elseif GROUP == "SmokeXYIn"
+        Bool[true], Bool[true]
+    else
+        Bool[false, true], Bool[false, true]
+    end
     planars = Bool[false, true]
-    conds = Bool[false, true]
-    inplaces = Bool[false, true]
     nvars_ = Int[2]
     ndata_ = Int[4]
     n_epochs_ = Int[2]

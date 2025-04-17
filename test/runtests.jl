@@ -27,7 +27,7 @@ if (GROUP == "All")
 end
 
 Test.@testset "Overall" begin
-    if GROUP == "All" || GROUP == "Smoke"
+    if GROUP == "All" || GROUP in ["SmokeXOut", "SmokeXIn", "SmokeXYOut", "SmokeXYIn"]
         include("smoke_tests.jl")
     end
 
