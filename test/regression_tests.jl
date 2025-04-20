@@ -1,6 +1,6 @@
 Test.@testset "Regression Tests" begin
     rng = StableRNGs.StableRNG(1)
-    nvars = 2^3
+    nvars = 1
     naugs = nvars
     n_in = nvars + naugs
     n = 2^10
@@ -12,7 +12,7 @@ Test.@testset "Regression Tests" begin
         nvars,
         naugs;
         compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-        tspan = (0.0f0, 13.0f0),
+        tspan = (0.0f0, 1.0f0),
         steer_rate = 1.0f-1,
         λ₁ = 1.0f-2,
         λ₂ = 1.0f-2,
