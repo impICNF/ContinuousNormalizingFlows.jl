@@ -24,7 +24,6 @@ function construct(
         reltol = sqrt(eps(one(data_type))),
         abstol = eps(one(data_type)),
         maxiters = typemax(Int),
-        alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
     ),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}

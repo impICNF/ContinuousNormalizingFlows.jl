@@ -43,7 +43,7 @@ n_in = nvars + naugs # with augmentation
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Lux #, ADTypes, OrdinaryDiffEqDefault, Zygote, CUDA, MLDataDevices
+using ContinuousNormalizingFlows, Lux #, ADTypes, Zygote, CUDA, MLDataDevices
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
     RNODE,
@@ -64,7 +64,6 @@ icnf = construct(
     #     reltol = sqrt(eps(one(Float32))),
     #     abstol = eps(one(Float32)),
     #     maxiters = typemax(Int32),
-    #     alg = DefaultODEAlgorithm(),
     # ), # pass to the solver
 )
 
