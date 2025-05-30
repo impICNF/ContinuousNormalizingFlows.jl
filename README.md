@@ -63,7 +63,7 @@ icnf = construct(
         save_everystep = false,
         reltol = sqrt(eps(one(Float32))),
         abstol = eps(one(Float32)),
-        maxiters = typemax(Int32),
+        maxiters = typemax(Int),
         alg = VCABM(; thread = True()),
         sensealg = GaussAdjoint(;
             autodiff = true,

@@ -3,7 +3,7 @@ function MLJModelInterface.fitted_params(::MLJICNF, fitresult)
     return (learned_parameters = ps, states = st)
 end
 
-@inline function make_opt_loss(
+function make_opt_loss(
     icnf::AbstractICNF{T, CM, INPLACE, COND},
     mode::Mode,
     st::NamedTuple,

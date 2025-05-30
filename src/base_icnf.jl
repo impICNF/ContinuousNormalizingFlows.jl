@@ -79,21 +79,21 @@ function Base.show(io::IO, icnf::AbstractICNF)
     return print(io, typeof(icnf))
 end
 
-@inline function n_augment(::AbstractICNF, ::Mode)
+function n_augment(::AbstractICNF, ::Mode)
     return 0
 end
 
-@inline function n_augment_input(
+function n_augment_input(
     icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, COND, true},
 ) where {INPLACE, COND}
     return icnf.naugmented
 end
 
-@inline function n_augment_input(::AbstractICNF)
+function n_augment_input(::AbstractICNF)
     return 0
 end
 
-@inline function steer_tspan(
+function steer_tspan(
     icnf::AbstractICNF{T, <:ComputeMode, INPLACE, COND, AUGMENTED, true},
     ::TrainMode,
 ) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED}
@@ -104,11 +104,11 @@ end
     return (t₀, t₁_new)
 end
 
-@inline function steer_tspan(icnf::AbstractICNF, ::Mode)
+function steer_tspan(icnf::AbstractICNF, ::Mode)
     return icnf.tspan
 end
 
-@inline function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
+function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
     return icnf.device(Array{T}(undef, dims...))
 end
 
@@ -190,11 +190,11 @@ function generate_sol(
     return fsol[begin:(end - n_aug_input - n_aug - 1), :]
 end
 
-@inline function get_fsol(sol::SciMLBase.AbstractODESolution)
+function get_fsol(sol::SciMLBase.AbstractODESolution)
     return last(sol.u)
 end
 
-@inline function get_fsol(sol::AbstractArray{T, N}) where {T, N}
+function get_fsol(sol::AbstractArray{T, N}) where {T, N}
     return selectdim(sol, N, lastindex(sol, N))
 end
 
@@ -384,7 +384,7 @@ function generate_prob(
     )
 end
 
-@inline function inference(
+function inference(
     icnf::AbstractICNF,
     mode::Mode,
     xs::AbstractVecOrMat{<:Real},
@@ -394,7 +394,7 @@ end
     return inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ps, st))
 end
 
-@inline function inference(
+function inference(
     icnf::AbstractICNF,
     mode::Mode,
     xs::AbstractVecOrMat{<:Real},
@@ -405,7 +405,7 @@ end
     return inference_sol(icnf, mode, inference_prob(icnf, mode, xs, ys, ps, st))
 end
 
-@inline function generate(
+function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ps::Any,
@@ -414,7 +414,7 @@ end
     return generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st))
 end
 
-@inline function generate(
+function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ys::AbstractVector{<:Real},
@@ -424,7 +424,7 @@ end
     return generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st))
 end
 
-@inline function generate(
+function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
@@ -434,7 +434,7 @@ end
     return generate_sol(icnf, mode, generate_prob(icnf, mode, ps, st, n))
 end
 
-@inline function generate(
+function generate(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
@@ -445,7 +445,7 @@ end
     return generate_sol(icnf, mode, generate_prob(icnf, mode, ys, ps, st, n))
 end
 
-@inline function loss(
+function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -455,7 +455,7 @@ end
     return -first(inference(icnf, mode, xs, ps, st))
 end
 
-@inline function loss(
+function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
@@ -466,7 +466,7 @@ end
     return -first(inference(icnf, mode, xs, ys, ps, st))
 end
 
-@inline function loss(
+function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -476,7 +476,7 @@ end
     return -Statistics.mean(first(inference(icnf, mode, xs, ps, st)))
 end
 
-@inline function loss(
+function loss(
     icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
@@ -487,7 +487,7 @@ end
     return -Statistics.mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 
-@inline function make_ode_func(
+function make_ode_func(
     icnf::AbstractICNF{T, CM, INPLACE},
     mode::Mode,
     nn::LuxCore.AbstractLuxLayer,
@@ -505,7 +505,7 @@ end
     return ifelse(INPLACE, ode_func_ip, ode_func_op)
 end
 
-@inline function (icnf::AbstractICNF{T, CM, INPLACE, false})(
+function (icnf::AbstractICNF{T, CM, INPLACE, false})(
     xs::AbstractVecOrMat,
     ps::Any,
     st::NamedTuple,
@@ -513,7 +513,7 @@ end
     return first(inference(icnf, TrainMode(), xs, ps, st)), st
 end
 
-@inline function (icnf::AbstractICNF{T, CM, INPLACE, true})(
+function (icnf::AbstractICNF{T, CM, INPLACE, true})(
     xs_ys::Tuple,
     ps::Any,
     st::NamedTuple,

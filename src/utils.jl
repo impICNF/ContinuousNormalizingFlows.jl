@@ -1,4 +1,4 @@
-@inline function jacobian_batched(
+function jacobian_batched(
     icnf::AbstractICNF{T, <:DIVecJacMatrixMode},
     f::Lux.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
@@ -16,7 +16,7 @@
     return y, eachslice(copy(res); dims = 3)
 end
 
-@inline function jacobian_batched(
+function jacobian_batched(
     icnf::AbstractICNF{T, <:DIJacVecMatrixMode},
     f::Lux.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
@@ -35,7 +35,7 @@ end
     return y, eachslice(copy(res); dims = 3)
 end
 
-@inline function jacobian_batched(
+function jacobian_batched(
     icnf::AbstractICNF{T, <:DIMatrixMode},
     f::Lux.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
@@ -44,7 +44,7 @@ end
     return y, split_jac(J, size(xs, 1))
 end
 
-@inline function split_jac(x::AbstractMatrix{<:Real}, sz::Integer)
+function split_jac(x::AbstractMatrix{<:Real}, sz::Integer)
     return (
         x[i:j, i:j] for (i, j) in zip(
             firstindex(x, 1):sz:lastindex(x, 1),
@@ -53,7 +53,7 @@ end
     )
 end
 
-@inline function jacobian_batched(
+function jacobian_batched(
     icnf::AbstractICNF{T, <:LuxMatrixMode},
     f::Lux.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},

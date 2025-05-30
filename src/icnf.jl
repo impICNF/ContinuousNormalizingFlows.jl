@@ -103,7 +103,7 @@ struct ICNF{
     λ₃::T
 end
 
-@inline function n_augment(::ICNF, ::TrainMode)
+function n_augment(::ICNF, ::TrainMode)
     return 2
 end
 
@@ -583,7 +583,7 @@ function augmented_f(
     return nothing
 end
 
-@inline function loss(
+function loss(
     icnf::ICNF{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
@@ -594,7 +594,7 @@ end
     return -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
 end
 
-@inline function loss(
+function loss(
     icnf::ICNF{<:AbstractFloat, <:VectorMode},
     mode::TrainMode,
     xs::AbstractVector{<:Real},
@@ -606,7 +606,7 @@ end
     return -logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ
 end
 
-@inline function loss(
+function loss(
     icnf::ICNF{<:AbstractFloat, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},
@@ -617,7 +617,7 @@ end
     return Statistics.mean(-logp̂x + icnf.λ₁ * Ė + icnf.λ₂ * ṅ + icnf.λ₃ * Ȧ)
 end
 
-@inline function loss(
+function loss(
     icnf::ICNF{<:AbstractFloat, <:MatrixMode},
     mode::TrainMode,
     xs::AbstractMatrix{<:Real},

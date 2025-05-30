@@ -65,32 +65,17 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         model.adtype,
     )
     optprob = SciMLBase.OptimizationProblem(optfunc, ps, data)
-    tst_overall = @timed for opt in model.optimizers
+    res_stats = []
+    for opt in model.optimizers
         optprob_re = SciMLBase.remake(optprob; u0 = ps)
-        tst_epochs = @timed res = SciMLBase.solve(
-            optprob_re,
-            opt;
-            epochs = model.n_epochs,
-            model.sol_kwargs...,
-        )
+        res = SciMLBase.solve(optprob_re, opt; epochs = model.n_epochs, model.sol_kwargs...)
         ps .= res.u
-        @info(
-            "Fitting (all epochs) - $(typeof(opt).name.name)",
-            "elapsed time (seconds)" = tst_epochs.time,
-            "garbage collection time (seconds)" = tst_epochs.gctime,
-            "allocated (bytes)" = tst_epochs.bytes,
-        )
+        push!(res_stats, res.stats)
     end
-    @info(
-        "Fitting - Overall",
-        "elapsed time (seconds)" = tst_overall.time,
-        "garbage collection time (seconds)" = tst_overall.gctime,
-        "allocated (bytes)" = tst_overall.bytes,
-    )
 
     fitresult = (ps, st)
     cache = nothing
-    report = (stats = tst_overall,)
+    report = (stats = res_stats,)
     return (fitresult, cache, report)
 end
 
@@ -102,8 +87,8 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     ynew = model.m.device(ynew)
     (ps, st) = fitresult
 
-    tst = @timed if model.m.compute_mode isa VectorMode
-        logp̂x = broadcast(
+    logp̂x = if model.m.compute_mode isa VectorMode
+        broadcast(
             function (x, y)
                 return first(inference(model.m, TestMode(), x, y, ps, st))
             end,
@@ -111,16 +96,10 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
             eachcol(ynew),
         )
     elseif model.m.compute_mode isa MatrixMode
-        logp̂x = first(inference(model.m, TestMode(), xnew, ynew, ps, st))
+        first(inference(model.m, TestMode(), xnew, ynew, ps, st))
     else
         error("Not Implemented")
     end
-    @info(
-        "Transforming",
-        "elapsed time (seconds)" = tst.time,
-        "garbage collection time (seconds)" = tst.gctime,
-        "allocated (bytes)" = tst.bytes,
-    )
 
     return DataFrames.DataFrame(; px = exp.(logp̂x))
 end
