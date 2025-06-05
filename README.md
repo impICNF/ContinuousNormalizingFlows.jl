@@ -46,7 +46,8 @@ n_in = nvars + naugs # with augmentation
 n = 1024
 
 # Model
-using ContinuousNormalizingFlows, Lux, OrdinaryDiffEqAdamsBashforthMoulton, SciMLSensitivity, Static, ADTypes, Zygote #, CUDA, MLDataDevices
+using ContinuousNormalizingFlows,
+    Lux, OrdinaryDiffEqAdamsBashforthMoulton, SciMLSensitivity, Static, ADTypes, Zygote #, CUDA, MLDataDevices
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
     RNODE,
