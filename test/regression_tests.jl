@@ -18,16 +18,31 @@ Test.@testset "Regression Tests" begin
         λ₂ = 1.0f-2,
         λ₃ = 1.0f-2,
         rng,
+        sol_kwargs = (;
+            progress = true,
+            save_everystep = false,
+            reltol = sqrt(eps(one(Float32))),
+            abstol = eps(one(Float32)),
+            maxiters = typemax(Int),
+            alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+            sensealg = SciMLSensitivity.GaussAdjoint(;
+                autodiff = true,
+                autojacvec = SciMLSensitivity.ZygoteVJP(),
+                checkpointing = true,
+            ),
+        ),
     )
-    ps, st = Lux.setup(icnf.rng, icnf)
-    ps = ComponentArrays.ComponentArray(ps)
 
     data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
     r = rand(icnf.rng, data_dist, nvars, n)
     r = convert.(Float32, r)
 
     df = DataFrames.DataFrame(transpose(r), :auto)
-    model = ContinuousNormalizingFlows.ICNFModel(icnf; use_batch = false)
+    model = ContinuousNormalizingFlows.ICNFModel(
+        icnf;
+        batch_size = 0,
+        sol_kwargs = (; progress = true,),
+    )
 
     mach = MLJBase.machine(model, df)
     MLJBase.fit!(mach)

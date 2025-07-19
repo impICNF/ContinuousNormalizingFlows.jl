@@ -6,7 +6,6 @@ mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     n_epochs::Int
     adtype::ADTypes.AbstractADType
 
-    use_batch::Bool
     batch_size::Int
     sol_kwargs::NamedTuple
 end
@@ -17,20 +16,10 @@ function CondICNFModel(
     optimizers::Tuple = (Optimisers.Lion(),),
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    use_batch::Bool = true,
     batch_size::Int = 32,
     sol_kwargs::NamedTuple = (;),
 )
-    return CondICNFModel(
-        m,
-        loss,
-        optimizers,
-        n_epochs,
-        adtype,
-        use_batch,
-        batch_size,
-        sol_kwargs,
-    )
+    return CondICNFModel(m, loss, optimizers, n_epochs, adtype, batch_size, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -48,10 +37,11 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     elseif model.m.compute_mode isa MatrixMode
         MLUtils.DataLoader(
             (x, y);
-            batchsize = if model.use_batch
-                model.batch_size
-            else
+            batchsize = if iszero(model.batch_size)
                 max(size(x, 2), size(y, 2))
+
+            else
+                model.batch_size
             end,
             shuffle = true,
             partial = true,
