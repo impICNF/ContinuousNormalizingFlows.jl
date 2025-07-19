@@ -41,7 +41,7 @@ Test.@testset "Regression Tests" begin
     model = ContinuousNormalizingFlows.ICNFModel(
         icnf;
         batch_size = 0,
-        sol_kwargs = (; progress = true,),
+        sol_kwargs = (; progress = true),
     )
 
     mach = MLJBase.machine(model, df)
