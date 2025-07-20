@@ -61,7 +61,7 @@ model = ICNFModel(
     n_epochs = 300,
     adtype = AutoZygote(),
     batch_size = 512,
-    sol_kwargs = (; progress = true,), # pass to the solver
+    sol_kwargs = (; progress = true), # pass to the solver
 )
 mach = machine(model, df)
 fit!(mach)
