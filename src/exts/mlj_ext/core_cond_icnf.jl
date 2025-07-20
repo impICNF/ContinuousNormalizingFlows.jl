@@ -39,7 +39,6 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
             (x, y);
             batchsize = if iszero(model.batch_size)
                 max(size(x, 2), size(y, 2))
-
             else
                 model.batch_size
             end,

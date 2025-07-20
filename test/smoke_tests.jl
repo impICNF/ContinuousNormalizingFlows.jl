@@ -207,7 +207,13 @@ Test.@testset "Smoke Tests" begin
 
             Test.@testset "$n_epochs for fit" for n_epochs in n_epochs_
                 if cond
-                    model = ContinuousNormalizingFlows.CondICNFModel(icnf; n_epochs, adtype)
+                    model = ContinuousNormalizingFlows.CondICNFModel(
+                        icnf;
+                        n_epochs,
+                        adtype,
+                        batch_size = 0,
+                        sol_kwargs = (; progress = true),
+                    )
                     mach = MLJBase.machine(model, (df, df2))
 
                     Test.@test !isnothing(MLJBase.fit!(mach))
@@ -218,7 +224,13 @@ Test.@testset "Smoke Tests" begin
                         ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
                     )
                 else
-                    model = ContinuousNormalizingFlows.ICNFModel(icnf; n_epochs, adtype)
+                    model = ContinuousNormalizingFlows.ICNFModel(
+                        icnf;
+                        n_epochs,
+                        adtype,
+                        batch_size = 0,
+                        sol_kwargs = (; progress = true),
+                    )
                     mach = MLJBase.machine(model, df)
 
                     Test.@test !isnothing(MLJBase.fit!(mach))
