@@ -7,6 +7,7 @@ import ADTypes,
     PkgBenchmark,
     SciMLSensitivity,
     StableRNGs,
+    Static,
     Zygote,
     ContinuousNormalizingFlows
 
@@ -49,7 +50,10 @@ icnf = ContinuousNormalizingFlows.construct(
         abstol = eps(one(Float32)),
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
-        sensealg = SciMLSensitivity.GaussAdjoint(; autodiff = true, checkpointing = true),
+        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
+            autodiff = true,
+            checkpointing = true,
+        ),
     ),
 )
 ps, st = Lux.setup(icnf.rng, icnf)
@@ -118,7 +122,10 @@ icnf2 = ContinuousNormalizingFlows.construct(
         abstol = eps(one(Float32)),
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
-        sensealg = SciMLSensitivity.GaussAdjoint(; autodiff = true, checkpointing = true),
+        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
+            autodiff = true,
+            checkpointing = true,
+        ),
     ),
 )
 

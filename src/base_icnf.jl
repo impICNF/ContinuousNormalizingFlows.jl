@@ -212,8 +212,10 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -235,8 +237,10 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -257,8 +261,10 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -280,8 +286,10 @@ function inference_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
         ps,
@@ -303,8 +311,10 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -327,8 +337,10 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -351,8 +363,10 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = icnf.nn
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -376,8 +390,10 @@ function generate_prob(
     ϵ = base_AT(icnf, icnf.nvars + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = CondLayer(icnf.nn, ys)
-    return SciMLBase.ODEProblem{INPLACE, SciMLBase.FullSpecialize}(
-        make_ode_func(icnf, mode, nn, st, ϵ),
+    return SciMLBase.ODEProblem{INPLACE}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
+            make_ode_func(icnf, mode, nn, st, ϵ),
+        ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
         ps,
@@ -494,15 +510,15 @@ function make_ode_func(
     st::NamedTuple,
     ϵ::AbstractVecOrMat{T},
 ) where {T <: AbstractFloat, CM, INPLACE}
-    function ode_func_op(u::Any, p::Any, t::Any)
+    function ode_func(u::Any, p::Any, t::Any)
         return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
     end
 
-    function ode_func_ip(du::Any, u::Any, p::Any, t::Any)
+    function ode_func(du::Any, u::Any, p::Any, t::Any)
         return augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
     end
 
-    return ifelse(INPLACE, ode_func_ip, ode_func_op)
+    return ode_func
 end
 
 function (icnf::AbstractICNF{T, CM, INPLACE, false})(

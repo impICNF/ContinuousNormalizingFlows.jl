@@ -42,7 +42,7 @@ icnf = construct(
         abstol = eps(one(Float32)),
         maxiters = typemax(Int),
         alg = VCABM(; thread = True()),
-        sensealg = GaussAdjoint(; autodiff = true, checkpointing = true),
+        sensealg = InterpolatingAdjoint(; autodiff = true, checkpointing = true),
     ), # pass to the solver
 )
 
