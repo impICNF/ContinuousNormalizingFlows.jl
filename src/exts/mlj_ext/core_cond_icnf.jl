@@ -39,7 +39,6 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
             (x, y);
             batchsize = if iszero(model.batch_size)
                 max(size(x, 2), size(y, 2))
-
             else
                 model.batch_size
             end,
@@ -79,7 +78,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
 
     logp̂x = if model.m.compute_mode isa VectorMode
         broadcast(
-            function (x, y)
+            function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
                 return first(inference(model.m, TestMode(), x, y, ps, st))
             end,
             eachcol(xnew),

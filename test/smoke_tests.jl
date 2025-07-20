@@ -121,6 +121,18 @@ Test.@testset "Smoke Tests" begin
             λ₁ = convert(data_type, 1.0e-2),
             λ₂ = convert(data_type, 1.0e-2),
             λ₃ = convert(data_type, 1.0e-2),
+            sol_kwargs = (;
+                progress = true,
+                save_everystep = false,
+                reltol = sqrt(eps(one(Float32))),
+                abstol = eps(one(Float32)),
+                maxiters = typemax(Int),
+                alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+                sensealg = SciMLSensitivity.InterpolatingAdjoint(;
+                    autodiff = true,
+                    checkpointing = true,
+                ),
+            ),
         )
         ps, st = Lux.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -147,10 +159,10 @@ Test.@testset "Smoke Tests" begin
             )
             Test.@test !isnothing(icnf((r, r2), ps, st))
 
-            diff_loss = function (x)
+            diff_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
             end
-            diff2_loss = function (x)
+            diff2_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
             end
         else
@@ -170,10 +182,10 @@ Test.@testset "Smoke Tests" begin
             Test.@test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
             Test.@test !isnothing(icnf(r, ps, st))
 
-            diff_loss = function (x)
+            diff_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
             end
-            diff2_loss = function (x)
+            diff2_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
             end
         end
@@ -195,7 +207,13 @@ Test.@testset "Smoke Tests" begin
 
             Test.@testset "$n_epochs for fit" for n_epochs in n_epochs_
                 if cond
-                    model = ContinuousNormalizingFlows.CondICNFModel(icnf; n_epochs, adtype)
+                    model = ContinuousNormalizingFlows.CondICNFModel(
+                        icnf;
+                        n_epochs,
+                        adtype,
+                        batch_size = 0,
+                        sol_kwargs = (; progress = true),
+                    )
                     mach = MLJBase.machine(model, (df, df2))
 
                     Test.@test !isnothing(MLJBase.fit!(mach))
@@ -206,7 +224,13 @@ Test.@testset "Smoke Tests" begin
                         ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
                     )
                 else
-                    model = ContinuousNormalizingFlows.ICNFModel(icnf; n_epochs, adtype)
+                    model = ContinuousNormalizingFlows.ICNFModel(
+                        icnf;
+                        n_epochs,
+                        adtype,
+                        batch_size = 0,
+                        sol_kwargs = (; progress = true),
+                    )
                     mach = MLJBase.machine(model, df)
 
                     Test.@test !isnothing(MLJBase.fit!(mach))

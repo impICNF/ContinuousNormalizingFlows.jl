@@ -25,9 +25,8 @@ Test.@testset "Regression Tests" begin
             abstol = eps(one(Float32)),
             maxiters = typemax(Int),
             alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
-            sensealg = SciMLSensitivity.GaussAdjoint(;
+            sensealg = SciMLSensitivity.InterpolatingAdjoint(;
                 autodiff = true,
-                autojacvec = SciMLSensitivity.ZygoteVJP(),
                 checkpointing = true,
             ),
         ),
