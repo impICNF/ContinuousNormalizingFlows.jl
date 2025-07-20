@@ -9,12 +9,12 @@ function make_opt_loss(
     st::NamedTuple,
     loss_::Function,
 ) where {T, CM, INPLACE, COND}
-    function opt_loss_org(u, data)
+    function opt_loss_org(u::Any, data::Any)
         xs, = data
         return loss_(icnf, mode, xs, u, st)
     end
 
-    function opt_loss_cond(u, data)
+    function opt_loss_cond(u::Any, data::Any)
         xs, ys = data
         return loss_(icnf, mode, xs, ys, u, st)
     end

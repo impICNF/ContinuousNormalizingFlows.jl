@@ -159,10 +159,10 @@ Test.@testset "Smoke Tests" begin
             )
             Test.@test !isnothing(icnf((r, r2), ps, st))
 
-            diff_loss = function (x)
+            diff_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, r, r2, x, st)
             end
-            diff2_loss = function (x)
+            diff2_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, x, r2, ps, st)
             end
         else
@@ -182,10 +182,10 @@ Test.@testset "Smoke Tests" begin
             Test.@test !isnothing(ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st))
             Test.@test !isnothing(icnf(r, ps, st))
 
-            diff_loss = function (x)
+            diff_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, r, x, st)
             end
-            diff2_loss = function (x)
+            diff2_loss = function (x::Any)
                 return ContinuousNormalizingFlows.loss(icnf, omode, x, ps, st)
             end
         end

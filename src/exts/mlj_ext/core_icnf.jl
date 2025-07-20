@@ -71,7 +71,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     (ps, st) = fitresult
 
     logp̂x = if model.m.compute_mode isa VectorMode
-        broadcast(function (x)
+        broadcast(function (x::AbstractVector{<:Real})
                 return first(inference(model.m, TestMode(), x, ps, st))
             end, eachcol(xnew))
     elseif model.m.compute_mode isa MatrixMode

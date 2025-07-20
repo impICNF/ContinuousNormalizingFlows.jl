@@ -78,7 +78,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
 
     logp̂x = if model.m.compute_mode isa VectorMode
         broadcast(
-            function (x, y)
+            function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
                 return first(inference(model.m, TestMode(), x, y, ps, st))
             end,
             eachcol(xnew),

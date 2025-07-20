@@ -494,11 +494,11 @@ function make_ode_func(
     st::NamedTuple,
     ϵ::AbstractVecOrMat{T},
 ) where {T <: AbstractFloat, CM, INPLACE}
-    function ode_func_op(u, p, t)
+    function ode_func_op(u::Any, p::Any, t::Any)
         return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
     end
 
-    function ode_func_ip(du, u, p, t)
+    function ode_func_ip(du::Any, u::Any, p::Any, t::Any)
         return augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
     end
 

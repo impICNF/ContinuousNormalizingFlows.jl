@@ -56,7 +56,7 @@ ps, st = Lux.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)
 r = rand(icnf.rng, Float32, nvars, n)
 
-function diff_loss_tn(x)
+function diff_loss_tn(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf,
         ContinuousNormalizingFlows.TrainMode(),
@@ -65,7 +65,7 @@ function diff_loss_tn(x)
         st,
     )
 end
-function diff_loss_tt(x)
+function diff_loss_tt(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf,
         ContinuousNormalizingFlows.TestMode(),
@@ -122,7 +122,7 @@ icnf2 = ContinuousNormalizingFlows.construct(
     ),
 )
 
-function diff_loss_tn2(x)
+function diff_loss_tn2(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf2,
         ContinuousNormalizingFlows.TrainMode(),
@@ -131,7 +131,7 @@ function diff_loss_tn2(x)
         st,
     )
 end
-function diff_loss_tt2(x)
+function diff_loss_tt2(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf2,
         ContinuousNormalizingFlows.TestMode(),
