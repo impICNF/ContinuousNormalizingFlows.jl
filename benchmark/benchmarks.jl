@@ -3,7 +3,9 @@ import ADTypes,
     ComponentArrays,
     DifferentiationInterface,
     Lux,
+    OrdinaryDiffEqAdamsBashforthMoulton,
     PkgBenchmark,
+    SciMLSensitivity,
     StableRNGs,
     Zygote,
     ContinuousNormalizingFlows
@@ -40,6 +42,15 @@ icnf = ContinuousNormalizingFlows.construct(
     λ₂ = 1.0f-2,
     λ₃ = 1.0f-2,
     rng,
+    sol_kwargs = (;
+        progress = true,
+        save_everystep = false,
+        reltol = sqrt(eps(one(Float32))),
+        abstol = eps(one(Float32)),
+        maxiters = typemax(Int),
+        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+        sensealg = SciMLSensitivity.GaussAdjoint(; autodiff = true, checkpointing = true),
+    ),
 )
 ps, st = Lux.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)
@@ -100,6 +111,15 @@ icnf2 = ContinuousNormalizingFlows.construct(
     λ₂ = 1.0f-2,
     λ₃ = 1.0f-2,
     rng,
+    sol_kwargs = (;
+        progress = true,
+        save_everystep = false,
+        reltol = sqrt(eps(one(Float32))),
+        abstol = eps(one(Float32)),
+        maxiters = typemax(Int),
+        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+        sensealg = SciMLSensitivity.GaussAdjoint(; autodiff = true, checkpointing = true),
+    ),
 )
 
 function diff_loss_tn2(x)

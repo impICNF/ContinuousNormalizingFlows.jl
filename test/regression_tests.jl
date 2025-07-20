@@ -27,7 +27,6 @@ Test.@testset "Regression Tests" begin
             alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
             sensealg = SciMLSensitivity.GaussAdjoint(;
                 autodiff = true,
-                autojacvec = SciMLSensitivity.ZygoteVJP(),
                 checkpointing = true,
             ),
         ),
