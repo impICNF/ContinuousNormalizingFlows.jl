@@ -5,6 +5,7 @@ import ADTypes,
     DifferentiationInterface,
     Distances,
     Distributions,
+    ExplicitImports,
     ForwardDiff,
     JET,
     Logging,
@@ -34,15 +35,19 @@ Test.@testset "Overall" begin
         include("smoke_tests.jl")
     end
 
-    if GROUP == "All" || GROUP == "Quality"
-        include("quality_tests.jl")
-    end
-
-    if GROUP == "All" || GROUP == "Instability"
-        include("instability_tests.jl")
-    end
-
     if GROUP == "All" || GROUP == "Regression"
         include("regression_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "CheckByAqua"
+        include("checkby_Aqua_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "CheckByJET"
+        include("checkby_JET_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "CheckByExplicitImports"
+        include("checkby_ExplicitImports_tests.jl")
     end
 end
