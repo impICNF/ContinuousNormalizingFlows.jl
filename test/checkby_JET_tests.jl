@@ -31,6 +31,7 @@ Test.@testset "CheckByJET" begin
             alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
             sensealg = SciMLSensitivity.InterpolatingAdjoint(;
                 autodiff = true,
+                autojacvec = SciMLSensitivity.ZygoteVJP(),
                 checkpointing = true,
             ),
         ),
