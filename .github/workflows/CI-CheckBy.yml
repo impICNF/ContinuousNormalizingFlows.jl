@@ -1,4 +1,4 @@
-name: CI
+name: CI-CheckBy
 on:
   schedule:
     - cron: '0 0 * * 0'
