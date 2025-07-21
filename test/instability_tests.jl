@@ -31,6 +31,7 @@ Test.@testset "Instability" begin
             alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
             sensealg = SciMLSensitivity.InterpolatingAdjoint(;
                 autodiff = true,
+                autojacvec = ZygoteVJP(),
                 checkpointing = true,
             ),
         ),

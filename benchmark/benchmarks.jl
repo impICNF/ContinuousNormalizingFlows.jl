@@ -52,6 +52,7 @@ icnf = ContinuousNormalizingFlows.construct(
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             autodiff = true,
+            autojacvec = ZygoteVJP(),
             checkpointing = true,
         ),
     ),
@@ -124,6 +125,7 @@ icnf2 = ContinuousNormalizingFlows.construct(
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             autodiff = true,
+            autojacvec = ZygoteVJP(),
             checkpointing = true,
         ),
     ),
