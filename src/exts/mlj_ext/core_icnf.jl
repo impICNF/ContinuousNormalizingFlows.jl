@@ -51,7 +51,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
         model.adtype,
     )
     optprob = SciMLBase.OptimizationProblem(optfunc, ps, data)
-    res_stats = []
+    res_stats = SciMLBase.OptimizationStats[]
     for opt in model.optimizers
         optprob_re = SciMLBase.remake(optprob; u0 = ps)
         res = SciMLBase.solve(optprob_re, opt; epochs = model.n_epochs, model.sol_kwargs...)
