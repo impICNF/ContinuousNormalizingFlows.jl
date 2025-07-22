@@ -66,16 +66,16 @@ Test.@testset "Smoke Tests" begin
         # ),
     ]
 
-    Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
-                                                                                                                                                                     devices,
+    Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for omode in
+                                                                                                                                                                     omodes,
+        planar in planars,
+        device in devices,
         data_type in data_types,
         compute_mode in compute_modes,
         ndata in ndata_,
         nvars in nvars_,
         inplace in inplaces,
         cond in conds,
-        planar in planars,
-        omode in omodes,
         mt in mts
 
         data_dist =
