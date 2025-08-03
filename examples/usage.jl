@@ -57,7 +57,7 @@ using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
-    optimizers = (Lion(),),
+    optimizers = (OptimiserChain(SignDecay(), WeightDecay(), Adam()),),
     n_epochs = 300,
     adtype = AutoZygote(),
     batch_size = 512,
