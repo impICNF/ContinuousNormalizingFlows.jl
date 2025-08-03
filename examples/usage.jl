@@ -53,11 +53,11 @@ r = rand(data_dist, nvars, n)
 r = convert.(Float32, r)
 
 # Fit It
-using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
+using DataFrames, MLJBase, Zygote, ADTypes, Optimization
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
-    optimizers = (Lion(),),
+    optimizers = (Sophia(),),
     n_epochs = 300,
     adtype = AutoZygote(),
     batch_size = 512,

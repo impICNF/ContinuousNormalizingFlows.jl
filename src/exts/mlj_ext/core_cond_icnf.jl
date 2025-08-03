@@ -13,7 +13,7 @@ end
 function CondICNFModel(
     m::AbstractICNF,
     loss::Function = loss;
-    optimizers::Tuple = (Optimisers.Lion(),),
+    optimizers::Tuple = (Optimization.Sophia(),),
     n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     batch_size::Int = 32,
