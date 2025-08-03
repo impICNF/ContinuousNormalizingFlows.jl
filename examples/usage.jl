@@ -14,13 +14,7 @@ n = 1024
 
 # Model
 using ContinuousNormalizingFlows,
-    Lux,
-    OrdinaryDiffEqAdamsBashforthMoulton,
-    SciMLSensitivity,
-    Static,
-    ADTypes,
-    Zygote,
-    MLDataDevices
+    Lux, OrdinaryDiffEqTsit5, SciMLSensitivity, Static, ADTypes, Zygote, MLDataDevices
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
     RNODE,
@@ -36,12 +30,11 @@ icnf = construct(
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
     sol_kwargs = (;
-        progress = true,
         save_everystep = false,
         reltol = sqrt(eps(one(Float32))),
         abstol = eps(one(Float32)),
         maxiters = typemax(Int),
-        alg = VCABM(; thread = True()),
+        alg = Tsit5(; thread = True()),
         sensealg = InterpolatingAdjoint(; autodiff = true, checkpointing = true),
     ), # pass to the solver
 )
@@ -57,7 +50,7 @@ using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
-    optimizers = (Lion(),),
+    optimizers = (Adam(),),
     n_epochs = 300,
     adtype = AutoZygote(),
     batch_size = 512,

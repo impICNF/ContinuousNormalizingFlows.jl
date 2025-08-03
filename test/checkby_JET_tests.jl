@@ -23,12 +23,11 @@ Test.@testset "CheckByJET" begin
         λ₂ = 1.0f-2,
         λ₃ = 1.0f-2,
         sol_kwargs = (;
-            progress = true,
             save_everystep = false,
             reltol = sqrt(eps(one(Float32))),
             abstol = eps(one(Float32)),
             maxiters = typemax(Int),
-            alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+            alg = OrdinaryDiffEqTsit5.Tsit5(; thread = Static.True()),
             sensealg = SciMLSensitivity.InterpolatingAdjoint(;
                 autodiff = true,
                 checkpointing = true,

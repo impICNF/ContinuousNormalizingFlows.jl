@@ -122,12 +122,11 @@ Test.@testset "Smoke Tests" begin
             λ₂ = convert(data_type, 1.0e-2),
             λ₃ = convert(data_type, 1.0e-2),
             sol_kwargs = (;
-                progress = true,
                 save_everystep = false,
                 reltol = sqrt(eps(one(Float32))),
                 abstol = eps(one(Float32)),
                 maxiters = typemax(Int),
-                alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+                alg = OrdinaryDiffEqTsit5.Tsit5(; thread = Static.True()),
                 sensealg = SciMLSensitivity.InterpolatingAdjoint(;
                     autodiff = true,
                     checkpointing = true,
