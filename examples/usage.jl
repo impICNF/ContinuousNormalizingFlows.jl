@@ -14,7 +14,7 @@ n = 1024
 
 # Model
 using ContinuousNormalizingFlows,
-    Lux, OrdinaryDiffEqTsit5, SciMLSensitivity, Static, ADTypes, Zygote, MLDataDevices
+    Lux, OrdinaryDiffEqDefault, SciMLSensitivity, ADTypes, Zygote, MLDataDevices
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
     RNODE,
@@ -34,8 +34,8 @@ icnf = construct(
         reltol = sqrt(eps(one(Float32))),
         abstol = eps(one(Float32)),
         maxiters = typemax(Int),
-        alg = Tsit5(; thread = True()),
-        sensealg = InterpolatingAdjoint(; autodiff = true, checkpointing = true),
+        alg = DefaultODEAlgorithm(),
+        sensealg = InterpolatingAdjoint(),
     ), # pass to the solver
 )
 

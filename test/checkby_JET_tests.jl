@@ -27,11 +27,8 @@ Test.@testset "CheckByJET" begin
             reltol = sqrt(eps(one(Float32))),
             abstol = eps(one(Float32)),
             maxiters = typemax(Int),
-            alg = OrdinaryDiffEqTsit5.Tsit5(; thread = Static.True()),
-            sensealg = SciMLSensitivity.InterpolatingAdjoint(;
-                autodiff = true,
-                checkpointing = true,
-            ),
+            alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
+            sensealg = SciMLSensitivity.InterpolatingAdjoint(),
         ),
     )
     ps, st = Lux.setup(icnf.rng, icnf)
