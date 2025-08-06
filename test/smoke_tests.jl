@@ -123,9 +123,6 @@ Test.@testset "Smoke Tests" begin
             λ₃ = convert(data_type, 1.0e-2),
             sol_kwargs = (;
                 save_everystep = false,
-                reltol = sqrt(eps(one(Float32))),
-                abstol = eps(one(Float32)),
-                maxiters = typemax(Int),
                 alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
                 sensealg = SciMLSensitivity.InterpolatingAdjoint(),
             ),

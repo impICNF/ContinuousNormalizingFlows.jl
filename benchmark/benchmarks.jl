@@ -44,9 +44,6 @@ icnf = ContinuousNormalizingFlows.construct(
     rng,
     sol_kwargs = (;
         save_everystep = false,
-        reltol = sqrt(eps(one(Float32))),
-        abstol = eps(one(Float32)),
-        maxiters = typemax(Int),
         alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(),
     ),
@@ -112,9 +109,6 @@ icnf2 = ContinuousNormalizingFlows.construct(
     rng,
     sol_kwargs = (;
         save_everystep = false,
-        reltol = sqrt(eps(one(Float32))),
-        abstol = eps(one(Float32)),
-        maxiters = typemax(Int),
         alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(),
     ),

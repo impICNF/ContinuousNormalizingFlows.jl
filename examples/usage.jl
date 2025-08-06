@@ -31,9 +31,6 @@ icnf = construct(
     λ₃ = 1.0f-2, # regulate augmented dimensions
     sol_kwargs = (;
         save_everystep = false,
-        reltol = sqrt(eps(one(Float32))),
-        abstol = eps(one(Float32)),
-        maxiters = typemax(Int),
         alg = DefaultODEAlgorithm(),
         sensealg = InterpolatingAdjoint(),
     ), # pass to the solver
