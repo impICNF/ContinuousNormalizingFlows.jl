@@ -49,11 +49,14 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         error("Not Implemented")
     end
     data = model.m.device(data)
-    optfunc = SciMLBase.OptimizationFunction(
-        make_opt_loss(model.m, TrainMode(), st, model.loss),
-        model.adtype,
+    optprob = SciMLBase.OptimizationProblem{true}(
+        SciMLBase.OptimizationFunction{true}(
+            make_opt_loss(model.m, TrainMode(), st, model.loss),
+            model.adtype,
+        ),
+        ps,
+        data,
     )
-    optprob = SciMLBase.OptimizationProblem(optfunc, ps, data)
     res_stats = SciMLBase.OptimizationStats[]
     for opt in model.optimizers
         optprob_re = SciMLBase.remake(optprob; u0 = ps)
