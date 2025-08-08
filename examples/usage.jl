@@ -16,8 +16,7 @@ r = convert.(Float32, r)
 # Parameters
 nvars = size(r, 1)
 naugs = nvars
-# n_in = nvars # without augmentation
-n_in = nvars + naugs # with augmentation
+n_in = nvars + naugs
 
 # Model
 using ContinuousNormalizingFlows,
