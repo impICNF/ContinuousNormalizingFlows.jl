@@ -1,9 +1,7 @@
 Test.@testset "Speed Tests" begin
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
@@ -16,6 +14,8 @@ Test.@testset "Speed Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
     ]
 
     Test.@testset "$compute_mode" for compute_mode in compute_modes
