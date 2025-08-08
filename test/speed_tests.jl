@@ -52,7 +52,7 @@ Test.@testset "Speed Tests" begin
         r = convert.(Float32, r)
 
         df = DataFrames.DataFrame(transpose(r), :auto)
-        model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0)
+        model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0, n_epochs = 5)
 
         mach = MLJBase.machine(model, df)
         MLJBase.fit!(mach)
