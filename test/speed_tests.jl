@@ -33,9 +33,7 @@ Test.@testset "Speed Tests" begin
             nn,
             nvars,
             naugs;
-            compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(
-                ADTypes.AutoZygote(),
-            ),
+            compute_mode,
             tspan = (0.0f0, 1.0f0),
             steer_rate = 1.0f-1,
             λ₁ = 1.0f-2,
@@ -54,11 +52,7 @@ Test.@testset "Speed Tests" begin
         r = convert.(Float32, r)
 
         df = DataFrames.DataFrame(transpose(r), :auto)
-        model = ContinuousNormalizingFlows.ICNFModel(
-            icnf;
-            batch_size = 0,
-            sol_kwargs = (; progress = true),
-        )
+        model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0)
 
         mach = MLJBase.machine(model, df)
         MLJBase.fit!(mach)
