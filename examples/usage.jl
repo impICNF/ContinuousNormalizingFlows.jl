@@ -65,21 +65,21 @@ ps, st = fitted_params(mach)
 
 # Store It
 using JLD2, UnPack
-jldsave("fitted.jld2"; ps, st) # save
-@unpack ps, st = load("fitted.jld2") # load
+jldsave("fitted.jld2"; ps, st) # save it
+@unpack ps, st = load("fitted.jld2") # load it
 
 # Use It
 d = ICNFDist(icnf, TestMode(), ps, st) # direct way
 # d = ICNFDist(mach, TestMode()) # alternative way
 actual_pdf = pdf.(data_dist, vec(r))
 estimated_pdf = pdf(d, r)
-new_data = rand(d, n)
+new_data = rand(d, ndata)
 
 # Evaluate It
 using Distances
 mad_ = meanad(estimated_pdf, actual_pdf)
 msd_ = msd(estimated_pdf, actual_pdf)
-tv_dis = totalvariation(estimated_pdf, actual_pdf) / n
+tv_dis = totalvariation(estimated_pdf, actual_pdf) / ndata
 res_df = DataFrame(; mad_, msd_, tv_dis)
 display(res_df)
 
