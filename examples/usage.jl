@@ -1,20 +1,31 @@
 # Switch To MKL For Faster Computation
-using MKL
+# using MKL
 
 # Enable Logging
 using Logging, TerminalLoggers
 global_logger(TerminalLogger())
 
+# Data
+using Distributions
+ndata = 1024
+ndimension = 1
+data_dist = Beta{Float32}(2.0f0, 4.0f0)
+r = rand(data_dist, ndimension, ndata)
+r = convert.(Float32, r)
+
 # Parameters
-nvars = 1
+nvars = size(r, 1)
 naugs = nvars
 # n_in = nvars # without augmentation
 n_in = nvars + naugs # with augmentation
-n = 1024
 
 # Model
 using ContinuousNormalizingFlows,
     Lux, OrdinaryDiffEqDefault, SciMLSensitivity, ADTypes, Zygote, MLDataDevices
+
+# To use gpu, add related packages
+# using LuxCUDA, CUDA, cuDNN
+
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
     RNODE,
@@ -24,6 +35,7 @@ icnf = construct(
     compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     inplace = false, # not using the inplace version of functions
     device = cpu_device(), # process data by CPU
+    # device = gpu_device(), # process data by GPU
     tspan = (0.0f0, 13.0f0), # have bigger time span
     steer_rate = 1.0f-1, # add random noise to end of the time span
     λ₁ = 1.0f-2, # regulate flow
@@ -35,12 +47,6 @@ icnf = construct(
         sensealg = InterpolatingAdjoint(),
     ), # pass to the solver
 )
-
-# Data
-using Distributions
-data_dist = Beta{Float32}(2.0f0, 4.0f0)
-r = rand(data_dist, nvars, n)
-r = convert.(Float32, r)
 
 # Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
@@ -55,6 +61,7 @@ model = ICNFModel(
 )
 mach = machine(model, df)
 fit!(mach)
+# CUDA.@allowscalar fit!(mach) # needed for gpu
 ps, st = fitted_params(mach)
 
 # Store It
