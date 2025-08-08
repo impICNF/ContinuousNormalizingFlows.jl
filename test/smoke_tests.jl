@@ -21,17 +21,16 @@ Test.@testset "Smoke Tests" begin
     n_epochs_ = Int[2]
     data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
-    adtypes = ADTypes.AbstractADType[
-        ADTypes.AutoZygote(),
-        ADTypes.AutoForwardDiff(),
-        # ADTypes.AutoEnzyme(;
-        #     mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-        #     function_annotation = Enzyme.Const,
-        # ),
-        # ADTypes.AutoEnzyme(;
-        #     mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-        #     function_annotation = Enzyme.Const,
-        # ),
+    adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
+    # ADTypes.AutoForwardDiff(),
+    # ADTypes.AutoEnzyme(;
+    #     mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+    #     function_annotation = Enzyme.Const,
+    # ),
+    # ADTypes.AutoEnzyme(;
+    #     mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+    #     function_annotation = Enzyme.Const,
+    # ),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
@@ -40,30 +39,30 @@ Test.@testset "Smoke Tests" begin
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        # ContinuousNormalizingFlows.DIVecJacVectorMode(
-        #     ADTypes.AutoEnzyme(;
-        #         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-        #         function_annotation = Enzyme.Const,
-        #     ),
-        # ),
-        # ContinuousNormalizingFlows.DIJacVecVectorMode(
-        #     ADTypes.AutoEnzyme(;
-        #         mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-        #         function_annotation = Enzyme.Const,
-        #     ),
-        # ),
-        # ContinuousNormalizingFlows.DIVecJacMatrixMode(
-        #     ADTypes.AutoEnzyme(;
-        #         mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-        #         function_annotation = Enzyme.Const,
-        #     ),
-        # ),
-        # ContinuousNormalizingFlows.DIJacVecMatrixMode(
-        #     ADTypes.AutoEnzyme(;
-        #         mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-        #         function_annotation = Enzyme.Const,
-        #     ),
-        # ),
+        ContinuousNormalizingFlows.DIVecJacVectorMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
+        ContinuousNormalizingFlows.DIVecJacMatrixMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
     ]
 
     Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in

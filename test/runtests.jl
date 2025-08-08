@@ -5,6 +5,7 @@ import ADTypes,
     DifferentiationInterface,
     Distances,
     Distributions,
+    Enzyme,
     ExplicitImports,
     ForwardDiff,
     JET,
@@ -36,6 +37,10 @@ Test.@testset "Overall" begin
 
     if GROUP == "All" || GROUP == "Regression"
         include("regression_tests.jl")
+    end
+
+    if GROUP == "All" || GROUP == "Speed"
+        include("speed_tests.jl")
     end
 
     if GROUP == "All" || GROUP == "CheckByAqua"
