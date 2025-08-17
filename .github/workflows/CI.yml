@@ -25,6 +25,7 @@ jobs:
           - SmokeXYOut
           - SmokeXYIn
           - Regression
+          - Speed
         version:
           - release
           - lts
