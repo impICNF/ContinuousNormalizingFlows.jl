@@ -55,7 +55,7 @@ Test.@testset "Speed Tests" begin
         model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0, n_epochs = 5)
 
         mach = MLJBase.machine(model, df)
-        MLJBase.fit!(mach)
+        Test.@test !isnothing(MLJBase.fit!(mach))
 
         @show only(MLJBase.report(mach).stats).time
 
