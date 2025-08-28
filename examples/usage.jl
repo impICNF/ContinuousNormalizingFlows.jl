@@ -63,7 +63,7 @@ fit!(mach)
 # CUDA.@allowscalar fit!(mach) # needed for gpu
 
 # Store It
-icnf_mach_fn = "icnf_mach.jlso"
+icnf_mach_fn = "icnf_mach.jls"
 MLJBase.save(icnf_mach_fn, mach) # save it
 mach = machine(icnf_mach_fn) # load it
 
