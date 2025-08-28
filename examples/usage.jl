@@ -61,16 +61,14 @@ model = ICNFModel(
 mach = machine(model, df)
 fit!(mach)
 # CUDA.@allowscalar fit!(mach) # needed for gpu
-ps, st = fitted_params(mach)
 
 # Store It
-using JLD2, UnPack
-jldsave("fitted.jld2"; ps, st) # save it
-@unpack ps, st = load("fitted.jld2") # load it
+icnf_mach_fn = "icnf_mach.jlso"
+MLJBase.save(icnf_mach_fn, mach) # save it
+mach = machine(icnf_mach_fn) # load it
 
 # Use It
-d = ICNFDist(icnf, TestMode(), ps, st) # direct way
-# d = ICNFDist(mach, TestMode()) # alternative way
+d = ICNFDist(mach, TestMode())
 actual_pdf = pdf.(data_dist, vec(r))
 estimated_pdf = pdf(d, r)
 new_data = rand(d, ndata)

@@ -211,6 +211,7 @@ Test.@testset "Smoke Tests" begin
                     Test.@test !isnothing(MLJBase.fit!(mach))
                     Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
                     Test.@test !isnothing(MLJBase.fitted_params(mach))
+                    Test.@test !isnothing(MLJBase.serializable(mach))
 
                     Test.@test !isnothing(
                         ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
@@ -228,6 +229,7 @@ Test.@testset "Smoke Tests" begin
                     Test.@test !isnothing(MLJBase.fit!(mach))
                     Test.@test !isnothing(MLJBase.transform(mach, df))
                     Test.@test !isnothing(MLJBase.fitted_params(mach))
+                    Test.@test !isnothing(MLJBase.serializable(mach))
 
                     Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode))
                 end
