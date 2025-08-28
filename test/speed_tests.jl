@@ -22,10 +22,16 @@ Test.@testset "Speed Tests" begin
         @show compute_mode
 
         rng = StableRNGs.StableRNG(1)
-        nvars = 1
+        ndata = 2^10
+        ndimension = 1
+        data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
+        r = rand(rng, data_dist, ndimension, ndata)
+        r = convert.(Float32, r)
+
+        nvars = size(r, 1)
         naugs = nvars
         n_in = nvars + naugs
-        n = 2^10
+
         nn = Lux.Chain(Lux.Dense(n_in => 3 * n_in, tanh), Lux.Dense(3 * n_in => n_in, tanh))
 
         icnf = ContinuousNormalizingFlows.construct(
@@ -46,10 +52,6 @@ Test.@testset "Speed Tests" begin
                 sensealg = SciMLSensitivity.InterpolatingAdjoint(),
             ),
         )
-
-        data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-        r = rand(icnf.rng, data_dist, nvars, n)
-        r = convert.(Float32, r)
 
         df = DataFrames.DataFrame(transpose(r), :auto)
         model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0, n_epochs = 5)
