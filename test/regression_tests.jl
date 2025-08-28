@@ -47,7 +47,7 @@ Test.@testset "Regression Tests" begin
 
     mad_ = Distances.meanad(estimated_pdf, actual_pdf)
     msd_ = Distances.msd(estimated_pdf, actual_pdf)
-    tv_dis = Distances.totalvariation(estimated_pdf, actual_pdf) / n
+    tv_dis = Distances.totalvariation(estimated_pdf, actual_pdf) / ndata
 
     Test.@test mad_ <= 1.0f2
     Test.@test msd_ <= 1.0f2
