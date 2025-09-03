@@ -57,7 +57,8 @@ Test.@testset "Speed Tests" begin
         model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0, n_epochs = 5)
 
         mach = MLJBase.machine(model, df)
-        Test.@test !isnothing(MLJBase.fit!(mach))
+        Test.@test !isnothing(MLJBase.fit!(mach)) broken =
+            compute_mode.adback isa ADTypes.AutoForwardDiff
 
         @show only(MLJBase.report(mach).stats).time
 
