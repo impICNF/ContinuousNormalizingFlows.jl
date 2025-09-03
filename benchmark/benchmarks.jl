@@ -3,6 +3,7 @@ import ADTypes,
     ComponentArrays,
     DifferentiationInterface,
     Lux,
+    LuxCore,
     OrdinaryDiffEqDefault,
     PkgBenchmark,
     SciMLSensitivity,
@@ -48,7 +49,7 @@ icnf = ContinuousNormalizingFlows.construct(
         sensealg = SciMLSensitivity.InterpolatingAdjoint(),
     ),
 )
-ps, st = Lux.setup(icnf.rng, icnf)
+ps, st = LuxCore.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)
 r = rand(icnf.rng, Float32, nvars, n)
 

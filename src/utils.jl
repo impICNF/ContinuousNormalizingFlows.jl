@@ -1,6 +1,6 @@
 function jacobian_batched(
     icnf::AbstractICNF{T, <:DIVecJacMatrixMode},
-    f::Lux.StatefulLuxLayer,
+    f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 ) where {T}
     y = f(xs)
@@ -18,7 +18,7 @@ end
 
 function jacobian_batched(
     icnf::AbstractICNF{T, <:DIJacVecMatrixMode},
-    f::Lux.StatefulLuxLayer,
+    f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 ) where {T}
     y = f(xs)
@@ -37,7 +37,7 @@ end
 
 function jacobian_batched(
     icnf::AbstractICNF{T, <:DIMatrixMode},
-    f::Lux.StatefulLuxLayer,
+    f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 ) where {T}
     y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
@@ -55,7 +55,7 @@ end
 
 function jacobian_batched(
     icnf::AbstractICNF{T, <:LuxMatrixMode},
-    f::Lux.StatefulLuxLayer,
+    f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 ) where {T}
     y = f(xs)

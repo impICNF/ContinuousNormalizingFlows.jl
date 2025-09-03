@@ -118,7 +118,7 @@ function augmented_f(
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.compute_mode.adback, z)
     l̇ = -LinearAlgebra.tr(J)
@@ -137,7 +137,7 @@ function augmented_f(
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, J = DifferentiationInterface.value_and_jacobian(snn, icnf.compute_mode.adback, z)
     du[begin:(end - n_aug - 1)] .= ż
@@ -156,7 +156,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, snn, z)
     l̇ = -transpose(LinearAlgebra.tr.(J))
@@ -175,7 +175,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = jacobian_batched(icnf, snn, z)
     du[begin:(end - n_aug - 1), :] .= ż
@@ -194,7 +194,7 @@ function augmented_f(
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
@@ -225,7 +225,7 @@ function augmented_f(
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
@@ -256,7 +256,7 @@ function augmented_f(
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ = DifferentiationInterface.value_and_pushforward(
         snn,
@@ -291,7 +291,7 @@ function augmented_f(
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ = DifferentiationInterface.value_and_pushforward(
         snn,
@@ -326,7 +326,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
@@ -361,7 +361,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ =
         DifferentiationInterface.value_and_pullback(snn, icnf.compute_mode.adback, z, (ϵ,))
@@ -392,7 +392,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = DifferentiationInterface.value_and_pushforward(
         snn,
@@ -431,7 +431,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = DifferentiationInterface.value_and_pushforward(
         snn,
@@ -466,7 +466,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż = snn(z)
     ϵJ = Lux.vector_jacobian_product(snn, icnf.compute_mode.adback, z, ϵ)
@@ -500,7 +500,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż = snn(z)
     ϵJ = Lux.vector_jacobian_product(snn, icnf.compute_mode.adback, z, ϵ)
@@ -530,7 +530,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż = snn(z)
     Jϵ = Lux.jacobian_vector_product(snn, icnf.compute_mode.adback, z, ϵ)
@@ -564,7 +564,7 @@ function augmented_f(
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J}
     n_aug = n_augment(icnf, mode)
-    snn = Lux.StatefulLuxLayer{true}(nn, p, st)
+    snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż = snn(z)
     Jϵ = Lux.jacobian_vector_product(snn, icnf.compute_mode.adback, z, ϵ)

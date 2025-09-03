@@ -126,7 +126,7 @@ Test.@testset "Smoke Tests" begin
                 sensealg = SciMLSensitivity.InterpolatingAdjoint(),
             ),
         )
-        ps, st = Lux.setup(icnf.rng, icnf)
+        ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
         r = device(r)
         r2 = device(r2)
