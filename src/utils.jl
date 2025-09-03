@@ -5,9 +5,13 @@ function jacobian_batched(
 ) where {T}
     y = f(xs)
     z = similar(xs)
-    z = convert.(promote_type(eltype(z), eltype(f.ps)), z)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
+    res = Zygote.Buffer(
+        convert.(promote_type(eltype(xs), eltype(f.ps)), xs),
+        size(xs, 1),
+        size(xs, 1),
+        size(xs, 2),
+    )
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[i, :, :] =
@@ -24,9 +28,13 @@ function jacobian_batched(
 ) where {T}
     y = f(xs)
     z = similar(xs)
-    z = convert.(promote_type(eltype(z), eltype(f.ps)), z)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(xs, size(xs, 1), size(xs, 1), size(xs, 2))
+    res = Zygote.Buffer(
+        convert.(promote_type(eltype(xs), eltype(f.ps)), xs),
+        size(xs, 1),
+        size(xs, 1),
+        size(xs, 2),
+    )
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[:, i, :] = only(
