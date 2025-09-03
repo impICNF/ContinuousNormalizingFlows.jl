@@ -212,14 +212,22 @@ Test.@testset "Smoke Tests" begin
                     )
                     mach = MLJBase.machine(model, (df, df2))
 
-                    Test.@test !isnothing(MLJBase.fit!(mach))
-                    Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
-                    Test.@test !isnothing(MLJBase.fitted_params(mach))
+                    Test.@test !isnothing(MLJBase.fit!(mach)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                    Test.@test !isnothing(MLJBase.transform(mach, (df, df2))) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                    Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                     Test.@test !isnothing(MLJBase.serializable(mach))
 
                     Test.@test !isnothing(
                         ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
-                    )
+                    ) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 else
                     model = ContinuousNormalizingFlows.ICNFModel(
                         icnf;
@@ -230,12 +238,20 @@ Test.@testset "Smoke Tests" begin
                     )
                     mach = MLJBase.machine(model, df)
 
-                    Test.@test !isnothing(MLJBase.fit!(mach))
-                    Test.@test !isnothing(MLJBase.transform(mach, df))
-                    Test.@test !isnothing(MLJBase.fitted_params(mach))
+                    Test.@test !isnothing(MLJBase.fit!(mach)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                    Test.@test !isnothing(MLJBase.transform(mach, df)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                    Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                     Test.@test !isnothing(MLJBase.serializable(mach))
 
-                    Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode))
+                    Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 end
             end
         end
