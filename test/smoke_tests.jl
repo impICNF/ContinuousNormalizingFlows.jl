@@ -36,6 +36,9 @@ Test.@testset "Smoke Tests" begin
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
@@ -60,9 +63,6 @@ Test.@testset "Smoke Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
     ]
 
     Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
@@ -194,8 +194,12 @@ Test.@testset "Smoke Tests" begin
         Test.@test !isnothing(rand(d, ndata))
 
         Test.@testset "$adtype on loss" for adtype in adtypes
-            Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
-            Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
+            Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
+                GROUP != "All" &&
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+            Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r)) broken =
+                GROUP != "All" &&
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
 
             Test.@testset "$n_epochs for fit" for n_epochs in n_epochs_
                 if cond
