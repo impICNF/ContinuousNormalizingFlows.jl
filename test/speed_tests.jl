@@ -58,7 +58,7 @@ Test.@testset "Speed Tests" begin
 
         mach = MLJBase.machine(model, df)
         Test.@test !isnothing(MLJBase.fit!(mach)) broken =
-            compute_mode.adback isa ADTypes.AutoForwardDiff
+            GROUP != "All" && compute_mode.adback isa ADTypes.AutoForwardDiff
 
         @show only(MLJBase.report(mach).stats).time
 

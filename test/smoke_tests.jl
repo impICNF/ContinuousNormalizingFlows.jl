@@ -195,9 +195,9 @@ Test.@testset "Smoke Tests" begin
 
         Test.@testset "$adtype on loss" for adtype in adtypes
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
-                compute_mode.adback isa ADTypes.AutoForwardDiff
+                GROUP != "All" && compute_mode.adback isa ADTypes.AutoForwardDiff
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r)) broken =
-                compute_mode.adback isa ADTypes.AutoForwardDiff
+                GROUP != "All" && compute_mode.adback isa ADTypes.AutoForwardDiff
 
             Test.@testset "$n_epochs for fit" for n_epochs in n_epochs_
                 if cond
