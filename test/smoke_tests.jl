@@ -18,7 +18,6 @@ Test.@testset "Smoke Tests" begin
     planars = Bool[false, true]
     nvars_ = Int[2]
     ndata_ = Int[4]
-    n_epochs_ = Int[2]
     data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
@@ -202,42 +201,38 @@ Test.@testset "Smoke Tests" begin
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
 
-            Test.@testset "$n_epochs for fit" for n_epochs in n_epochs_
-                if cond
-                    model = ContinuousNormalizingFlows.CondICNFModel(
-                        icnf;
-                        n_epochs,
-                        adtype,
-                        batch_size = 0,
-                        sol_kwargs = (; progress = true),
-                    )
-                    mach = MLJBase.machine(model, (df, df2))
+            if cond
+                model = ContinuousNormalizingFlows.CondICNFModel(
+                    icnf;
+                    adtype,
+                    batch_size = 0,
+                    sol_kwargs = (; progress = true, epochs = 2),
+                )
+                mach = MLJBase.machine(model, (df, df2))
 
-                    Test.@test !isnothing(MLJBase.fit!(mach))
-                    Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
-                    Test.@test !isnothing(MLJBase.fitted_params(mach))
-                    Test.@test !isnothing(MLJBase.serializable(mach))
+                Test.@test !isnothing(MLJBase.fit!(mach))
+                Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
+                Test.@test !isnothing(MLJBase.fitted_params(mach))
+                Test.@test !isnothing(MLJBase.serializable(mach))
 
-                    Test.@test !isnothing(
-                        ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
-                    )
-                else
-                    model = ContinuousNormalizingFlows.ICNFModel(
-                        icnf;
-                        n_epochs,
-                        adtype,
-                        batch_size = 0,
-                        sol_kwargs = (; progress = true),
-                    )
-                    mach = MLJBase.machine(model, df)
+                Test.@test !isnothing(
+                    ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
+                )
+            else
+                model = ContinuousNormalizingFlows.ICNFModel(
+                    icnf;
+                    adtype,
+                    batch_size = 0,
+                    sol_kwargs = (; progress = true, epochs = 2),
+                )
+                mach = MLJBase.machine(model, df)
 
-                    Test.@test !isnothing(MLJBase.fit!(mach))
-                    Test.@test !isnothing(MLJBase.transform(mach, df))
-                    Test.@test !isnothing(MLJBase.fitted_params(mach))
-                    Test.@test !isnothing(MLJBase.serializable(mach))
+                Test.@test !isnothing(MLJBase.fit!(mach))
+                Test.@test !isnothing(MLJBase.transform(mach, df))
+                Test.@test !isnothing(MLJBase.fitted_params(mach))
+                Test.@test !isnothing(MLJBase.serializable(mach))
 
-                    Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode))
-                end
+                Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode))
             end
         end
     end

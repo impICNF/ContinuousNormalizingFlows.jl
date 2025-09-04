@@ -3,7 +3,6 @@ mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     loss::Function
 
     optimizers::Tuple
-    n_epochs::Int
     adtype::ADTypes.AbstractADType
 
     batch_size::Int
@@ -14,12 +13,11 @@ function ICNFModel(
     m::AbstractICNF,
     loss::Function = loss;
     optimizers::Tuple = (Optimisers.Adam(),),
-    n_epochs::Int = 300,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     batch_size::Int = 32,
     sol_kwargs::NamedTuple = (;),
 )
-    return ICNFModel(m, loss, optimizers, n_epochs, adtype, batch_size, sol_kwargs)
+    return ICNFModel(m, loss, optimizers, adtype, batch_size, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
@@ -57,7 +55,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     res_stats = SciMLBase.OptimizationStats[]
     for opt in model.optimizers
         optprob_re = SciMLBase.remake(optprob; u0 = ps)
-        res = SciMLBase.solve(optprob_re, opt; epochs = model.n_epochs, model.sol_kwargs...)
+        res = SciMLBase.solve(optprob_re, opt; model.sol_kwargs...)
         ps .= res.u
         push!(res_stats, res.stats)
     end

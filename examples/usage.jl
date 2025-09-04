@@ -53,10 +53,9 @@ df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
     optimizers = (Adam(),),
-    n_epochs = 300,
     adtype = AutoZygote(),
     batch_size = 512,
-    sol_kwargs = (; progress = true), # pass to the solver
+    sol_kwargs = (; progress = true, epochs = 300), # pass to the solver
 )
 mach = machine(model, df)
 fit!(mach)

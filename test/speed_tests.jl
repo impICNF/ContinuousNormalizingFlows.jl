@@ -60,7 +60,11 @@ Test.@testset "Speed Tests" begin
             continue
         end
 
-        model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0, n_epochs = 5)
+        model = ContinuousNormalizingFlows.ICNFModel(
+            icnf;
+            batch_size = 0,
+            sol_kwargs = (; epochs = 5),
+        )
 
         mach = MLJBase.machine(model, df)
         MLJBase.fit!(mach)
