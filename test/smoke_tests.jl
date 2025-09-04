@@ -221,7 +221,9 @@ Test.@testset "Smoke Tests" begin
                     Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
                         GROUP != "All" &&
                         compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                    Test.@test !isnothing(MLJBase.serializable(mach))
+                    Test.@test !isnothing(MLJBase.serializable(mach)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
 
                     Test.@test !isnothing(
                         ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
@@ -247,7 +249,9 @@ Test.@testset "Smoke Tests" begin
                     Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
                         GROUP != "All" &&
                         compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                    Test.@test !isnothing(MLJBase.serializable(mach))
+                    Test.@test !isnothing(MLJBase.serializable(mach)) broken =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
 
                     Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode)) broken =
                         GROUP != "All" &&

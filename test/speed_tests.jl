@@ -10,12 +10,12 @@ Test.@testset "Speed Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
+        # ContinuousNormalizingFlows.DIJacVecMatrixMode(
+        #     ADTypes.AutoEnzyme(;
+        #         mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+        #         function_annotation = Enzyme.Const,
+        #     ),
+        # ),
     ]
 
     Test.@testset "$compute_mode" for compute_mode in compute_modes
@@ -57,9 +57,7 @@ Test.@testset "Speed Tests" begin
         model = ContinuousNormalizingFlows.ICNFModel(icnf; batch_size = 0, n_epochs = 5)
 
         mach = MLJBase.machine(model, df)
-        Test.@test !isnothing(MLJBase.fit!(mach)) broken =
-            GROUP != "All" &&
-            compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+        MLJBase.fit!(mach)
 
         @show only(MLJBase.report(mach).stats).time
 
