@@ -14,6 +14,7 @@ function Distributions._logpdf(d::ICNFDist, x::AbstractVector{<:Real})
     return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         first(inference(d.m, d.mode, x, d.ps, d.st))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
+        @warn "to compute by matrices, data should be a matrix."
         first(Distributions._logpdf(d, hcat(x)))
     else
         error("Not Implemented")
@@ -22,7 +23,8 @@ end
 
 function Distributions._logpdf(d::ICNFDist, A::AbstractMatrix{<:Real})
     return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        Distributions._logpdf.(d, eachcol(A))
+        @warn "to compute by vectors, data should be a vector."
+        Distributions._logpdf.(d, collect(collect.(eachcol(A))))
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         first(inference(d.m, d.mode, A, d.ps, d.st))
     else
@@ -38,6 +40,7 @@ function Distributions._rand!(
     return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
         x .= generate(d.m, d.mode, d.ps, d.st)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
+        @warn "to compute by matrices, data should be a matrix."
         x .= Distributions._rand!(rng, d, hcat(x))
     else
         error("Not Implemented")
@@ -49,7 +52,8 @@ function Distributions._rand!(
     A::AbstractMatrix{<:Real},
 )
     return if d.m isa AbstractICNF{<:AbstractFloat, <:VectorMode}
-        A .= hcat(Distributions._rand!.(rng, d, eachcol(A))...)
+        @warn "to compute by vectors, data should be a vector."
+        A .= hcat(Distributions._rand!.(rng, d, collect(collect.(eachcol(A))))...)
     elseif d.m isa AbstractICNF{<:AbstractFloat, <:MatrixMode}
         A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
     else

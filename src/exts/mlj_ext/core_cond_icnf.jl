@@ -80,12 +80,13 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     (ps, st) = fitresult
 
     logp̂x = if model.m.compute_mode isa VectorMode
+        @warn "to compute by vectors, data should be a vector."
         broadcast(
             function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
                 return first(inference(model.m, TestMode(), x, y, ps, st))
             end,
-            eachcol(xnew),
-            eachcol(ynew),
+            collect(collect.(eachcol(xnew))),
+            collect(collect.(eachcol(ynew))),
         )
     elseif model.m.compute_mode isa MatrixMode
         first(inference(model.m, TestMode(), xnew, ynew, ps, st))

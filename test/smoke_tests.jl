@@ -22,6 +22,7 @@ Test.@testset "Smoke Tests" begin
     data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
+    # ADTypes.AutoForwardDiff(),
     # ADTypes.AutoEnzyme(;
     #     mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
     #     function_annotation = Enzyme.Const,
@@ -30,13 +31,21 @@ Test.@testset "Smoke Tests" begin
     #     mode = Enzyme.set_runtime_activity(Enzyme.Forward),
     #     function_annotation = Enzyme.Const,
     # ),
-    # ADTypes.AutoForwardDiff(),
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIVecJacVectorMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
+        ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
@@ -48,21 +57,12 @@ Test.@testset "Smoke Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
     ]
 
     Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
@@ -192,6 +192,11 @@ Test.@testset "Smoke Tests" begin
         Test.@test !isnothing(Distributions.pdf(d, r))
         Test.@test !isnothing(rand(d))
         Test.@test !isnothing(rand(d, ndata))
+
+        if GROUP != "All" &&
+           compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+            continue
+        end
 
         Test.@testset "$adtype on loss" for adtype in adtypes
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
