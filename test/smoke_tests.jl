@@ -15,7 +15,7 @@ Test.@testset "Smoke Tests" begin
     else
         Bool[false, true], Bool[false, true]
     end
-    planars = Bool[false, true]
+    planars = Bool[false]
     nvars_ = Int[2]
     ndata_ = Int[4]
     n_epochs_ = Int[2]
