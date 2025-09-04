@@ -15,7 +15,7 @@ Test.@testset "Smoke Tests" begin
     else
         Bool[false, true], Bool[false, true]
     end
-    planars = Bool[false]
+    planars = Bool[false, true]
     nvars_ = Int[2]
     ndata_ = Int[4]
     n_epochs_ = Int[2]
@@ -196,10 +196,17 @@ Test.@testset "Smoke Tests" begin
         Test.@testset "$adtype on loss" for adtype in adtypes
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
                 GROUP != "All" &&
-                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} skip =
+                GROUP != "All" &&
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
+                planar
+
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r)) broken =
                 GROUP != "All" &&
-                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} skip =
+                GROUP != "All" &&
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
+                planar
 
             Test.@testset "$n_epochs for fit" for n_epochs in n_epochs_
                 if cond
@@ -214,7 +221,10 @@ Test.@testset "Smoke Tests" begin
 
                     Test.@test !isnothing(MLJBase.fit!(mach)) broken =
                         GROUP != "All" &&
-                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} skip =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
+                        planar
                     Test.@test !isnothing(MLJBase.transform(mach, (df, df2))) broken =
                         GROUP != "All" &&
                         compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
@@ -242,7 +252,10 @@ Test.@testset "Smoke Tests" begin
 
                     Test.@test !isnothing(MLJBase.fit!(mach)) broken =
                         GROUP != "All" &&
-                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} skip =
+                        GROUP != "All" &&
+                        compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
+                        planar
                     Test.@test !isnothing(MLJBase.transform(mach, df)) broken =
                         GROUP != "All" &&
                         compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
