@@ -5,7 +5,7 @@ function icnf_jacobian(
     xs::AbstractVector{<:Real},
 )
     y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
-    return y, oftype(y, J)
+    return y, oftype(hcat(y), J)
 end
 
 function icnf_jacobian(
