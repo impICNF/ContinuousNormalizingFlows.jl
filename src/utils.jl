@@ -4,8 +4,9 @@ function icnf_jacobian(
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractVector{<:Real},
 )
-    y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
-    return y, oftype(hcat(y), J)
+    y = f(xs)
+    return y,
+    oftype(hcat(y), DifferentiationInterface.jacobian(f, icnf.compute_mode.adback, xs))
 end
 
 function icnf_jacobian(
@@ -14,7 +15,8 @@ function icnf_jacobian(
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
 )
-    y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
+    y = f(xs)
+    J = DifferentiationInterface.jacobian(f, icnf.compute_mode.adback, xs)
     return y,
     oftype(
         cat(y; dims = Val(3)),
@@ -87,9 +89,12 @@ function icnf_jacobian(
     xs::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
-    y, ϵJ =
-        DifferentiationInterface.value_and_pullback(f, icnf.compute_mode.adback, xs, (ϵ,))
-    return y, oftype(y, only(ϵJ))
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (ϵ,))),
+    )
 end
 
 function icnf_jacobian(
@@ -99,13 +104,12 @@ function icnf_jacobian(
     xs::AbstractVector{<:Real},
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat}
-    y, Jϵ = DifferentiationInterface.value_and_pushforward(
-        f,
-        icnf.compute_mode.adback,
-        xs,
-        (ϵ,),
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (ϵ,))),
     )
-    return y, oftype(y, only(Jϵ))
 end
 
 function icnf_jacobian(
@@ -115,9 +119,12 @@ function icnf_jacobian(
     xs::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
-    y, ϵJ =
-        DifferentiationInterface.value_and_pullback(f, icnf.compute_mode.adback, xs, (ϵ,))
-    return y, oftype(y, only(ϵJ))
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (ϵ,))),
+    )
 end
 
 function icnf_jacobian(
@@ -127,13 +134,12 @@ function icnf_jacobian(
     xs::AbstractMatrix{<:Real},
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat}
-    y, Jϵ = DifferentiationInterface.value_and_pushforward(
-        f,
-        icnf.compute_mode.adback,
-        xs,
-        (ϵ,),
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (ϵ,))),
     )
-    return y, oftype(y, only(Jϵ))
 end
 
 function icnf_jacobian(
