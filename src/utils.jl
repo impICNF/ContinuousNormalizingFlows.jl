@@ -23,7 +23,7 @@ function icnf_jacobian(
     ::TestMode,
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
-) where {T}
+) where {T <: AbstractFloat}
     y = f(xs)
     z = similar(xs)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
@@ -42,7 +42,7 @@ function icnf_jacobian(
     ::TestMode,
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
-) where {T}
+) where {T <: AbstractFloat}
     y = f(xs)
     z = similar(xs)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
