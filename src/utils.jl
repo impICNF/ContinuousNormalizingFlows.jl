@@ -15,7 +15,19 @@ function icnf_jacobian(
     xs::AbstractMatrix{<:Real},
 )
     y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
-    return y, oftype.(Ref(y), split_jac(J, size(xs, 1)))
+    return y,
+    oftype(
+        cat(y; dims = Val(3)),
+        cat(
+            (
+                J[i:j, i:j] for (i, j) in zip(
+                    firstindex(J, 1):size(y, 1):lastindex(J, 1),
+                    (firstindex(J, 1) + size(y, 1) - 1):size(y, 1):lastindex(J, 1),
+                )
+            )...;
+            dims = Val(3),
+        ),
+    )
 end
 
 function icnf_jacobian(
@@ -34,7 +46,7 @@ function icnf_jacobian(
             only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (z,)))
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
-    return y, oftype.(Ref(y), eachslice(copy(res); dims = 3))
+    return y, oftype(cat(y; dims = Val(3)), copy(res))
 end
 
 function icnf_jacobian(
@@ -54,7 +66,7 @@ function icnf_jacobian(
         )
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
-    return y, oftype.(Ref(y), eachslice(copy(res); dims = 3))
+    return y, oftype(cat(y; dims = Val(3)), copy(res))
 end
 
 function icnf_jacobian(
@@ -65,10 +77,7 @@ function icnf_jacobian(
 )
     y = f(xs)
     return y,
-    oftype.(
-        Ref(y),
-        eachslice(Lux.batched_jacobian(f, icnf.compute_mode.adback, xs); dims = 3),
-    )
+    oftype(cat(y; dims = Val(3)), Lux.batched_jacobian(f, icnf.compute_mode.adback, xs))
 end
 
 function icnf_jacobian(
@@ -147,13 +156,4 @@ function icnf_jacobian(
 ) where {T <: AbstractFloat}
     y = f(xs)
     return y, oftype(y, Lux.jacobian_vector_product(f, icnf.compute_mode.adback, xs, ϵ))
-end
-
-function split_jac(x::AbstractMatrix{<:Real}, sz::Integer)
-    return (
-        x[i:j, i:j] for (i, j) in zip(
-            firstindex(x, 1):sz:lastindex(x, 1),
-            (firstindex(x, 1) + sz - 1):sz:lastindex(x, 1),
-        )
-    )
 end

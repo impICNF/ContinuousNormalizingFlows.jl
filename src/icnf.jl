@@ -159,7 +159,7 @@ function augmented_f(
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
-    l̇ = -transpose(LinearAlgebra.tr.(J))
+    l̇ = -transpose(LinearAlgebra.tr.(eachslice(J; dims = 3)))
     return vcat(ż, l̇)
 end
 
@@ -179,7 +179,7 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     du[begin:(end - n_aug - 1), :] .= ż
-    du[(end - n_aug), :] .= -(LinearAlgebra.tr.(J))
+    du[(end - n_aug), :] .= -(LinearAlgebra.tr.(eachslice(J; dims = 3)))
     return nothing
 end
 
