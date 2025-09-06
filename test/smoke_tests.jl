@@ -131,6 +131,14 @@ Test.@testset "Smoke Tests" begin
         r2 = device(r2)
         ps = device(ps)
         st = device(st)
+
+        if GROUP != "All" &&
+           compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
+           planar &&
+           VERSION >= v"1.11"
+            continue
+        end
+
         if cond
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, r2, ps, st),
