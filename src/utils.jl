@@ -1,40 +1,66 @@
-function jacobian_batched(
-    icnf::AbstractICNF{T, <:DIVecJacMatrixMode},
+function icnf_jacobian(
+    icnf::AbstractICNF{<:AbstractFloat, <:DIVectorMode},
+    ::TestMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractVector{<:Real},
+)
+    y = f(xs)
+    return y,
+    oftype(hcat(y), DifferentiationInterface.jacobian(f, icnf.compute_mode.adback, xs))
+end
+
+function icnf_jacobian(
+    icnf::AbstractICNF{<:AbstractFloat, <:DIMatrixMode},
+    ::TestMode,
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
-) where {T}
+)
+    y = f(xs)
+    J = DifferentiationInterface.jacobian(f, icnf.compute_mode.adback, xs)
+    return y,
+    oftype(
+        cat(y; dims = Val(3)),
+        cat(
+            (
+                J[i:j, i:j] for (i, j) in zip(
+                    firstindex(J, 1):size(y, 1):lastindex(J, 1),
+                    (firstindex(J, 1) + size(y, 1) - 1):size(y, 1):lastindex(J, 1),
+                )
+            )...;
+            dims = Val(3),
+        ),
+    )
+end
+
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:DIVecJacMatrixMode},
+    ::TestMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractMatrix{<:Real},
+) where {T <: AbstractFloat}
     y = f(xs)
     z = similar(xs)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(
-        convert.(promote_type(eltype(xs), eltype(f.ps)), xs),
-        size(xs, 1),
-        size(xs, 1),
-        size(xs, 2),
-    )
+    res = Zygote.Buffer(y, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[i, :, :] =
             only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (z,)))
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
-    return y, eachslice(copy(res); dims = 3)
+    return y, oftype(cat(y; dims = Val(3)), copy(res))
 end
 
-function jacobian_batched(
+function icnf_jacobian(
     icnf::AbstractICNF{T, <:DIJacVecMatrixMode},
+    ::TestMode,
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
-) where {T}
+) where {T <: AbstractFloat}
     y = f(xs)
     z = similar(xs)
     ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(
-        convert.(promote_type(eltype(xs), eltype(f.ps)), xs),
-        size(xs, 1),
-        size(xs, 1),
-        size(xs, 2),
-    )
+    res = Zygote.Buffer(y, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
         res[:, i, :] = only(
@@ -42,33 +68,98 @@ function jacobian_batched(
         )
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
-    return y, eachslice(copy(res); dims = 3)
+    return y, oftype(cat(y; dims = Val(3)), copy(res))
 end
 
-function jacobian_batched(
-    icnf::AbstractICNF{T, <:DIMatrixMode},
+function icnf_jacobian(
+    icnf::AbstractICNF{<:AbstractFloat, <:LuxMatrixMode},
+    ::TestMode,
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
-) where {T}
-    y, J = DifferentiationInterface.value_and_jacobian(f, icnf.compute_mode.adback, xs)
-    return y, split_jac(J, size(xs, 1))
+)
+    y = f(xs)
+    return y,
+    oftype(cat(y; dims = Val(3)), Lux.batched_jacobian(f, icnf.compute_mode.adback, xs))
 end
 
-function split_jac(x::AbstractMatrix{<:Real}, sz::Integer)
-    return (
-        x[i:j, i:j] for (i, j) in zip(
-            firstindex(x, 1):sz:lastindex(x, 1),
-            (firstindex(x, 1) + sz - 1):sz:lastindex(x, 1),
-        )
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:DIVecJacVectorMode},
+    ::TrainMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+) where {T <: AbstractFloat}
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (ϵ,))),
     )
 end
 
-function jacobian_batched(
-    icnf::AbstractICNF{T, <:LuxMatrixMode},
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:DIJacVecVectorMode},
+    ::TrainMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractVector{<:Real},
+    ϵ::AbstractVector{T},
+) where {T <: AbstractFloat}
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (ϵ,))),
+    )
+end
+
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:DIVecJacMatrixMode},
+    ::TrainMode,
     f::LuxCore.StatefulLuxLayer,
     xs::AbstractMatrix{<:Real},
-) where {T}
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat}
     y = f(xs)
-    J = Lux.batched_jacobian(f, icnf.compute_mode.adback, xs)
-    return y, eachslice(J; dims = 3)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (ϵ,))),
+    )
+end
+
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:DIJacVecMatrixMode},
+    ::TrainMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat}
+    y = f(xs)
+    return y,
+    oftype(
+        y,
+        only(DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (ϵ,))),
+    )
+end
+
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:LuxVecJacMatrixMode},
+    ::TrainMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat}
+    y = f(xs)
+    return y, oftype(y, Lux.vector_jacobian_product(f, icnf.compute_mode.adback, xs, ϵ))
+end
+
+function icnf_jacobian(
+    icnf::AbstractICNF{T, <:LuxJacVecMatrixMode},
+    ::TrainMode,
+    f::LuxCore.StatefulLuxLayer,
+    xs::AbstractMatrix{<:Real},
+    ϵ::AbstractMatrix{T},
+) where {T <: AbstractFloat}
+    y = f(xs)
+    return y, oftype(y, Lux.jacobian_vector_product(f, icnf.compute_mode.adback, xs, ϵ))
 end
