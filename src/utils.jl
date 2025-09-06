@@ -44,8 +44,10 @@ function icnf_jacobian(
     res = Zygote.Buffer(y, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] =
-            only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (z,)))
+        res[i, :, :] = oftype(
+            y,
+            only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (z,))),
+        )
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
     return y, oftype(cat(y; dims = Val(3)), copy(res))
@@ -63,8 +65,11 @@ function icnf_jacobian(
     res = Zygote.Buffer(y, size(xs, 1), size(xs, 1), size(xs, 2))
     for i in axes(xs, 1)
         ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[:, i, :] = only(
-            DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (z,)),
+        res[:, i, :] = oftype(
+            y,
+            only(
+                DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (z,)),
+            ),
         )
         ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
     end
