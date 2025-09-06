@@ -116,6 +116,13 @@ Test.@testset "CheckByJET" begin
         ps = device(ps)
         st = device(st)
 
+        if GROUP != "All" &&
+           compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
+           planar &&
+           VERSION >= v"1.11"
+            continue
+        end
+
         if cond
             ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st)
             JET.test_call(
