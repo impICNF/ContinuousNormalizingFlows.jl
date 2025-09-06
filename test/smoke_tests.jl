@@ -200,10 +200,10 @@ Test.@testset "Smoke Tests" begin
         Test.@test !isnothing(rand(d))
         Test.@test !isnothing(rand(d, ndata))
 
-        if GROUP != "All" &&
-           compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-            continue
-        end
+        # if GROUP != "All" &&
+        #    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+        #     continue
+        # end
 
         Test.@testset "$adtype on loss" for adtype in adtypes
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
