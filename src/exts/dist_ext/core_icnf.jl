@@ -11,14 +11,14 @@ function ICNFDist(mach::MLJBase.Machine{<:ICNFModel}, mode::Mode)
 end
 
 function Distributions._logpdf(
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:VectorMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     x::AbstractVector{<:Real},
 )
     return first(inference(d.m, d.mode, x, d.ps, d.st))
 end
 
 function Distributions._logpdf(
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:MatrixMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     x::AbstractVector{<:Real},
 )
     @warn "to compute by matrices, data should be a matrix."
@@ -26,7 +26,7 @@ function Distributions._logpdf(
 end
 
 function Distributions._logpdf(
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:VectorMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     A::AbstractMatrix{<:Real},
 )
     @warn "to compute by vectors, data should be a vector."
@@ -34,7 +34,7 @@ function Distributions._logpdf(
 end
 
 function Distributions._logpdf(
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:MatrixMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     A::AbstractMatrix{<:Real},
 )
     return first(inference(d.m, d.mode, A, d.ps, d.st))
@@ -42,7 +42,7 @@ end
 
 function Distributions._rand!(
     rng::Random.AbstractRNG,
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:VectorMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     x::AbstractVector{<:Real},
 )
     return x .= generate(d.m, d.mode, d.ps, d.st)
@@ -50,7 +50,7 @@ end
 
 function Distributions._rand!(
     rng::Random.AbstractRNG,
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:MatrixMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     x::AbstractVector{<:Real},
 )
     @warn "to compute by matrices, data should be a matrix."
@@ -59,7 +59,7 @@ end
 
 function Distributions._rand!(
     rng::Random.AbstractRNG,
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:VectorMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     A::AbstractMatrix{<:Real},
 )
     @warn "to compute by vectors, data should be a vector."
@@ -68,7 +68,7 @@ end
 
 function Distributions._rand!(
     rng::Random.AbstractRNG,
-    d::ICNFDist{AbstractICNF{<:AbstractFloat, <:MatrixMode}},
+    d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     A::AbstractMatrix{<:Real},
 )
     return A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
