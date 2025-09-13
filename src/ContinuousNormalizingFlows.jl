@@ -25,6 +25,7 @@ import ADTypes,
     SciMLSensitivity,
     ScientificTypesBase,
     Statistics,
+    WeightInitializers,
     Zygote
 
 export construct,
