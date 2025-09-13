@@ -62,7 +62,7 @@ Test.@testset "Speed Tests" begin
 
         model = ContinuousNormalizingFlows.ICNFModel(
             icnf;
-            batch_size = 0,
+            batchsize = 0,
             sol_kwargs = (; epochs = 5),
         )
 

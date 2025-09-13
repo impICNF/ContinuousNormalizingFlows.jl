@@ -5,7 +5,7 @@ mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     optimizers::Tuple
     adtype::ADTypes.AbstractADType
 
-    batch_size::Int
+    batchsize::Int
     sol_kwargs::NamedTuple
 end
 
@@ -14,10 +14,10 @@ function CondICNFModel(
     loss::Function = loss;
     optimizers::Tuple = (Optimisers.Adam(),),
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    batch_size::Int = 32,
+    batchsize::Int = 32,
     sol_kwargs::NamedTuple = (;),
 )
-    return CondICNFModel(m, loss, optimizers, adtype, batch_size, sol_kwargs)
+    return CondICNFModel(m, loss, optimizers, adtype, batchsize, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -30,22 +30,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     y = model.m.device(y)
     ps = model.m.device(ps)
     st = model.m.device(st)
-    data = if model.m.compute_mode isa VectorMode
-        MLUtils.DataLoader((x, y); batchsize = -1, shuffle = true, partial = true)
-    elseif model.m.compute_mode isa MatrixMode
-        MLUtils.DataLoader(
-            (x, y);
-            batchsize = if iszero(model.batch_size)
-                max(size(x, 2), size(y, 2))
-            else
-                model.batch_size
-            end,
-            shuffle = true,
-            partial = true,
-        )
-    else
-        error("Not Implemented")
-    end
+    data = make_dataloader(model.m, model.batchsize, (x, y))
     data = model.m.device(data)
     optprob = SciMLBase.OptimizationProblem{true}(
         SciMLBase.OptimizationFunction{true}(

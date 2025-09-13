@@ -94,12 +94,12 @@ function n_augment_input(::AbstractICNF)
 end
 
 function steer_tspan(
-    icnf::AbstractICNF{T, <:ComputeMode, INPLACE, COND, AUGMENTED, true},
+    icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, COND, AUGMENTED, true},
     ::TrainMode,
-) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED}
+) where {INPLACE, COND, AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
-    r = convert(T, rand(icnf.rng, icnf.steerdist))
+    r = oftype(t₁, rand(icnf.rng, icnf.steerdist))
     t₁_new = muladd(Δt, r, t₁)
     return (t₀, t₁_new)
 end
@@ -504,12 +504,12 @@ function loss(
 end
 
 function make_ode_func(
-    icnf::AbstractICNF{T, CM, INPLACE},
+    icnf::AbstractICNF{T},
     mode::Mode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVecOrMat{T},
-) where {T <: AbstractFloat, CM, INPLACE}
+) where {T <: AbstractFloat}
     function ode_func(u::Any, p::Any, t::Any)
         return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
     end
@@ -521,19 +521,19 @@ function make_ode_func(
     return ode_func
 end
 
-function (icnf::AbstractICNF{T, CM, INPLACE, false})(
+function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false})(
     xs::AbstractVecOrMat,
     ps::Any,
     st::NamedTuple,
-) where {T, CM, INPLACE}
+) where {INPLACE}
     return first(inference(icnf, TrainMode(), xs, ps, st)), st
 end
 
-function (icnf::AbstractICNF{T, CM, INPLACE, true})(
+function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true})(
     xs_ys::Tuple,
     ps::Any,
     st::NamedTuple,
-) where {T, CM, INPLACE}
+) where {INPLACE}
     xs, ys = xs_ys
     return first(inference(icnf, TrainMode(), xs, ys, ps, st)), st
 end
