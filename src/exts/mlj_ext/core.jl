@@ -3,12 +3,7 @@ function MLJModelInterface.fitted_params(::MLJICNF, fitresult)
     return (learned_parameters = ps, states = st)
 end
 
-function make_opt_loss(
-    icnf::AbstractICNF{T, CM, INPLACE, COND},
-    mode::Mode,
-    st::NamedTuple,
-    loss_::Function,
-) where {T, CM, INPLACE, COND}
+function make_opt_loss(icnf::AbstractICNF, mode::Mode, st::NamedTuple, loss_::Function)
     function opt_loss(u::Any, data::Tuple{<:Any})
         xs, = data
         return loss_(icnf, mode, xs, u, st)
@@ -20,4 +15,36 @@ function make_opt_loss(
     end
 
     return opt_loss
+end
+
+function make_dataloader(
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
+    ::Int,
+    data::Tuple,
+)
+    return MLUtils.DataLoader(
+        data;
+        batchsize = -1,
+        shuffle = true,
+        partial = true,
+        rng = icnf.rng,
+    )
+end
+
+function make_dataloader(
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    batchsize::Int,
+    data::Tuple,
+)
+    return MLUtils.DataLoader(
+        data;
+        batchsize = if iszero(batchsize)
+            last(maximum(broadcast(size, data)))
+        else
+            batchsize
+        end,
+        shuffle = true,
+        partial = true,
+        rng = icnf.rng,
+    )
 end
