@@ -526,7 +526,7 @@ function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false})(
     ps::Any,
     st::NamedTuple,
 ) where {INPLACE}
-    return first(inference(icnf, TrainMode(), xs, ps, st)), st
+    return first(inference(icnf, TrainMode{false}(), xs, ps, st)), st
 end
 
 function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true})(
@@ -535,5 +535,5 @@ function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true})(
     st::NamedTuple,
 ) where {INPLACE}
     xs, ys = xs_ys
-    return first(inference(icnf, TrainMode(), xs, ys, ps, st)), st
+    return first(inference(icnf, TrainMode{false}(), xs, ys, ps, st)), st
 end

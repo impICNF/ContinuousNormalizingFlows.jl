@@ -41,7 +41,10 @@ Test.@testset "Regression Tests" begin
     mach = MLJBase.machine(model, df)
     MLJBase.fit!(mach)
 
-    d = ContinuousNormalizingFlows.ICNFDist(mach, ContinuousNormalizingFlows.TestMode())
+    d = ContinuousNormalizingFlows.ICNFDist(
+        mach,
+        ContinuousNormalizingFlows.TestMode{true}(),
+    )
     actual_pdf = Distributions.pdf.(data_dist, r)
     estimated_pdf = Distributions.pdf(d, r)
 

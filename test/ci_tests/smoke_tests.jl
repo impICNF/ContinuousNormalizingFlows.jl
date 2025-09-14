@@ -1,8 +1,8 @@
 Test.@testset "Smoke Tests" begin
     mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.ICNF]
     omodes = ContinuousNormalizingFlows.Mode[
-        ContinuousNormalizingFlows.TrainMode(),
-        ContinuousNormalizingFlows.TestMode(),
+        ContinuousNormalizingFlows.TrainMode{true}(),
+        ContinuousNormalizingFlows.TestMode{true}(),
     ]
     conds, inplaces = if GROUP == "SmokeXOut"
         Bool[false], Bool[false]
