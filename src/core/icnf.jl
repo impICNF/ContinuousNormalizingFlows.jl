@@ -141,7 +141,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -166,7 +166,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -197,7 +197,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
