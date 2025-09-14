@@ -24,7 +24,7 @@ import ADTypes,
 
 GROUP = get(ENV, "GROUP", "All")
 
-if (GROUP == "All")
+if GROUP == "All"
     GC.enable_logging(true)
 
     debuglogger = TerminalLoggers.TerminalLogger(stderr, Logging.Debug)

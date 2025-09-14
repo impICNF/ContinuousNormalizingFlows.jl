@@ -95,7 +95,7 @@ end
 
 function steer_tspan(
     icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, COND, AUGMENTED, true},
-    ::TrainMode,
+    ::TrainMode{true},
 ) where {INPLACE, COND, AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
@@ -124,9 +124,9 @@ end
 
 function inference_sol(
     icnf::AbstractICNF{T, <:VectorMode, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG},
-    mode::Mode,
+    mode::Mode{REG},
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
-) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
+) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG, REG}
     n_aug = n_augment(icnf, mode)
     fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1)]
@@ -134,7 +134,7 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    Ȧ = if (NORM_Z_AUG && AUGMENTED)
+    Ȧ = if NORM_Z_AUG && AUGMENTED && REG
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
         LinearAlgebra.norm(z_aug)
@@ -146,9 +146,9 @@ end
 
 function inference_sol(
     icnf::AbstractICNF{T, <:MatrixMode, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG},
-    mode::Mode,
+    mode::Mode{REG},
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
-) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
+) where {T <: AbstractFloat, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG, REG}
     n_aug = n_augment(icnf, mode)
     fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1), :]
@@ -156,7 +156,7 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end, :]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    Ȧ = transpose(if (NORM_Z_AUG && AUGMENTED)
+    Ȧ = transpose(if NORM_Z_AUG && AUGMENTED && REG
         n_aug_input = n_augment_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
         LinearAlgebra.norm.(eachcol(z_aug))

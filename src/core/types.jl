@@ -1,6 +1,14 @@
-abstract type Mode end
-struct TestMode <: Mode end
-struct TrainMode <: Mode end
+abstract type Mode{REG} end
+struct TestMode{REG} <: Mode{REG} end
+struct TrainMode{REG} <: Mode{REG} end
+
+function TestMode()
+    return TestMode{false}()
+end
+
+function TrainMode()
+    return TrainMode{true}()
+end
 
 abstract type ComputeMode{ADBack} end
 abstract type VectorMode{ADBack} <: ComputeMode{ADBack} end
