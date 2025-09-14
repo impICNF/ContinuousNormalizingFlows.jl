@@ -70,7 +70,7 @@ ps = ComponentArrays.ComponentArray(ps)
 function diff_loss_tn(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf,
-        ContinuousNormalizingFlows.TrainMode(),
+        ContinuousNormalizingFlows.TrainMode{true}(),
         r,
         x,
         st,
@@ -79,7 +79,7 @@ end
 function diff_loss_tt(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf,
-        ContinuousNormalizingFlows.TestMode(),
+        ContinuousNormalizingFlows.TestMode{true}(),
         r,
         x,
         st,
@@ -89,7 +89,7 @@ end
 function diff_loss_tn2(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf2,
-        ContinuousNormalizingFlows.TrainMode(),
+        ContinuousNormalizingFlows.TrainMode{true}(),
         r,
         x,
         st,
@@ -98,7 +98,7 @@ end
 function diff_loss_tt2(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf2,
-        ContinuousNormalizingFlows.TestMode(),
+        ContinuousNormalizingFlows.TestMode{true}(),
         r,
         x,
         st,

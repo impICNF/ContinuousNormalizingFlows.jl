@@ -71,7 +71,10 @@ Test.@testset "Speed Tests" begin
 
         @show only(MLJBase.report(mach).stats).time
 
-        d = ContinuousNormalizingFlows.ICNFDist(mach, ContinuousNormalizingFlows.TestMode())
+        d = ContinuousNormalizingFlows.ICNFDist(
+            mach,
+            ContinuousNormalizingFlows.TestMode{true}(),
+        )
         actual_pdf = Distributions.pdf.(data_dist, r)
         estimated_pdf = Distributions.pdf(d, r)
 

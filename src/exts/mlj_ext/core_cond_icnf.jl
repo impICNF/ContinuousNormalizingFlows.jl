@@ -34,7 +34,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     data = model.m.device(data)
     optprob = SciMLBase.OptimizationProblem{true}(
         SciMLBase.OptimizationFunction{true}(
-            make_opt_loss(model.m, TrainMode(), st, model.loss),
+            make_opt_loss(model.m, TrainMode{true}(), st, model.loss),
             model.adtype,
         ),
         ps,
@@ -66,13 +66,13 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
         @warn "to compute by vectors, data should be a vector."
         broadcast(
             function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
-                return first(inference(model.m, TestMode(), x, y, ps, st))
+                return first(inference(model.m, TestMode{false}(), x, y, ps, st))
             end,
             collect(collect.(eachcol(xnew))),
             collect(collect.(eachcol(ynew))),
         )
     elseif model.m.compute_mode isa MatrixMode
-        first(inference(model.m, TestMode(), xnew, ynew, ps, st))
+        first(inference(model.m, TestMode{false}(), xnew, ynew, ps, st))
     else
         error("Not Implemented")
     end

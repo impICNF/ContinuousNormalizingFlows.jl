@@ -7,8 +7,8 @@ Test.@testset "CheckByJET" begin
 
     mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.ICNF]
     omodes = ContinuousNormalizingFlows.Mode[
-        ContinuousNormalizingFlows.TrainMode(),
-        ContinuousNormalizingFlows.TestMode(),
+        ContinuousNormalizingFlows.TrainMode{true}(),
+        ContinuousNormalizingFlows.TestMode{true}(),
     ]
     conds = Bool[false, true]
     inplaces = Bool[false, true]
