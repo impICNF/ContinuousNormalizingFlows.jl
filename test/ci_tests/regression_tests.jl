@@ -34,7 +34,7 @@ Test.@testset "Regression Tests" begin
     df = DataFrames.DataFrame(transpose(r), :auto)
     model = ContinuousNormalizingFlows.ICNFModel(
         icnf;
-        batch_size = 0,
+        batchsize = 0,
         sol_kwargs = (; progress = true, epochs = 300),
     )
 

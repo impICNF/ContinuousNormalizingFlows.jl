@@ -127,10 +127,10 @@ Test.@testset "Smoke Tests" begin
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
-        r = device(r)
-        r2 = device(r2)
-        ps = device(ps)
-        st = device(st)
+        r = icnf.device(r)
+        r2 = icnf.device(r2)
+        ps = icnf.device(ps)
+        st = icnf.device(st)
 
         if GROUP != "All" &&
            compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
@@ -224,7 +224,7 @@ Test.@testset "Smoke Tests" begin
                 model = ContinuousNormalizingFlows.CondICNFModel(
                     icnf;
                     adtype,
-                    batch_size = 0,
+                    batchsize = 0,
                     sol_kwargs = (; progress = true, epochs = 2),
                 )
                 mach = MLJBase.machine(model, (df, df2))
@@ -251,7 +251,7 @@ Test.@testset "Smoke Tests" begin
                 model = ContinuousNormalizingFlows.ICNFModel(
                     icnf;
                     adtype,
-                    batch_size = 0,
+                    batchsize = 0,
                     sol_kwargs = (; progress = true, epochs = 2),
                 )
                 mach = MLJBase.machine(model, df)

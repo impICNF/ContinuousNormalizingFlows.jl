@@ -14,8 +14,8 @@ end
 function PlanarLayer(
     nvars::Int,
     activation::Any = identity;
-    init_weight::Any = Lux.glorot_uniform,
-    init_bias::Any = Lux.zeros32,
+    init_weight::Any = WeightInitializers.glorot_uniform,
+    init_bias::Any = WeightInitializers.zeros32,
     use_bias::Bool = true,
     n_cond::Int = 0,
 )

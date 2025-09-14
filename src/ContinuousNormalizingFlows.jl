@@ -25,6 +25,7 @@ import ADTypes,
     SciMLSensitivity,
     ScientificTypesBase,
     Statistics,
+    WeightInitializers,
     Zygote
 
 export construct,
@@ -54,13 +55,10 @@ export construct,
 include(joinpath("layers", "cond_layer.jl"))
 include(joinpath("layers", "planar_layer.jl"))
 
-include("types.jl")
-
-include("base_icnf.jl")
-
-include("icnf.jl")
-
-include("utils.jl")
+include(joinpath("core", "types.jl"))
+include(joinpath("core", "base_icnf.jl"))
+include(joinpath("core", "icnf.jl"))
+include(joinpath("core", "utils.jl"))
 
 include(joinpath("exts", "mlj_ext", "core.jl"))
 include(joinpath("exts", "mlj_ext", "core_icnf.jl"))
