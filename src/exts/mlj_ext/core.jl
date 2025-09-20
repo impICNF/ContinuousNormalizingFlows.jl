@@ -39,7 +39,7 @@ function make_dataloader(
     return MLUtils.DataLoader(
         data;
         batchsize = if iszero(batchsize)
-            last(maximum(broadcast(size, data)))
+            last(maximum(size.(data)))
         else
             batchsize
         end,
