@@ -55,11 +55,6 @@ Test.@testset "Speed Tests" begin
 
         df = DataFrames.DataFrame(transpose(r), :auto)
 
-        if GROUP != "All" &&
-           compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-            continue
-        end
-
         model = ContinuousNormalizingFlows.ICNFModel(
             icnf;
             batchsize = 0,
