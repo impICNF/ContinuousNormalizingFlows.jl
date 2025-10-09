@@ -21,11 +21,10 @@ Test.@testset "Speed Tests" begin
     Test.@testset "$compute_mode" for compute_mode in compute_modes
         @show compute_mode
 
-        rng = StableRNGs.StableRNG(1)
         ndata = 2^10
         ndimension = 1
         data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-        r = rand(rng, data_dist, ndimension, ndata)
+        r = rand(data_dist, ndimension, ndata)
         r = convert.(Float32, r)
 
         nvars = size(r, 1)
@@ -45,7 +44,6 @@ Test.@testset "Speed Tests" begin
             λ₁ = 1.0f-2,
             λ₂ = 1.0f-2,
             λ₃ = 1.0f-2,
-            rng,
             sol_kwargs = (;
                 save_everystep = false,
                 alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),

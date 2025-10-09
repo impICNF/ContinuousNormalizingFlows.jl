@@ -31,7 +31,8 @@ if GROUP == "All"
     Logging.global_logger(debuglogger)
 end
 
-Test.@testset "Overall" begin
+Test.@testset verbose = true showtiming = true failfast = false rng =
+    StableRNGs.StableRNG(1) "Overall" begin
     if GROUP == "All" || GROUP in ["SmokeXOut", "SmokeXIn", "SmokeXYOut", "SmokeXYIn"]
         include(joinpath("ci_tests", "smoke_tests.jl"))
     end
