@@ -1,8 +1,7 @@
 Test.@testset "CheckByJET" begin
     JET.test_package(
         ContinuousNormalizingFlows;
-        target_modules = [ContinuousNormalizingFlows],
-        mode = :typo,
+        target_modules = (ContinuousNormalizingFlows,),
     )
 
     mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.ICNF]
@@ -118,29 +117,37 @@ Test.@testset "CheckByJET" begin
 
         if cond
             ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st)
-            JET.test_call(
-                ContinuousNormalizingFlows.loss,
-                Base.typesof(icnf, omode, r, r2, ps, st);
-                target_modules = [ContinuousNormalizingFlows],
-                mode = :typo,
+            JET.@test_call target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
+                icnf,
+                omode,
+                r,
+                r2,
+                ps,
+                st,
             )
-            JET.test_opt(
-                ContinuousNormalizingFlows.loss,
-                Base.typesof(icnf, omode, r, r2, ps, st);
-                target_modules = [ContinuousNormalizingFlows],
+            JET.@test_opt target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
+                icnf,
+                omode,
+                r,
+                r2,
+                ps,
+                st,
             )
         else
             ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st)
-            JET.test_call(
-                ContinuousNormalizingFlows.loss,
-                Base.typesof(icnf, omode, r, ps, st);
-                target_modules = [ContinuousNormalizingFlows],
-                mode = :typo,
+            JET.@test_call target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
+                icnf,
+                omode,
+                r,
+                ps,
+                st,
             )
-            JET.test_opt(
-                ContinuousNormalizingFlows.loss,
-                Base.typesof(icnf, omode, r, ps, st);
-                target_modules = [ContinuousNormalizingFlows],
+            JET.@test_opt target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
+                icnf,
+                omode,
+                r,
+                ps,
+                st,
             )
         end
     end

@@ -83,7 +83,7 @@ display(res_df)
 # Plot It
 using CairoMakie
 f = Figure()
-ax = Makie.Axis(f[1, 1]; title = "Result")
+ax = Axis(f[1, 1]; title = "Result")
 lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "actual")
 lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "estimated")
 axislegend(ax)
