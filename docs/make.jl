@@ -9,7 +9,7 @@ Documenter.DocMeta.setdocmeta!(
 
 Documenter.makedocs(;
     modules = [ContinuousNormalizingFlows],
-    authors = "Hossein Pourbozorg <prbzrg@gmail.com> and contributors",
+    authors = "Hossein Pourbozorg <prbzrg@gmail.com>",
     repo = "https://github.com/impICNF/ContinuousNormalizingFlows.jl/blob/{commit}{path}#{line}",
     sitename = "ContinuousNormalizingFlows.jl",
     format = Documenter.HTML(;
