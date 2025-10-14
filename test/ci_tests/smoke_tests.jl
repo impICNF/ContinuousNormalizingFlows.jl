@@ -33,30 +33,32 @@ Test.@testset "Smoke Tests" begin
     ]
     compute_modes = ContinuousNormalizingFlows.ComputeMode[
         ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIVecJacVectorMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
+        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoEnzyme()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(
+        ContinuousNormalizingFlows.DIVecJacVectorMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoEnzyme()),
+        ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(
+        ContinuousNormalizingFlows.DIJacVecVectorMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Forward),
                 function_annotation = Enzyme.Const,

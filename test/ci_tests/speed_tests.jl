@@ -4,12 +4,14 @@ Test.@testset "Speed Tests" begin
         ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
         ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
+        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoEnzyme()),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
                 function_annotation = Enzyme.Const,
             ),
         ),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoEnzyme()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Forward),
