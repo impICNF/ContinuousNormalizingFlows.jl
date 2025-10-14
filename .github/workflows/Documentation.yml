@@ -1,12 +1,12 @@
 name: Documentation
 on:
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: '20 8 * * 2'
   push:
-      branches:
-        - main
-      tags:
-        - v*
+    branches:
+      - main
+    tags:
+      - v*
   pull_request:
   release:
   workflow_dispatch:
