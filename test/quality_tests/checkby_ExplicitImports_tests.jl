@@ -1,4 +1,4 @@
-Test.@testset "CheckByExplicitImports" begin
+Test.@testset verbose = true showtiming = true failfast = false "CheckByExplicitImports" begin
     Test.@test isnothing(
         ExplicitImports.check_no_implicit_imports(ContinuousNormalizingFlows),
     )

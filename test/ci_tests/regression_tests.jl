@@ -1,4 +1,4 @@
-Test.@testset "Regression Tests" begin
+Test.@testset verbose = true showtiming = true failfast = false "Regression Tests" begin
     rng = StableRNGs.StableRNG(1)
     ndata = 2^10
     ndimension = 1

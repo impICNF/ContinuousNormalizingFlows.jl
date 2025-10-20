@@ -1,4 +1,4 @@
-Test.@testset "Smoke Tests" begin
+Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" begin
     mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.ICNF]
     omodes = ContinuousNormalizingFlows.Mode[
         ContinuousNormalizingFlows.TrainMode{true}(),
@@ -38,7 +38,12 @@ Test.@testset "Smoke Tests" begin
         ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoEnzyme()),
+        ContinuousNormalizingFlows.LuxVecJacMatrixMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
@@ -51,7 +56,12 @@ Test.@testset "Smoke Tests" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoEnzyme()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Forward),
@@ -66,8 +76,8 @@ Test.@testset "Smoke Tests" begin
         ),
     ]
 
-    Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
-                                                                                                                                                                     devices,
+    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
+                                                                                                                                                                                                                       devices,
         data_type in data_types,
         compute_mode in compute_modes,
         ndata in ndata_,
@@ -195,20 +205,17 @@ Test.@testset "Smoke Tests" begin
         Test.@test !isnothing(rand(d))
         Test.@test !isnothing(rand(d, ndata))
 
-        Test.@testset "$adtype on loss" for adtype in adtypes
+        Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
+                                                                                              adtypes
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
-                GROUP != "All" &&
-                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
-                (
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
                     omode isa ContinuousNormalizingFlows.TrainMode || (
                         omode isa ContinuousNormalizingFlows.TestMode &&
                         compute_mode isa ContinuousNormalizingFlows.VectorMode
                     )
                 )
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r)) broken =
-                GROUP != "All" &&
-                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} &&
-                (
+                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
                     omode isa ContinuousNormalizingFlows.TrainMode || (
                         omode isa ContinuousNormalizingFlows.TestMode &&
                         compute_mode isa ContinuousNormalizingFlows.VectorMode
@@ -225,22 +232,17 @@ Test.@testset "Smoke Tests" begin
                 mach = MLJBase.machine(model, (df, df2))
 
                 Test.@test !isnothing(MLJBase.fit!(mach)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 Test.@test !isnothing(MLJBase.transform(mach, (df, df2))) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 Test.@test !isnothing(MLJBase.serializable(mach)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
 
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
                 ) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
             else
                 model = ContinuousNormalizingFlows.ICNFModel(
@@ -252,20 +254,15 @@ Test.@testset "Smoke Tests" begin
                 mach = MLJBase.machine(model, df)
 
                 Test.@test !isnothing(MLJBase.fit!(mach)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 Test.@test !isnothing(MLJBase.transform(mach, df)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
                 Test.@test !isnothing(MLJBase.serializable(mach)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
 
                 Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode)) broken =
-                    GROUP != "All" &&
                     compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
             end
         end

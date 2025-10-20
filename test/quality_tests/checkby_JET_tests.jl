@@ -1,4 +1,4 @@
-Test.@testset "CheckByJET" begin
+Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" begin
     JET.test_package(
         ContinuousNormalizingFlows;
         target_modules = (ContinuousNormalizingFlows,),
@@ -23,7 +23,12 @@ Test.@testset "CheckByJET" begin
         ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
         ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoEnzyme()),
+        ContinuousNormalizingFlows.LuxVecJacMatrixMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
         ContinuousNormalizingFlows.DIVecJacMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
@@ -36,7 +41,12 @@ Test.@testset "CheckByJET" begin
                 function_annotation = Enzyme.Const,
             ),
         ),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoEnzyme()),
+        ContinuousNormalizingFlows.LuxJacVecMatrixMode(
+            ADTypes.AutoEnzyme(;
+                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
+                function_annotation = Enzyme.Const,
+            ),
+        ),
         ContinuousNormalizingFlows.DIJacVecMatrixMode(
             ADTypes.AutoEnzyme(;
                 mode = Enzyme.set_runtime_activity(Enzyme.Forward),
@@ -51,8 +61,8 @@ Test.@testset "CheckByJET" begin
         ),
     ]
 
-    Test.@testset "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
-                                                                                                                                                                     devices,
+    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
+                                                                                                                                                                                                                       devices,
         data_type in data_types,
         compute_mode in compute_modes,
         ndata in ndata_,
