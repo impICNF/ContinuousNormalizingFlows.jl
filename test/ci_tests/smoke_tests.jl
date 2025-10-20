@@ -207,6 +207,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
+
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
                 compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
                     omode isa ContinuousNormalizingFlows.TrainMode || (
@@ -242,8 +243,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
-                ) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                ) broken = compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
             else
                 model = ContinuousNormalizingFlows.ICNFModel(
                     icnf;
