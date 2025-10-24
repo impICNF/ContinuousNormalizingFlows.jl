@@ -35,7 +35,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
     model = ContinuousNormalizingFlows.ICNFModel(
         icnf;
         batchsize = 0,
-        sol_kwargs = (; progress = true, epochs = 300),
+        sol_kwargs = (; epochs = 300),
     )
 
     mach = MLJBase.machine(model, df)

@@ -9,7 +9,6 @@ import ADTypes,
     ExplicitImports,
     ForwardDiff,
     JET,
-    Logging,
     Lux,
     LuxCore,
     MLDataDevices,
@@ -17,19 +16,11 @@ import ADTypes,
     OrdinaryDiffEqDefault,
     SciMLSensitivity,
     StableRNGs,
-    TerminalLoggers,
     Test,
     Zygote,
     ContinuousNormalizingFlows
 
 GROUP = get(ENV, "GROUP", "All")
-
-if GROUP == "All"
-    GC.enable_logging(true)
-
-    debuglogger = TerminalLoggers.TerminalLogger(stderr, Logging.Debug)
-    Logging.global_logger(debuglogger)
-end
 
 Test.@testset verbose = true showtiming = true failfast = false "Overall" begin
     if GROUP == "All" || GROUP in ["SmokeXOut", "SmokeXIn", "SmokeXYOut", "SmokeXYIn"]
