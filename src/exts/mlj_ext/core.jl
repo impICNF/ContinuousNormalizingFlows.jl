@@ -22,13 +22,7 @@ function make_dataloader(
     ::Int,
     data::Tuple,
 )
-    return MLUtils.DataLoader(
-        data;
-        batchsize = -1,
-        shuffle = true,
-        partial = true,
-        rng = icnf.rng,
-    )
+    return MLUtils.DataLoader(data; batchsize = -1, shuffle = true, partial = true)
 end
 
 function make_dataloader(
@@ -45,6 +39,5 @@ function make_dataloader(
         end,
         shuffle = true,
         partial = true,
-        rng = icnf.rng,
     )
 end
