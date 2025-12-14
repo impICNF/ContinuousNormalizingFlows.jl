@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.defaultFormatter": "julialang.language-julia",
+		"editor.formatOnPaste": true,
+		"editor.formatOnSave": true,
+		"editor.formatOnType": true,
+		"editor.trimWhitespaceOnDelete": true,
+		"files.insertFinalNewline": true,
+		"files.trimFinalNewlines": true,
+		"files.trimTrailingWhitespace": true,
+		"julia.enableCrashReporter": true,
+		"julia.enableTelemetry": true,
+		"julia.execution.codeInREPL": true,
+		"julia.execution.saveOnEval": true,
+		"julia.focusPlotNavigator": true,
+		"julia.inlayHints.static.enabled": true,
+		"julia.NumThreads": "auto"
+	}
+}

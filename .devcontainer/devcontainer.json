@@ -1,7 +1,8 @@
 {
     "image": "julia:latest",
     "features": {
-        "ghcr.io/julialang/devcontainer-features/julia:1": {
+        "ghcr.io/julialang/devcontainer-features/julia:latest": {
+            "channel": "release"
         }
     }
 }

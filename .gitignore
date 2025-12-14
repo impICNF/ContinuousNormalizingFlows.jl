@@ -24,7 +24,5 @@ docs/site/
 Manifest.toml
 LocalPreferences.toml
 
-.vscode
-
 .benchmarkci
 benchmark/*.json
