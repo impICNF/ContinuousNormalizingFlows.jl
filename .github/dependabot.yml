@@ -1,10 +1,12 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: '/'
     schedule:
-      interval: "daily"
-  - package-ecosystem: "julia"
-    directory: "/"
+      interval: cron
+      cronjob: '20 8 * * 2'
+  - package-ecosystem: julia
+    directory: '/'
     schedule:
-      interval: "daily"
+      interval: cron
+      cronjob: '20 8 * * 2'
