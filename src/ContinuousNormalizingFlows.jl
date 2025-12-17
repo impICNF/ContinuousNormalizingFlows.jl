@@ -52,21 +52,21 @@ export construct,
     CondLayer,
     PlanarLayer
 
-include(joinpath("layers", "cond_layer.jl"))
-include(joinpath("layers", "planar_layer.jl"))
+include("layers/cond_layer.jl")
+include("layers/planar_layer.jl")
 
-include(joinpath("core", "types.jl"))
-include(joinpath("core", "base_icnf.jl"))
-include(joinpath("core", "icnf.jl"))
-include(joinpath("core", "utils.jl"))
+include("core/types.jl")
+include("core/base_icnf.jl")
+include("core/icnf.jl")
+include("core/utils.jl")
 
-include(joinpath("exts", "mlj_ext", "core.jl"))
-include(joinpath("exts", "mlj_ext", "core_icnf.jl"))
-include(joinpath("exts", "mlj_ext", "core_cond_icnf.jl"))
+include("exts/mlj_ext/core.jl")
+include("exts/mlj_ext/core_icnf.jl")
+include("exts/mlj_ext/core_cond_icnf.jl")
 
-include(joinpath("exts", "dist_ext", "core.jl"))
-include(joinpath("exts", "dist_ext", "core_icnf.jl"))
-include(joinpath("exts", "dist_ext", "core_cond_icnf.jl"))
+include("exts/dist_ext/core.jl")
+include("exts/dist_ext/core_icnf.jl")
+include("exts/dist_ext/core_cond_icnf.jl")
 
 """
 Implementations of Infinitesimal Continuous Normalizing Flows Algorithms in Julia
