@@ -6,7 +6,11 @@ updates:
       interval: cron
       cronjob: '20 8 * * 2'
   - package-ecosystem: julia
-    directory: '/'
+    directories:
+      - '/'
+      - '/docs'
+      - '/test'
+      - '/benchmark'
     schedule:
       interval: cron
       cronjob: '20 8 * * 2'
