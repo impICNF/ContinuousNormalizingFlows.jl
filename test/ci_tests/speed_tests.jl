@@ -32,7 +32,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
 
     Test.@testset verbose = true showtiming = true failfast = false "$compute_mode" for compute_mode in
                                                                                         compute_modes
-
         @show compute_mode
 
         rng = StableRNGs.StableRNG(1)
@@ -63,7 +62,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
             sol_kwargs = (;
                 save_everystep = false,
                 alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-                sensealg = SciMLSensitivity.InterpolatingAdjoint(),
+                sensealg = SciMLSensitivity.GaussAdjoint(),
             ),
         )
 

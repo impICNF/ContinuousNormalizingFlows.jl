@@ -27,7 +27,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
         sol_kwargs = (;
             save_everystep = false,
             alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-            sensealg = SciMLSensitivity.InterpolatingAdjoint(),
+            sensealg = SciMLSensitivity.GaussAdjoint(),
         ),
     )
 

@@ -117,7 +117,7 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
             sol_kwargs = (;
                 save_everystep = false,
                 alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-                sensealg = SciMLSensitivity.InterpolatingAdjoint(),
+                sensealg = SciMLSensitivity.GaussAdjoint(),
             ),
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)

@@ -43,7 +43,7 @@ icnf = construct(
     sol_kwargs = (;
         save_everystep = false,
         alg = DefaultODEAlgorithm(),
-        sensealg = InterpolatingAdjoint(),
+        sensealg = GaussAdjoint(),
     ), # pass to the solver
 )
 

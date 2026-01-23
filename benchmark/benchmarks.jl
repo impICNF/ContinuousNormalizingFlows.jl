@@ -41,7 +41,7 @@ icnf = ContinuousNormalizingFlows.construct(
     sol_kwargs = (;
         save_everystep = false,
         alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-        sensealg = SciMLSensitivity.InterpolatingAdjoint(),
+        sensealg = SciMLSensitivity.GaussAdjoint(),
     ),
 )
 
@@ -61,7 +61,7 @@ icnf2 = ContinuousNormalizingFlows.construct(
     sol_kwargs = (;
         save_everystep = false,
         alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-        sensealg = SciMLSensitivity.InterpolatingAdjoint(),
+        sensealg = SciMLSensitivity.GaussAdjoint(),
     ),
 )
 
