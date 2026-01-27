@@ -24,11 +24,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
         λ₂ = 1.0f-2,
         λ₃ = 1.0f-2,
         rng,
-        sol_kwargs = (;
-            save_everystep = false,
-            alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-            sensealg = SciMLSensitivity.GaussAdjoint(),
-        ),
     )
 
     df = DataFrames.DataFrame(transpose(r), :auto)

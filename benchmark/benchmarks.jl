@@ -38,11 +38,6 @@ icnf = ContinuousNormalizingFlows.construct(
     λ₂ = 1.0f-2,
     λ₃ = 1.0f-2,
     rng,
-    sol_kwargs = (;
-        save_everystep = false,
-        alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-        sensealg = SciMLSensitivity.GaussAdjoint(),
-    ),
 )
 
 icnf2 = ContinuousNormalizingFlows.construct(
@@ -58,11 +53,6 @@ icnf2 = ContinuousNormalizingFlows.construct(
     λ₂ = 1.0f-2,
     λ₃ = 1.0f-2,
     rng,
-    sol_kwargs = (;
-        save_everystep = false,
-        alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-        sensealg = SciMLSensitivity.GaussAdjoint(),
-    ),
 )
 
 ps, st = LuxCore.setup(icnf.rng, icnf)
