@@ -131,11 +131,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             λ₁ = convert(data_type, 1.0e-2),
             λ₂ = convert(data_type, 1.0e-2),
             λ₃ = convert(data_type, 1.0e-2),
-            sol_kwargs = (;
-                save_everystep = false,
-                alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-                sensealg = SciMLSensitivity.GaussAdjoint(),
-            ),
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -207,7 +202,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
-
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
                 compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
                     omode isa ContinuousNormalizingFlows.TrainMode || (

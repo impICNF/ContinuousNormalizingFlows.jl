@@ -114,11 +114,6 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
             λ₁ = convert(data_type, 1.0e-2),
             λ₂ = convert(data_type, 1.0e-2),
             λ₃ = convert(data_type, 1.0e-2),
-            sol_kwargs = (;
-                save_everystep = false,
-                alg = OrdinaryDiffEqDefault.DefaultODEAlgorithm(),
-                sensealg = SciMLSensitivity.GaussAdjoint(),
-            ),
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
