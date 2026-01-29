@@ -1,3 +1,5 @@
+abstract type MLJICNF{AICNF <: AbstractICNF} <: MLJModelInterface.Unsupervised end
+
 function MLJModelInterface.fitted_params(::MLJICNF, fitresult)
     (ps, st) = fitresult
     return (learned_parameters = ps, states = st)
@@ -17,16 +19,12 @@ function make_opt_loss(icnf::AbstractICNF, mode::Mode, st::NamedTuple, loss_::Fu
     return opt_loss
 end
 
-function make_dataloader(
-    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
-    ::Int,
-    data::Tuple,
-)
+function make_dataloader(::AbstractICNF{<:AbstractFloat, <:VectorMode}, ::Int, data::Tuple)
     return MLUtils.DataLoader(data; batchsize = -1, shuffle = true, partial = true)
 end
 
 function make_dataloader(
-    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
+    ::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     batchsize::Int,
     data::Tuple,
 )
