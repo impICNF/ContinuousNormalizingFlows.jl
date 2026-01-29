@@ -15,7 +15,7 @@ r = convert.(Float32, r)
 
 # Parameters
 nvars = size(r, 1)
-naugs = nvars
+naugs = nvars + 1
 n_in = nvars + naugs
 
 # Model
@@ -27,7 +27,7 @@ using ContinuousNormalizingFlows,
 
 nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
 icnf = construct(
-    RNODE,
+    ICNF,
     nn,
     nvars, # number of variables
     naugs; # number of augmented dimensions
@@ -35,7 +35,7 @@ icnf = construct(
     inplace = false, # not using the inplace version of functions
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
-    tspan = (0.0f0, 10.0f0), # have bigger time span
+    tspan = (0.0f0, 1.0f0), # time span
     steer_rate = 1.0f-1, # add random noise to end of the time span
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
@@ -52,10 +52,10 @@ using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
-    optimizers = (Adam(),),
+    optimizers = (Lion(),),
     adtype = AutoZygote(),
     batchsize = 512,
-    sol_kwargs = (; epochs = 300), # pass to the solver
+    sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
 )
 mach = machine(model, df)
 fit!(mach)
