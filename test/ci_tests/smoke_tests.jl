@@ -202,6 +202,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
+
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
                 compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
                     omode isa ContinuousNormalizingFlows.TrainMode || (
