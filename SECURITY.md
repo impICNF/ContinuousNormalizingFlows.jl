@@ -4,4 +4,4 @@
 
 | Version | Supported          |
 |:------- |:------------------ |
-| 0.29.3  | :white_check_mark: |
+| 0.29.4  | :white_check_mark: |

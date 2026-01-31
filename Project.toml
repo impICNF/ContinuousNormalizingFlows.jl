@@ -1,6 +1,6 @@
 name = "ContinuousNormalizingFlows"
 uuid = "00b1973d-5b2e-40bf-8604-5c9c1d8f50ac"
-version = "0.29.3"
+version = "0.29.4"
 authors = ["Hossein Pourbozorg <prbzrg@gmail.com>"]
 
 [deps]
