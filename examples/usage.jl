@@ -52,7 +52,7 @@ using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
     icnf;
-    optimizers = (Lion(),),
+    optimizers = (Adam(),),
     adtype = AutoZygote(),
     batchsize = 512,
     sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
