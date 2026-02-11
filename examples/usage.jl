@@ -20,7 +20,7 @@ n_in = nvars + naugs
 
 # Model
 using ContinuousNormalizingFlows,
-    Lux, OrdinaryDiffEqDefault, SciMLSensitivity, ADTypes, Zygote, MLDataDevices
+    Lux, OrdinaryDiffEqAdamsBashforthMoulton, SciMLSensitivity, ADTypes, Zygote, MLDataDevices
 
 # To use gpu, add related packages
 # using LuxCUDA, CUDA, cuDNN
@@ -42,7 +42,7 @@ icnf = construct(
     λ₃ = 1.0f-2, # regulate augmented dimensions
     sol_kwargs = (;
         save_everystep = false,
-        alg = DefaultODEAlgorithm(),
+        alg = VCABM(),
         sensealg = GaussAdjoint(),
     ), # pass to the solver
 )
