@@ -1,11 +1,11 @@
 # Switch To MKL For Faster Computation
 # using MKL
 
-# Enable Logging
+## Enable Logging
 using Logging, TerminalLoggers
 global_logger(TerminalLogger())
 
-# Data
+## Data
 using Distributions
 ndata = 1024
 ndimension = 1
@@ -13,12 +13,12 @@ data_dist = Beta{Float32}(2.0f0, 4.0f0)
 r = rand(data_dist, ndimension, ndata)
 r = convert.(Float32, r)
 
-# Parameters
+## Parameters
 nvars = size(r, 1)
 naugs = nvars + 1
 n_in = nvars + naugs
 
-# Model
+## Model
 using ContinuousNormalizingFlows,
     Lux, OrdinaryDiffEqAdamsBashforthMoulton, ADTypes, Zygote, MLDataDevices
 
@@ -43,7 +43,7 @@ icnf = construct(
     sol_kwargs = (; save_everystep = false, alg = VCABM()), # pass to the solver
 )
 
-# Fit It
+## Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 df = DataFrame(transpose(r), :auto)
 model = ICNFModel(
@@ -57,18 +57,18 @@ mach = machine(model, df)
 fit!(mach)
 # CUDA.@allowscalar fit!(mach) # needed for gpu
 
-# Store It
+## Store It
 icnf_mach_fn = "icnf_mach.jls"
 MLJBase.save(icnf_mach_fn, mach) # save it
 mach = machine(icnf_mach_fn) # load it
 
-# Use It
+## Use It
 d = ICNFDist(mach, TestMode())
 actual_pdf = pdf.(data_dist, vec(r))
 estimated_pdf = pdf(d, r)
 new_data = rand(d, ndata)
 
-# Evaluate It
+## Evaluate It
 using Distances
 mad_ = meanad(estimated_pdf, actual_pdf)
 msd_ = msd(estimated_pdf, actual_pdf)
@@ -76,7 +76,7 @@ tv_dis = totalvariation(estimated_pdf, actual_pdf) / ndata
 res_df = DataFrame(; mad_, msd_, tv_dis)
 display(res_df)
 
-# Plot It
+## Plot It
 using CairoMakie
 f = Figure()
 ax = Axis(f[1, 1]; title = "Result")

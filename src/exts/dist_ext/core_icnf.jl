@@ -21,7 +21,7 @@ function Distributions._logpdf(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     x::AbstractVector{<:Real},
 )
-    @warn "to compute by matrices, data should be a matrix."
+    @warn maxlog = 1 "to compute by matrices, data should be a matrix."
     return first(Distributions._logpdf(d, hcat(x)))
 end
 
@@ -29,7 +29,7 @@ function Distributions._logpdf(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     A::AbstractMatrix{<:Real},
 )
-    @warn "to compute by vectors, data should be a vector."
+    @warn maxlog = 1 "to compute by vectors, data should be a vector."
     return Distributions._logpdf.(d, collect(collect.(eachcol(A))))
 end
 
@@ -53,7 +53,7 @@ function Distributions._rand!(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     x::AbstractVector{<:Real},
 )
-    @warn "to compute by matrices, data should be a matrix."
+    @warn maxlog = 1 "to compute by matrices, data should be a matrix."
     return x .= Distributions._rand!(rng, d, hcat(x))
 end
 
@@ -62,7 +62,7 @@ function Distributions._rand!(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     A::AbstractMatrix{<:Real},
 )
-    @warn "to compute by vectors, data should be a vector."
+    @warn maxlog = 1 "to compute by vectors, data should be a vector."
     return A .= hcat(Distributions._rand!.(rng, d, collect(collect.(eachcol(A))))...)
 end
 
