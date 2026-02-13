@@ -20,12 +20,7 @@ n_in = nvars + naugs
 
 # Model
 using ContinuousNormalizingFlows,
-    Lux,
-    OrdinaryDiffEqAdamsBashforthMoulton,
-    SciMLSensitivity,
-    ADTypes,
-    Zygote,
-    MLDataDevices
+    Lux, OrdinaryDiffEqAdamsBashforthMoulton, ADTypes, Zygote, MLDataDevices
 
 # To use gpu, add related packages
 # using LuxCUDA, CUDA, cuDNN
@@ -45,7 +40,7 @@ icnf = construct(
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
-    sol_kwargs = (; save_everystep = false, alg = VCABM(), sensealg = GaussAdjoint()), # pass to the solver
+    sol_kwargs = (; save_everystep = false, alg = VCABM()), # pass to the solver
 )
 
 # Fit It
