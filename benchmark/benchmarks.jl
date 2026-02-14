@@ -42,7 +42,7 @@ icnf = ContinuousNormalizingFlows.construct(;
 )
 
 icnf2 = ContinuousNormalizingFlows.construct(;
-    nvars;
+    nvars,
     naugmented = naugs,
     nn,
     inplace = true,
