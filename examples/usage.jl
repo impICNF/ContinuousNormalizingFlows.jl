@@ -45,22 +45,25 @@ icnf = construct(;
 
 ## Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
-df = DataFrame(transpose(r), :auto)
-model = ICNFModel(
-    icnf;
-    optimizers = (Adam(),),
-    adtype = AutoZygote(),
-    batchsize = 512,
-    sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
-)
-mach = machine(model, df)
-fit!(mach)
-# CUDA.@allowscalar fit!(mach) # needed for gpu
 
-## Store It
 icnf_mach_fn = "icnf_mach.jls"
-MLJBase.save(icnf_mach_fn, mach) # save it
-mach = machine(icnf_mach_fn) # load it
+if ispath(icnf_mach_fn)
+    mach = machine(icnf_mach_fn) # load it
+else
+    df = DataFrame(transpose(r), :auto)
+    model = ICNFModel(
+        icnf;
+        optimizers = (Adam(),),
+        adtype = AutoZygote(),
+        batchsize = 512,
+        sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
+    )
+    mach = machine(model, df)
+    fit!(mach)
+    # CUDA.@allowscalar fit!(mach) # needed for gpu
+
+    MLJBase.save(icnf_mach_fn, mach) # save it
+end
 
 ## Use It
 d = ICNFDist(mach, TestMode())
