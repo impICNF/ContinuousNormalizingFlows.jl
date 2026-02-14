@@ -10,7 +10,7 @@ mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
 end
 
 function CondICNFModel(;
-    icnf::AbstractICNF,
+    icnf::AbstractICNF = ICNF(),
     loss::Function = loss,
     optimizers::Tuple = (
         Optimisers.OptimiserChain(Optimisers.WeightDecay(), Optimisers.Adam()),

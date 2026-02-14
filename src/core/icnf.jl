@@ -77,7 +77,10 @@ function ICNF(;
         abstol = convert(data_type, 1.0e-8),
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
-        sensealg = SciMLSensitivity.GaussAdjoint(; autodiff = true, checkpointing = true),
+        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
+            autodiff = true,
+            checkpointing = true,
+        ),
     ),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     λ₁::AbstractFloat = convert(data_type, 1.0e-2),
