@@ -27,9 +27,9 @@ jobs:
           - Regression
           - Speed
         version:
-          - 1.10
-          - 1.11
-          - 1.12
+          - "1.10"
+          - "1.11"
+          - "1.12"
           # - release
           # - lts
           # - nightly
