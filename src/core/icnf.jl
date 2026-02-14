@@ -78,8 +78,8 @@ function ICNF(;
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
-            autodiff = true,
             checkpointing = true,
+            autodiff = true,
         ),
     ),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
