@@ -25,14 +25,14 @@ using ContinuousNormalizingFlows,
 # To use gpu, add related packages
 # using LuxCUDA, CUDA, cuDNN
 
-nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
-icnf = construct(
-    ICNF,
-    nn,
-    nvars, # number of variables
-    naugs; # number of augmented dimensions
+nn = Chain(Dense(n_in => (2 * n_in + 1), tanh), Dense((2 * n_in + 1) => n_in, tanh))
+icnf = construct(;
+    nvars = nvars, # number of variables
+    naugmented = naugs, # number of augmented dimensions
+    nn = nn,
     compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     inplace = false, # not using the inplace version of functions
+    cond = false, # not conditioning on auxiliary input
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
     tspan = (0.0f0, 1.0f0), # time span

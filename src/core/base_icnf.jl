@@ -1,5 +1,5 @@
 function construct(;
-    nvars::Int,
+    nvars::Int = 1,
     naugmented::Int = 0,
     nn::LuxCore.AbstractLuxLayer = Lux.Chain(
         Lux.Dense((nvars + naugmented) => (nvars + naugmented), tanh),

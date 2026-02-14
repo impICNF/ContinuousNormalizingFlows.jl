@@ -4,7 +4,6 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
         target_modules = (ContinuousNormalizingFlows,),
     )
 
-    mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.ICNF]
     omodes = ContinuousNormalizingFlows.Mode[
         ContinuousNormalizingFlows.TrainMode{true}(),
         ContinuousNormalizingFlows.TestMode{true}(),
@@ -61,8 +60,8 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
         ),
     ]
 
-    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
-                                                                                                                                                                                                                       devices,
+    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode" for device in
+                                                                                                                                                                                                                 devices,
         data_type in data_types,
         compute_mode in compute_modes,
         ndata in ndata_,
@@ -70,8 +69,7 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
         inplace in inplaces,
         cond in conds,
         planar in planars,
-        omode in omodes,
-        mt in mts
+        omode in omodes
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
@@ -90,21 +88,24 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
             ifelse(
                 planar,
                 Lux.Chain(
-                    ContinuousNormalizingFlows.PlanarLayer(nvars * 2, tanh; n_cond = nvars),
+                    ContinuousNormalizingFlows.PlanarLayer(
+                        nvars * 2 + 1,
+                        tanh;
+                        n_cond = nvars,
+                    ),
                 ),
-                Lux.Chain(Lux.Dense(nvars * 3 => nvars * 2, tanh)),
+                Lux.Chain(Lux.Dense(nvars * 3 + 1 => nvars * 2 + 1, tanh)),
             ),
             ifelse(
                 planar,
-                Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2, tanh)),
-                Lux.Chain(Lux.Dense(nvars * 2 => nvars * 2, tanh)),
+                Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2 + 1, tanh)),
+                Lux.Chain(Lux.Dense(nvars * 2 + 1 => nvars * 2 + 1, tanh)),
             ),
         )
-        icnf = ContinuousNormalizingFlows.construct(
-            mt,
-            nn,
+        icnf = ContinuousNormalizingFlows.construct(;
             nvars,
-            nvars;
+            naugmented = nvars + 1,
+            nn,
             data_type,
             compute_mode,
             inplace,
