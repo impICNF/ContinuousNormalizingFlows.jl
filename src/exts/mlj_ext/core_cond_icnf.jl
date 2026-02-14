@@ -40,7 +40,7 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         ps,
         data,
     )
-    res_stats = SciMLBase.OptimizationStats[]
+    res_stats = Any[]
     for opt in model.optimizers
         optprob_re = SciMLBase.remake(optprob; u0 = ps)
         res = SciMLBase.solve(optprob_re, opt; model.sol_kwargs...)

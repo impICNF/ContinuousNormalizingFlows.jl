@@ -1,60 +1,3 @@
-struct Planar{
-    T <: AbstractFloat,
-    CM <: ComputeMode,
-    INPLACE,
-    COND,
-    AUGMENTED,
-    STEER,
-    NORM_Z_AUG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
-struct CondPlanar{
-    T <: AbstractFloat,
-    CM <: ComputeMode,
-    INPLACE,
-    COND,
-    AUGMENTED,
-    STEER,
-    NORM_Z_AUG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
-
-struct FFJORD{
-    T <: AbstractFloat,
-    CM <: ComputeMode,
-    INPLACE,
-    COND,
-    AUGMENTED,
-    STEER,
-    NORM_Z_AUG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
-struct CondFFJORD{
-    T <: AbstractFloat,
-    CM <: ComputeMode,
-    INPLACE,
-    COND,
-    AUGMENTED,
-    STEER,
-    NORM_Z_AUG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
-
-struct RNODE{
-    T <: AbstractFloat,
-    CM <: ComputeMode,
-    INPLACE,
-    COND,
-    AUGMENTED,
-    STEER,
-    NORM_Z_AUG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
-struct CondRNODE{
-    T <: AbstractFloat,
-    CM <: ComputeMode,
-    INPLACE,
-    COND,
-    AUGMENTED,
-    STEER,
-    NORM_Z_AUG,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG} end
-
 """
 Implementation of ICNF.
 
@@ -65,6 +8,10 @@ Refs:
 [Grathwohl, Will, Ricky TQ Chen, Jesse Bettencourt, Ilya Sutskever, and David Duvenaud. "Ffjord: Free-form continuous dynamics for scalable reversible generative models." arXiv preprint arXiv:1810.01367 (2018).](https://arxiv.org/abs/1810.01367)
 
 [Finlay, Chris, Jörn-Henrik Jacobsen, Levon Nurbekyan, and Adam M. Oberman. "How to train your neural ODE: the world of Jacobian and kinetic regularization." arXiv preprint arXiv:2002.02798 (2020).](https://arxiv.org/abs/2002.02798)
+
+[Dupont, Emilien, Arnaud Doucet, and Yee Whye Teh. "Augmented Neural ODEs." arXiv preprint arXiv:1904.01681 (2019).](https://arxiv.org/abs/1904.01681)
+
+[Ghosh, Arnab, Harkirat Singh Behl, Emilien Dupont, Philip HS Torr, and Vinay Namboodiri. "STEER: Simple Temporal Regularization For Neural ODEs." arXiv preprint arXiv:2006.10711 (2020).](https://arxiv.org/abs/2006.10711)
 """
 struct ICNF{
     T <: AbstractFloat,

@@ -1,12 +1,14 @@
-function construct(
-    aicnf::Type{<:AbstractICNF},
-    nn::LuxCore.AbstractLuxLayer,
+function construct(;
     nvars::Int,
-    naugmented::Int = 0;
+    naugmented::Int = 0,
+    nn::LuxCore.AbstractLuxLayer = Lux.Chain(
+        Lux.Dense((nvars + naugmented) => (nvars + naugmented), tanh),
+    ),
+    aicnf::Type{<:AbstractICNF} = ICNF,
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
-    cond::Bool = aicnf <: Union{CondRNODE, CondFFJORD, CondPlanar},
+    cond::Bool = false,
     device::MLDataDevices.AbstractDevice = MLDataDevices.cpu_device(),
     basedist::Distributions.Distribution = Distributions.MvNormal(
         FillArrays.Zeros{data_type}(nvars + naugmented),
@@ -20,25 +22,13 @@ function construct(
     ),
     sol_kwargs::NamedTuple = (;),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
-    λ₁::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
-        convert(data_type, 1.0e-2)
-    else
-        zero(data_type)
-    end,
-    λ₂::AbstractFloat = if aicnf <: Union{RNODE, CondRNODE}
-        convert(data_type, 1.0e-2)
-    else
-        zero(data_type)
-    end,
-    λ₃::AbstractFloat = if naugmented >= nvars
-        convert(data_type, 1.0e-2)
-    else
-        zero(data_type)
-    end,
+    λ₁::AbstractFloat = zero(data_type),
+    λ₂::AbstractFloat = zero(data_type),
+    λ₃::AbstractFloat = zero(data_type),
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
 
-    return ICNF{
+    return aicnf{
         data_type,
         typeof(compute_mode),
         inplace,
