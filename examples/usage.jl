@@ -52,7 +52,7 @@ icnf = ICNF(;
         abstol = 1.0f-8,
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = True()),
-        sensealg = GaussAdjoint(; autodiff = true, checkpointing = true),
+        sensealg = InterpolatingAdjoint(; autodiff = true, checkpointing = true),
     ), # pass to the solver
 )
 
