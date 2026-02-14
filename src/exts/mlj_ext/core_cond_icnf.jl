@@ -65,7 +65,7 @@ function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
     (ps, st) = fitresult
 
     logp̂x = if model.icnf.compute_mode isa VectorMode
-        @warn maxlog = 1 "to compute by vectors, data should be a vector."
+        @warn "to compute by vectors, data should be a vector." maxlog = 1
         broadcast(
             function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
                 return first(inference(model.icnf, TestMode{false}(), x, y, ps, st))
