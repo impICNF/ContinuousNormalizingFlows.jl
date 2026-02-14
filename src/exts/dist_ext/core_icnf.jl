@@ -1,5 +1,5 @@
 struct ICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
-    m::AICNF
+    icnf::AICNF
     mode::Mode
     ps::Any
     st::NamedTuple
@@ -7,14 +7,14 @@ end
 
 function ICNFDist(mach::MLJBase.Machine{<:ICNFModel}, mode::Mode)
     (ps, st) = MLJModelInterface.fitted_params(mach)
-    return ICNFDist(mach.model.m, mode, ps, st)
+    return ICNFDist(mach.model.icnf, mode, ps, st)
 end
 
 function Distributions._logpdf(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     x::AbstractVector{<:Real},
 )
-    return first(inference(d.m, d.mode, x, d.ps, d.st))
+    return first(inference(d.icnf, d.mode, x, d.ps, d.st))
 end
 
 function Distributions._logpdf(
@@ -37,7 +37,7 @@ function Distributions._logpdf(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     A::AbstractMatrix{<:Real},
 )
-    return first(inference(d.m, d.mode, A, d.ps, d.st))
+    return first(inference(d.icnf, d.mode, A, d.ps, d.st))
 end
 
 function Distributions._rand!(
@@ -45,7 +45,7 @@ function Distributions._rand!(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     x::AbstractVector{<:Real},
 )
-    return x .= generate(d.m, d.mode, d.ps, d.st)
+    return x .= generate(d.icnf, d.mode, d.ps, d.st)
 end
 
 function Distributions._rand!(
@@ -71,5 +71,5 @@ function Distributions._rand!(
     d::ICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     A::AbstractMatrix{<:Real},
 )
-    return A .= generate(d.m, d.mode, d.ps, d.st, size(A, 2))
+    return A .= generate(d.icnf, d.mode, d.ps, d.st, size(A, 2))
 end

@@ -50,6 +50,79 @@ struct ICNF{
     λ₃::T
 end
 
+function ICNF(;
+    nvars::Int = 1,
+    naugmented::Int = nvars + 1,
+    nn::LuxCore.AbstractLuxLayer = Lux.Chain(
+        Lux.Dense((nvars + naugmented) => (nvars + naugmented), tanh),
+    ),
+    data_type::Type{<:AbstractFloat} = Float32,
+    compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
+    inplace::Bool = false,
+    cond::Bool = false,
+    device::MLDataDevices.AbstractDevice = MLDataDevices.cpu_device(),
+    basedist::Distributions.Distribution = Distributions.MvNormal(
+        FillArrays.Zeros{data_type}(nvars + naugmented),
+        FillArrays.Eye{data_type}(nvars + naugmented),
+    ),
+    tspan::NTuple{2} = (zero(data_type), one(data_type)),
+    steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
+    epsdist::Distributions.Distribution = Distributions.MvNormal(
+        FillArrays.Zeros{data_type}(nvars + naugmented),
+        FillArrays.Eye{data_type}(nvars + naugmented),
+    ),
+    sol_kwargs::NamedTuple = (;
+        save_everystep = false,
+        reltol = convert(data_type, 1.0e-4),
+        abstol = convert(data_type, 1.0e-8),
+        maxiters = typemax(Int),
+        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+        sensealg = SciMLSensitivity.GaussAdjoint(; autodiff = true, checkpointing = true),
+    ),
+    rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
+    λ₁::AbstractFloat = convert(data_type, 1.0e-2),
+    λ₂::AbstractFloat = convert(data_type, 1.0e-2),
+    λ₃::AbstractFloat = convert(data_type, 1.0e-2),
+)
+    steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
+
+    return ICNF{
+        data_type,
+        typeof(compute_mode),
+        inplace,
+        cond,
+        !iszero(naugmented),
+        !iszero(steer_rate),
+        !iszero(λ₁),
+        !iszero(λ₂),
+        !iszero(λ₃),
+        typeof(nn),
+        typeof(nvars),
+        typeof(device),
+        typeof(basedist),
+        typeof(tspan),
+        typeof(steerdist),
+        typeof(epsdist),
+        typeof(sol_kwargs),
+        typeof(rng),
+    }(
+        nn,
+        nvars,
+        naugmented,
+        compute_mode,
+        device,
+        basedist,
+        tspan,
+        steerdist,
+        epsdist,
+        sol_kwargs,
+        rng,
+        λ₁,
+        λ₂,
+        λ₃,
+    )
+end
+
 function n_augment(::ICNF, ::Mode)
     return 2
 end

@@ -1,5 +1,5 @@
 struct CondICNFDist{AICNF <: AbstractICNF} <: ICNFDistribution{AICNF}
-    m::AICNF
+    icnf::AICNF
     mode::Mode
     ys::AbstractVecOrMat{<:Real}
     ps::Any
@@ -12,14 +12,14 @@ function CondICNFDist(
     ys::AbstractVecOrMat{<:Real},
 )
     (ps, st) = MLJModelInterface.fitted_params(mach)
-    return CondICNFDist(mach.model.m, mode, ys, ps, st)
+    return CondICNFDist(mach.model.icnf, mode, ys, ps, st)
 end
 
 function Distributions._logpdf(
     d::CondICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     x::AbstractVector{<:Real},
 )
-    return first(inference(d.m, d.mode, x, d.ys, d.ps, d.st))
+    return first(inference(d.icnf, d.mode, x, d.ys, d.ps, d.st))
 end
 
 function Distributions._logpdf(
@@ -42,7 +42,7 @@ function Distributions._logpdf(
     d::CondICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     A::AbstractMatrix{<:Real},
 )
-    return first(inference(d.m, d.mode, A, d.ys[:, begin:size(A, 2)], d.ps, d.st))
+    return first(inference(d.icnf, d.mode, A, d.ys[:, begin:size(A, 2)], d.ps, d.st))
 end
 
 function Distributions._rand!(
@@ -50,7 +50,7 @@ function Distributions._rand!(
     d::CondICNFDist{<:AbstractICNF{<:AbstractFloat, <:VectorMode}},
     x::AbstractVector{<:Real},
 )
-    return x .= generate(d.m, d.mode, d.ys, d.ps, d.st)
+    return x .= generate(d.icnf, d.mode, d.ys, d.ps, d.st)
 end
 
 function Distributions._rand!(
@@ -76,5 +76,5 @@ function Distributions._rand!(
     d::CondICNFDist{<:AbstractICNF{<:AbstractFloat, <:MatrixMode}},
     A::AbstractMatrix{<:Real},
 )
-    return A .= generate(d.m, d.mode, d.ys[:, begin:size(A, 2)], d.ps, d.st, size(A, 2))
+    return A .= generate(d.icnf, d.mode, d.ys[:, begin:size(A, 2)], d.ps, d.st, size(A, 2))
 end

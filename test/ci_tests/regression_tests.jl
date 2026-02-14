@@ -15,21 +15,11 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
         Lux.Dense((2 * n_in + 1) => n_in, tanh),
     )
 
-    icnf = ContinuousNormalizingFlows.construct(;
-        nvars,
-        naugmented = naugs,
-        nn,
-        compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-        steer_rate = 1.0f-1,
-        λ₁ = 1.0f-2,
-        λ₂ = 1.0f-2,
-        λ₃ = 1.0f-2,
-        rng,
-    )
+    icnf = ContinuousNormalizingFlows.ICNF(; nvars, naugmented = naugs, nn, rng)
 
     df = DataFrames.DataFrame(transpose(r), :auto)
-    model = ContinuousNormalizingFlows.ICNFModel(
-        icnf;
+    model = ContinuousNormalizingFlows.ICNFModel(;
+        icnf,
         batchsize = 0,
         sol_kwargs = (; epochs = 300),
     )

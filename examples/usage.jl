@@ -20,13 +20,19 @@ n_in = nvars + naugs
 
 ## Model
 using ContinuousNormalizingFlows,
-    Lux, OrdinaryDiffEqAdamsBashforthMoulton, ADTypes, Zygote, MLDataDevices
+    Lux,
+    OrdinaryDiffEqAdamsBashforthMoulton,
+    SciMLSensitivity,
+    Static,
+    ADTypes,
+    Zygote,
+    MLDataDevices
 
 # To use gpu, add related packages
 # using LuxCUDA, CUDA, cuDNN
 
 nn = Chain(Dense(n_in => (2 * n_in + 1), tanh), Dense((2 * n_in + 1) => n_in, tanh))
-icnf = construct(;
+icnf = ICNF(;
     nvars = nvars, # number of variables
     naugmented = naugs, # number of augmented dimensions
     nn = nn,
@@ -40,7 +46,14 @@ icnf = construct(;
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
-    sol_kwargs = (; save_everystep = false, alg = VCABM()), # pass to the solver
+    sol_kwargs = (;
+        save_everystep = false,
+        reltol = 1.0f-4,
+        abstol = 1.0f-8,
+        maxiters = typemax(Int),
+        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = True()),
+        sensealg = GaussAdjoint(; autodiff = true, checkpointing = true),
+    ), # pass to the solver
 )
 
 ## Fit It
@@ -51,11 +64,11 @@ if ispath(icnf_mach_fn)
     mach = machine(icnf_mach_fn) # load it
 else
     df = DataFrame(transpose(r), :auto)
-    model = ICNFModel(
-        icnf;
-        optimizers = (Adam(),),
+    model = ICNFModel(;
+        icnf,
+        optimizers = (OptimiserChain(WeightDecay(), Adam()),),
         adtype = AutoZygote(),
-        batchsize = 512,
+        batchsize = 1024,
         sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
     )
     mach = machine(model, df)

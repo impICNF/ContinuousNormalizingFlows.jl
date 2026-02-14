@@ -6,9 +6,7 @@ import ADTypes,
     ForwardDiff,
     Lux,
     LuxCore,
-    OrdinaryDiffEqDefault,
     PkgBenchmark,
-    SciMLSensitivity,
     StableRNGs,
     Zygote,
     ContinuousNormalizingFlows
@@ -29,30 +27,10 @@ nn = Lux.Chain(
     Lux.Dense((2 * n_in + 1) => n_in, tanh),
 )
 
-icnf = ContinuousNormalizingFlows.construct(;
-    nvars,
-    naugmented = naugs,
-    nn,
-    compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-    steer_rate = 1.0f-1,
-    λ₁ = 1.0f-2,
-    λ₂ = 1.0f-2,
-    λ₃ = 1.0f-2,
-    rng,
-)
+icnf = ContinuousNormalizingFlows.ICNF(; nvars, naugmented = naugs, nn, rng)
 
-icnf2 = ContinuousNormalizingFlows.construct(;
-    nvars,
-    naugmented = naugs,
-    nn,
-    inplace = true,
-    compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-    steer_rate = 1.0f-1,
-    λ₁ = 1.0f-2,
-    λ₂ = 1.0f-2,
-    λ₃ = 1.0f-2,
-    rng,
-)
+icnf2 =
+    ContinuousNormalizingFlows.ICNF(; nvars, naugmented = naugs, nn, inplace = true, rng)
 
 ps, st = LuxCore.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)

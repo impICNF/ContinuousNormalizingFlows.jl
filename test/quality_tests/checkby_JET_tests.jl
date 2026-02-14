@@ -102,7 +102,7 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
                 Lux.Chain(Lux.Dense(nvars * 2 + 1 => nvars * 2 + 1, tanh)),
             ),
         )
-        icnf = ContinuousNormalizingFlows.construct(;
+        icnf = ContinuousNormalizingFlows.ICNF(;
             nvars,
             naugmented = nvars + 1,
             nn,
@@ -111,10 +111,6 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
             inplace,
             cond,
             device,
-            steer_rate = convert(data_type, 1.0e-1),
-            λ₁ = convert(data_type, 1.0e-2),
-            λ₂ = convert(data_type, 1.0e-2),
-            λ₃ = convert(data_type, 1.0e-2),
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)

@@ -50,22 +50,17 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
             Lux.Dense((2 * n_in + 1) => n_in, tanh),
         )
 
-        icnf = ContinuousNormalizingFlows.construct(;
+        icnf = ContinuousNormalizingFlows.ICNF(;
             nvars,
             naugmented = naugs,
             nn,
             compute_mode,
-            tspan = (0.0f0, 1.0f0),
-            steer_rate = 1.0f-1,
-            λ₁ = 1.0f-2,
-            λ₂ = 1.0f-2,
-            λ₃ = 1.0f-2,
             rng,
         )
 
         df = DataFrames.DataFrame(transpose(r), :auto)
-        model = ContinuousNormalizingFlows.ICNFModel(
-            icnf;
+        model = ContinuousNormalizingFlows.ICNFModel(;
+            icnf,
             batchsize = 0,
             sol_kwargs = (; epochs = 5),
         )
