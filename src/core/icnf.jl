@@ -76,10 +76,14 @@ function ICNF(;
     ),
     sol_kwargs::NamedTuple = (;
         save_everystep = false,
+        maxiters = typemax(Int),
         reltol = convert(data_type, 1.0e-4),
         abstol = convert(data_type, 1.0e-8),
-        maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
+            checkpointing = true,
+            autodiff = true,
+        ),
     ),
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)

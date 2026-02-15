@@ -20,7 +20,13 @@ n_in = nvars + naugs
 
 ## Model
 using ContinuousNormalizingFlows,
-    Lux, OrdinaryDiffEqAdamsBashforthMoulton, Static, ADTypes, Zygote, MLDataDevices
+    Lux,
+    OrdinaryDiffEqAdamsBashforthMoulton,
+    Static,
+    SciMLSensitivity,
+    ADTypes,
+    Zygote,
+    MLDataDevices
 
 # To use gpu, add related packages
 # using LuxCUDA
@@ -42,10 +48,11 @@ icnf = ICNF(;
     compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     sol_kwargs = (;
         save_everystep = false,
+        maxiters = typemax(Int),
         reltol = 1.0f-4,
         abstol = 1.0f-8,
-        maxiters = typemax(Int),
-        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = True()),
+        alg = VCABM(; thread = True()),
+        sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
     ), # pass to the solver
 )
 
