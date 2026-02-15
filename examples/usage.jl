@@ -1,5 +1,5 @@
 # Switch To MKL For Faster Computation
-# using MKL
+using MKL
 
 ## Enable Logging
 using Logging, TerminalLoggers
@@ -20,47 +20,63 @@ n_in = nvars + naugs
 
 ## Model
 using ContinuousNormalizingFlows,
-    Lux, OrdinaryDiffEqAdamsBashforthMoulton, ADTypes, Zygote, MLDataDevices
+    Lux,
+    OrdinaryDiffEqAdamsBashforthMoulton,
+    Static,
+    SciMLSensitivity,
+    ADTypes,
+    Zygote,
+    MLDataDevices
 
 # To use gpu, add related packages
-# using LuxCUDA, CUDA, cuDNN
+# using LuxCUDA
 
-nn = Chain(Dense(n_in => 3 * n_in, tanh), Dense(3 * n_in => n_in, tanh))
-icnf = construct(
-    ICNF,
-    nn,
-    nvars, # number of variables
-    naugs; # number of augmented dimensions
-    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
-    inplace = false, # not using the inplace version of functions
-    device = cpu_device(), # process data by CPU
-    # device = gpu_device(), # process data by GPU
-    tspan = (0.0f0, 1.0f0), # time span
-    steer_rate = 1.0f-1, # add random noise to end of the time span
+nn = Chain(Dense(n_in => (2 * n_in + 1), tanh), Dense((2 * n_in + 1) => n_in, tanh))
+icnf = ICNF(;
+    nn = nn,
+    nvars = nvars, # number of variables
+    naugmented = naugs, # number of augmented dimensions
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
-    sol_kwargs = (; save_everystep = false, alg = VCABM()), # pass to the solver
+    steer_rate = 1.0f-1, # add random noise to end of the time span
+    tspan = (0.0f0, 1.0f0), # time span
+    device = cpu_device(), # process data by CPU
+    # device = gpu_device(), # process data by GPU
+    cond = false, # not conditioning on auxiliary input
+    inplace = false, # not using the inplace version of functions
+    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
+    sol_kwargs = (;
+        save_everystep = false,
+        maxiters = typemax(Int),
+        reltol = 1.0f-4,
+        abstol = 1.0f-8,
+        alg = VCABM(; thread = True()),
+        sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
+    ), # pass to the solver
 )
 
 ## Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
-df = DataFrame(transpose(r), :auto)
-model = ICNFModel(
-    icnf;
-    optimizers = (Adam(),),
-    adtype = AutoZygote(),
-    batchsize = 512,
-    sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
-)
-mach = machine(model, df)
-fit!(mach)
-# CUDA.@allowscalar fit!(mach) # needed for gpu
 
-## Store It
 icnf_mach_fn = "icnf_mach.jls"
-MLJBase.save(icnf_mach_fn, mach) # save it
-mach = machine(icnf_mach_fn) # load it
+if ispath(icnf_mach_fn)
+    mach = machine(icnf_mach_fn) # load it
+else
+    df = DataFrame(transpose(r), :auto)
+    model = ICNFModel(;
+        icnf,
+        optimizers = (OptimiserChain(WeightDecay(), Adam()),),
+        batchsize = 1024,
+        adtype = AutoZygote(),
+        sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
+    )
+    mach = machine(model, df)
+    fit!(mach)
+    # CUDA.@allowscalar fit!(mach) # needed for gpu
+
+    MLJBase.save(icnf_mach_fn, mach) # save it
+end
 
 ## Use It
 d = ICNFDist(mach, TestMode())

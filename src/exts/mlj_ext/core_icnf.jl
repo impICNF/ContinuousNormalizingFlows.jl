@@ -1,43 +1,43 @@
 mutable struct ICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
-    m::AICNF
+    icnf::AICNF
     loss::Function
-
     optimizers::Tuple
-    adtype::ADTypes.AbstractADType
-
     batchsize::Int
+    adtype::ADTypes.AbstractADType
     sol_kwargs::NamedTuple
 end
 
-function ICNFModel(
-    m::AbstractICNF,
-    loss::Function = loss;
-    optimizers::Tuple = (Optimisers.Adam(),),
+function ICNFModel(;
+    icnf::AbstractICNF = ICNF(),
+    loss::Function = loss,
+    optimizers::Tuple = (
+        Optimisers.OptimiserChain(Optimisers.WeightDecay(), Optimisers.Adam()),
+    ),
+    batchsize::Int = 1024,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    batchsize::Int = 32,
-    sol_kwargs::NamedTuple = (;),
+    sol_kwargs::NamedTuple = (; epochs = 300, progress = true),
 )
-    return ICNFModel(m, loss, optimizers, adtype, batchsize, sol_kwargs)
+    return ICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(transpose(MLJModelInterface.matrix(X)))
-    ps, st = LuxCore.setup(model.m.rng, model.m)
+    ps, st = LuxCore.setup(model.icnf.rng, model.icnf)
     ps = ComponentArrays.ComponentArray(ps)
-    x = model.m.device(x)
-    ps = model.m.device(ps)
-    st = model.m.device(st)
-    data = make_dataloader(model.m, model.batchsize, (x,))
-    data = model.m.device(data)
+    x = model.icnf.device(x)
+    ps = model.icnf.device(ps)
+    st = model.icnf.device(st)
+    data = make_dataloader(model.icnf, model.batchsize, (x,))
+    data = model.icnf.device(data)
     optprob = SciMLBase.OptimizationProblem{true}(
         SciMLBase.OptimizationFunction{true}(
-            make_opt_loss(model.m, TrainMode{true}(), st, model.loss),
+            make_opt_loss(model.icnf, TrainMode{true}(), st, model.loss),
             model.adtype,
         ),
         ps,
         data,
     )
-    res_stats = SciMLBase.OptimizationStats[]
+    res_stats = Any[]
     for opt in model.optimizers
         optprob_re = SciMLBase.remake(optprob; u0 = ps)
         res = SciMLBase.solve(optprob_re, opt; model.sol_kwargs...)
@@ -53,19 +53,19 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    xnew = model.m.device(xnew)
+    xnew = model.icnf.device(xnew)
     (ps, st) = fitresult
 
-    logp̂x = if model.m.compute_mode isa VectorMode
-        @warn maxlog = 1 "to compute by vectors, data should be a vector."
+    logp̂x = if model.icnf.compute_mode isa VectorMode
+        @warn "to compute by vectors, data should be a vector." maxlog = 1
         broadcast(
             function (x::AbstractVector{<:Real})
-                return first(inference(model.m, TestMode{false}(), x, ps, st))
+                return first(inference(model.icnf, TestMode{false}(), x, ps, st))
             end,
             collect(collect.(eachcol(xnew))),
         )
-    elseif model.m.compute_mode isa MatrixMode
-        first(inference(model.m, TestMode{false}(), xnew, ps, st))
+    elseif model.icnf.compute_mode isa MatrixMode
+        first(inference(model.icnf, TestMode{false}(), xnew, ps, st))
     else
         error("Not Implemented")
     end

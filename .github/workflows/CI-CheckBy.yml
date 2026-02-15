@@ -24,8 +24,11 @@ jobs:
           - CheckByJET
           - CheckByExplicitImports
         version:
-          - release
-          - lts
+          - "1.10"
+          - "1.11"
+          - "1.12"
+          # - release
+          # - lts
           # - nightly
         os:
           - ubuntu-latest

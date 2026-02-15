@@ -32,7 +32,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
 
     Test.@testset verbose = true showtiming = true failfast = false "$compute_mode" for compute_mode in
                                                                                         compute_modes
-
         @show compute_mode
 
         rng = StableRNGs.StableRNG(1)
@@ -43,28 +42,25 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
         r = convert.(Float32, r)
 
         nvars = size(r, 1)
-        naugs = nvars
+        naugs = nvars + 1
         n_in = nvars + naugs
 
-        nn = Lux.Chain(Lux.Dense(n_in => 3 * n_in, tanh), Lux.Dense(3 * n_in => n_in, tanh))
+        nn = Lux.Chain(
+            Lux.Dense(n_in => (2 * n_in + 1), tanh),
+            Lux.Dense((2 * n_in + 1) => n_in, tanh),
+        )
 
-        icnf = ContinuousNormalizingFlows.construct(
-            ContinuousNormalizingFlows.ICNF,
+        icnf = ContinuousNormalizingFlows.ICNF(;
             nn,
             nvars,
-            naugs;
-            compute_mode,
-            tspan = (0.0f0, 1.0f0),
-            steer_rate = 1.0f-1,
-            λ₁ = 1.0f-2,
-            λ₂ = 1.0f-2,
-            λ₃ = 1.0f-2,
+            naugmented = naugs,
             rng,
+            compute_mode,
         )
 
         df = DataFrames.DataFrame(transpose(r), :auto)
-        model = ContinuousNormalizingFlows.ICNFModel(
-            icnf;
+        model = ContinuousNormalizingFlows.ICNFModel(;
+            icnf,
             batchsize = 0,
             sol_kwargs = (; epochs = 5),
         )

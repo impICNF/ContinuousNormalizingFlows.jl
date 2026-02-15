@@ -3,7 +3,7 @@ struct TestMode{REG} <: Mode{REG} end
 struct TrainMode{REG} <: Mode{REG} end
 
 function TestMode()
-    return TestMode{false}()
+    return TestMode{true}()
 end
 
 function TrainMode()

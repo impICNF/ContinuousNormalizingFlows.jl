@@ -6,9 +6,7 @@ import ADTypes,
     ForwardDiff,
     Lux,
     LuxCore,
-    OrdinaryDiffEqDefault,
     PkgBenchmark,
-    SciMLSensitivity,
     StableRNGs,
     Zygote,
     ContinuousNormalizingFlows
@@ -21,39 +19,18 @@ r = rand(rng, data_dist, ndimension, ndata)
 r = convert.(Float32, r)
 
 nvars = size(r, 1)
-naugs = nvars
+naugs = nvars + 1
 n_in = nvars + naugs
 
-nn = Lux.Chain(Lux.Dense(n_in => 3 * n_in, tanh), Lux.Dense(3 * n_in => n_in, tanh))
-
-icnf = ContinuousNormalizingFlows.construct(
-    ContinuousNormalizingFlows.ICNF,
-    nn,
-    nvars,
-    naugs;
-    compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-    tspan = (0.0f0, 1.0f0),
-    steer_rate = 1.0f-1,
-    λ₁ = 1.0f-2,
-    λ₂ = 1.0f-2,
-    λ₃ = 1.0f-2,
-    rng,
+nn = Lux.Chain(
+    Lux.Dense(n_in => (2 * n_in + 1), tanh),
+    Lux.Dense((2 * n_in + 1) => n_in, tanh),
 )
 
-icnf2 = ContinuousNormalizingFlows.construct(
-    ContinuousNormalizingFlows.ICNF,
-    nn,
-    nvars,
-    naugs;
-    inplace = true,
-    compute_mode = ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-    tspan = (0.0f0, 1.0f0),
-    steer_rate = 1.0f-1,
-    λ₁ = 1.0f-2,
-    λ₂ = 1.0f-2,
-    λ₃ = 1.0f-2,
-    rng,
-)
+icnf = ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng)
+
+icnf2 =
+    ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng, inplace = true)
 
 ps, st = LuxCore.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)

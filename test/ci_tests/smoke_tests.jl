@@ -1,5 +1,4 @@
 Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" begin
-    mts = Type{<:ContinuousNormalizingFlows.AbstractICNF}[ContinuousNormalizingFlows.ICNF]
     omodes = ContinuousNormalizingFlows.Mode[
         ContinuousNormalizingFlows.TrainMode{true}(),
         ContinuousNormalizingFlows.TestMode{true}(),
@@ -76,8 +75,8 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
         ),
     ]
 
-    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode | $mt" for device in
-                                                                                                                                                                                                                       devices,
+    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode" for device in
+                                                                                                                                                                                                                 devices,
         data_type in data_types,
         compute_mode in compute_modes,
         ndata in ndata_,
@@ -85,8 +84,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
         inplace in inplaces,
         cond in conds,
         planar in planars,
-        omode in omodes,
-        mt in mts
+        omode in omodes
 
         data_dist =
             Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
@@ -107,30 +105,29 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             ifelse(
                 planar,
                 Lux.Chain(
-                    ContinuousNormalizingFlows.PlanarLayer(nvars * 2, tanh; n_cond = nvars),
+                    ContinuousNormalizingFlows.PlanarLayer(
+                        nvars * 2 + 1,
+                        tanh;
+                        n_cond = nvars,
+                    ),
                 ),
-                Lux.Chain(Lux.Dense(nvars * 3 => nvars * 2, tanh)),
+                Lux.Chain(Lux.Dense(nvars * 3 + 1 => nvars * 2 + 1, tanh)),
             ),
             ifelse(
                 planar,
-                Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2, tanh)),
-                Lux.Chain(Lux.Dense(nvars * 2 => nvars * 2, tanh)),
+                Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2 + 1, tanh)),
+                Lux.Chain(Lux.Dense(nvars * 2 + 1 => nvars * 2 + 1, tanh)),
             ),
         )
-        icnf = ContinuousNormalizingFlows.construct(
-            mt,
+        icnf = ContinuousNormalizingFlows.ICNF(;
             nn,
             nvars,
-            nvars;
-            data_type,
-            compute_mode,
-            inplace,
-            cond,
+            naugmented = nvars + 1,
             device,
-            steer_rate = convert(data_type, 1.0e-1),
-            λ₁ = convert(data_type, 1.0e-2),
-            λ₂ = convert(data_type, 1.0e-2),
-            λ₃ = convert(data_type, 1.0e-2),
+            cond,
+            inplace,
+            compute_mode,
+            data_type,
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -202,63 +199,41 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
-
-            Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps)) broken =
-                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
-                    omode isa ContinuousNormalizingFlows.TrainMode || (
-                        omode isa ContinuousNormalizingFlows.TestMode &&
-                        compute_mode isa ContinuousNormalizingFlows.VectorMode
-                    )
-                )
-            Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r)) broken =
-                compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode} && (
-                    omode isa ContinuousNormalizingFlows.TrainMode || (
-                        omode isa ContinuousNormalizingFlows.TestMode &&
-                        compute_mode isa ContinuousNormalizingFlows.VectorMode
-                    )
-                )
+            Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
+            Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
 
             if cond
-                model = ContinuousNormalizingFlows.CondICNFModel(
-                    icnf;
-                    adtype,
+                model = ContinuousNormalizingFlows.CondICNFModel(;
+                    icnf,
                     batchsize = 0,
+                    adtype,
                     sol_kwargs = (; epochs = 2),
                 )
                 mach = MLJBase.machine(model, (df, df2))
 
-                Test.@test !isnothing(MLJBase.fit!(mach)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                Test.@test !isnothing(MLJBase.transform(mach, (df, df2))) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                Test.@test !isnothing(MLJBase.serializable(mach)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                Test.@test !isnothing(MLJBase.fit!(mach))
+                Test.@test !isnothing(MLJBase.transform(mach, (df, df2)))
+                Test.@test !isnothing(MLJBase.fitted_params(mach))
+                Test.@test !isnothing(MLJBase.serializable(mach))
 
                 Test.@test !isnothing(
                     ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
-                ) broken = compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                )
             else
-                model = ContinuousNormalizingFlows.ICNFModel(
-                    icnf;
-                    adtype,
+                model = ContinuousNormalizingFlows.ICNFModel(;
+                    icnf,
                     batchsize = 0,
+                    adtype,
                     sol_kwargs = (; epochs = 2),
                 )
                 mach = MLJBase.machine(model, df)
 
-                Test.@test !isnothing(MLJBase.fit!(mach)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                Test.@test !isnothing(MLJBase.transform(mach, df)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                Test.@test !isnothing(MLJBase.fitted_params(mach)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
-                Test.@test !isnothing(MLJBase.serializable(mach)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                Test.@test !isnothing(MLJBase.fit!(mach))
+                Test.@test !isnothing(MLJBase.transform(mach, df))
+                Test.@test !isnothing(MLJBase.fitted_params(mach))
+                Test.@test !isnothing(MLJBase.serializable(mach))
 
-                Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode)) broken =
-                    compute_mode.adback isa ADTypes.AutoEnzyme{<:Enzyme.ForwardMode}
+                Test.@test !isnothing(ContinuousNormalizingFlows.ICNFDist(mach, omode))
             end
         end
     end

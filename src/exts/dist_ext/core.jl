@@ -4,7 +4,7 @@ abstract type ICNFDistribution{AICNF <: AbstractICNF} <:
               Distributions.ContinuousMultivariateDistribution end
 
 function Base.length(d::ICNFDistribution)
-    return d.m.nvars
+    return d.icnf.nvars
 end
 
 function Base.eltype(::ICNFDistribution{AICNF}) where {AICNF <: AbstractICNF}
