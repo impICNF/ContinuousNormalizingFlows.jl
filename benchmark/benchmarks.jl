@@ -27,10 +27,10 @@ nn = Lux.Chain(
     Lux.Dense((2 * n_in + 1) => n_in, tanh),
 )
 
-icnf = ContinuousNormalizingFlows.ICNF(; nvars, naugmented = naugs, nn, rng)
+icnf = ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng)
 
 icnf2 =
-    ContinuousNormalizingFlows.ICNF(; nvars, naugmented = naugs, nn, inplace = true, rng)
+    ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng, inplace = true)
 
 ps, st = LuxCore.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)

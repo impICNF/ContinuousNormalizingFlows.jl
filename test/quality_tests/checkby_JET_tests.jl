@@ -103,14 +103,14 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
             ),
         )
         icnf = ContinuousNormalizingFlows.ICNF(;
+            nn,
             nvars,
             naugmented = nvars + 1,
-            nn,
-            data_type,
-            compute_mode,
-            inplace,
-            cond,
             device,
+            cond,
+            inplace,
+            compute_mode,
+            data_type,
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)

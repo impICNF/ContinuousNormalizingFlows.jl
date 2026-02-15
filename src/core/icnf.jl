@@ -23,50 +23,53 @@ struct ICNF{
     NORM_Z,
     NORM_J,
     NORM_Z_AUG,
-    NN <: LuxCore.AbstractLuxLayer,
-    NVARS <: Int,
     DEVICE <: MLDataDevices.AbstractDevice,
-    BASEDIST <: Distributions.Distribution,
-    TSPAN <: NTuple{2, T},
-    STEERDIST <: Distributions.Distribution,
-    EPSDIST <: Distributions.Distribution,
-    SOL_KWARGS <: NamedTuple,
     RNG <: Random.AbstractRNG,
+    TSPAN <: NTuple{2, T},
+    NVARS <: Int,
+    NN <: LuxCore.AbstractLuxLayer,
+    BASEDIST <: Distributions.Distribution,
+    EPSDIST <: Distributions.Distribution,
+    STEERDIST <: Distributions.Distribution,
+    SOL_KWARGS <: NamedTuple,
 } <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
-    nn::NN
-    nvars::NVARS
-    naugmented::NVARS
-
     compute_mode::CM
     device::DEVICE
-    basedist::BASEDIST
-    tspan::TSPAN
-    steerdist::STEERDIST
-    epsdist::EPSDIST
-    sol_kwargs::SOL_KWARGS
     rng::RNG
+    tspan::TSPAN
+    nvars::NVARS
+    naugmented::NVARS
+    nn::NN
     λ₁::T
     λ₂::T
     λ₃::T
+    basedist::BASEDIST
+    epsdist::EPSDIST
+    steerdist::STEERDIST
+    sol_kwargs::SOL_KWARGS
 end
 
 function ICNF(;
-    nvars::Int = 1,
-    naugmented::Int = nvars + 1,
-    nn::LuxCore.AbstractLuxLayer = Lux.Chain(
-        Lux.Dense((nvars + naugmented) => (nvars + naugmented), tanh),
-    ),
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     cond::Bool = false,
     device::MLDataDevices.AbstractDevice = MLDataDevices.cpu_device(),
+    rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
+    tspan::NTuple{2} = (zero(data_type), one(data_type)),
+    nvars::Int = 1,
+    naugmented::Int = nvars + 1,
+    nn::LuxCore.AbstractLuxLayer = Lux.Chain(
+        Lux.Dense((nvars + naugmented) => (nvars + naugmented), tanh),
+    ),
+    steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
+    λ₁::AbstractFloat = convert(data_type, 1.0e-2),
+    λ₂::AbstractFloat = convert(data_type, 1.0e-2),
+    λ₃::AbstractFloat = convert(data_type, 1.0e-2),
     basedist::Distributions.Distribution = Distributions.MvNormal(
         FillArrays.Zeros{data_type}(nvars + naugmented),
         FillArrays.Eye{data_type}(nvars + naugmented),
     ),
-    tspan::NTuple{2} = (zero(data_type), one(data_type)),
-    steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
     epsdist::Distributions.Distribution = Distributions.MvNormal(
         FillArrays.Zeros{data_type}(nvars + naugmented),
         FillArrays.Eye{data_type}(nvars + naugmented),
@@ -77,18 +80,9 @@ function ICNF(;
         abstol = convert(data_type, 1.0e-8),
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
-        sensealg = SciMLSensitivity.InterpolatingAdjoint(;
-            checkpointing = true,
-            autodiff = true,
-        ),
     ),
-    rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
-    λ₁::AbstractFloat = convert(data_type, 1.0e-2),
-    λ₂::AbstractFloat = convert(data_type, 1.0e-2),
-    λ₃::AbstractFloat = convert(data_type, 1.0e-2),
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
-
     return ICNF{
         data_type,
         typeof(compute_mode),
@@ -99,30 +93,30 @@ function ICNF(;
         !iszero(λ₁),
         !iszero(λ₂),
         !iszero(λ₃),
-        typeof(nn),
-        typeof(nvars),
         typeof(device),
-        typeof(basedist),
-        typeof(tspan),
-        typeof(steerdist),
-        typeof(epsdist),
-        typeof(sol_kwargs),
         typeof(rng),
+        typeof(tspan),
+        typeof(nvars),
+        typeof(nn),
+        typeof(basedist),
+        typeof(epsdist),
+        typeof(steerdist),
+        typeof(sol_kwargs),
     }(
-        nn,
-        nvars,
-        naugmented,
         compute_mode,
         device,
-        basedist,
-        tspan,
-        steerdist,
-        epsdist,
-        sol_kwargs,
         rng,
+        tspan,
+        nvars,
+        naugmented,
+        nn,
         λ₁,
         λ₂,
         λ₃,
+        basedist,
+        epsdist,
+        steerdist,
+        sol_kwargs,
     )
 end
 

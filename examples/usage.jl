@@ -1,5 +1,5 @@
 # Switch To MKL For Faster Computation
-# using MKL
+using MKL
 
 ## Enable Logging
 using Logging, TerminalLoggers
@@ -20,39 +20,32 @@ n_in = nvars + naugs
 
 ## Model
 using ContinuousNormalizingFlows,
-    Lux,
-    OrdinaryDiffEqAdamsBashforthMoulton,
-    SciMLSensitivity,
-    Static,
-    ADTypes,
-    Zygote,
-    MLDataDevices
+    Lux, OrdinaryDiffEqAdamsBashforthMoulton, Static, ADTypes, Zygote, MLDataDevices
 
 # To use gpu, add related packages
-# using LuxCUDA, CUDA, cuDNN
+# using LuxCUDA
 
 nn = Chain(Dense(n_in => (2 * n_in + 1), tanh), Dense((2 * n_in + 1) => n_in, tanh))
 icnf = ICNF(;
+    nn = nn,
     nvars = nvars, # number of variables
     naugmented = naugs, # number of augmented dimensions
-    nn = nn,
-    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
-    inplace = false, # not using the inplace version of functions
-    cond = false, # not conditioning on auxiliary input
-    device = cpu_device(), # process data by CPU
-    # device = gpu_device(), # process data by GPU
-    tspan = (0.0f0, 1.0f0), # time span
-    steer_rate = 1.0f-1, # add random noise to end of the time span
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
+    steer_rate = 1.0f-1, # add random noise to end of the time span
+    tspan = (0.0f0, 1.0f0), # time span
+    device = cpu_device(), # process data by CPU
+    # device = gpu_device(), # process data by GPU
+    cond = false, # not conditioning on auxiliary input
+    inplace = false, # not using the inplace version of functions
+    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     sol_kwargs = (;
         save_everystep = false,
         reltol = 1.0f-4,
         abstol = 1.0f-8,
         maxiters = typemax(Int),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = True()),
-        sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
     ), # pass to the solver
 )
 
@@ -67,8 +60,8 @@ else
     model = ICNFModel(;
         icnf,
         optimizers = (OptimiserChain(WeightDecay(), Adam()),),
-        adtype = AutoZygote(),
         batchsize = 1024,
+        adtype = AutoZygote(),
         sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
     )
     mach = machine(model, df)

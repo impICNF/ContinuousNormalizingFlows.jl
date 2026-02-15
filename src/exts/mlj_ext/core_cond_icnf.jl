@@ -1,11 +1,9 @@
 mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     icnf::AICNF
     loss::Function
-
     optimizers::Tuple
-    adtype::ADTypes.AbstractADType
-
     batchsize::Int
+    adtype::ADTypes.AbstractADType
     sol_kwargs::NamedTuple
 end
 
@@ -15,11 +13,11 @@ function CondICNFModel(;
     optimizers::Tuple = (
         Optimisers.OptimiserChain(Optimisers.WeightDecay(), Optimisers.Adam()),
     ),
-    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     batchsize::Int = 1024,
+    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     sol_kwargs::NamedTuple = (; epochs = 300, progress = true),
 )
-    return CondICNFModel(icnf, loss, optimizers, adtype, batchsize, sol_kwargs)
+    return CondICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)

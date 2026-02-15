@@ -51,11 +51,11 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
         )
 
         icnf = ContinuousNormalizingFlows.ICNF(;
+            nn,
             nvars,
             naugmented = naugs,
-            nn,
-            compute_mode,
             rng,
+            compute_mode,
         )
 
         df = DataFrames.DataFrame(transpose(r), :auto)

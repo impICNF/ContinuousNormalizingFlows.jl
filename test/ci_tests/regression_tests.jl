@@ -15,7 +15,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
         Lux.Dense((2 * n_in + 1) => n_in, tanh),
     )
 
-    icnf = ContinuousNormalizingFlows.ICNF(; nvars, naugmented = naugs, nn, rng)
+    icnf = ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng)
 
     df = DataFrames.DataFrame(transpose(r), :auto)
     model = ContinuousNormalizingFlows.ICNFModel(;

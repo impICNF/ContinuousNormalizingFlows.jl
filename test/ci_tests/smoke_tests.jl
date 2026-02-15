@@ -120,14 +120,14 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             ),
         )
         icnf = ContinuousNormalizingFlows.ICNF(;
+            nn,
             nvars,
             naugmented = nvars + 1,
-            nn,
-            data_type,
-            compute_mode,
-            inplace,
-            cond,
             device,
+            cond,
+            inplace,
+            compute_mode,
+            data_type,
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -205,8 +205,8 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             if cond
                 model = ContinuousNormalizingFlows.CondICNFModel(;
                     icnf,
-                    adtype,
                     batchsize = 0,
+                    adtype,
                     sol_kwargs = (; epochs = 2),
                 )
                 mach = MLJBase.machine(model, (df, df2))
@@ -222,8 +222,8 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             else
                 model = ContinuousNormalizingFlows.ICNFModel(;
                     icnf,
-                    adtype,
                     batchsize = 0,
+                    adtype,
                     sol_kwargs = (; epochs = 2),
                 )
                 mach = MLJBase.machine(model, df)
