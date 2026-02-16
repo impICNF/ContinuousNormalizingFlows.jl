@@ -62,10 +62,7 @@ function ICNF(;
     nvars::Int = 1,
     naugmented::Int = nvars + 1,
     nn::LuxCore.AbstractLuxLayer = Lux.Chain(
-        Lux.Dense(
-            (nvars + naugmented + !autonomous) => (nvars + naugmented + !autonomous),
-            tanh,
-        ),
+        Lux.Dense(nvars + naugmented + !autonomous => nvars + naugmented, tanh),
     ),
     steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
     λ₁::AbstractFloat = convert(data_type, 1.0e-2),
