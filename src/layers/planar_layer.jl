@@ -3,68 +3,60 @@ Implementation of Planar Layer from
 
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
-struct PlanarLayer{use_bias, cond, F1, F2, F3, NVARS <: Int} <: LuxCore.AbstractLuxLayer
+struct PlanarLayer{USE_BIAS, F1, F2, F3, NVARS <: Int} <: LuxCore.AbstractLuxLayer
+    in_dims::NVARS
+    out_dims::NVARS
     activation::F1
-    nvars::NVARS
     init_weight::F2
     init_bias::F3
-    n_cond::NVARS
 end
 
 function PlanarLayer(
-    nvars::Int,
+    mapping::Pair{<:Int, <:Int},
     activation::Any = identity;
     init_weight::Any = WeightInitializers.glorot_uniform,
     init_bias::Any = WeightInitializers.zeros32,
     use_bias::Bool = true,
-    n_cond::Int = 0,
 )
     return PlanarLayer{
         use_bias,
-        !iszero(n_cond),
         typeof(activation),
         typeof(init_weight),
         typeof(init_bias),
-        typeof(nvars),
+        typeof(first(mapping)),
     }(
+        first(mapping),
+        last(mapping),
         activation,
-        nvars,
         init_weight,
         init_bias,
-        n_cond,
     )
 end
 
 function LuxCore.initialparameters(
     rng::Random.AbstractRNG,
-    layer::PlanarLayer{use_bias, cond},
-) where {use_bias, cond}
+    layer::PlanarLayer{USE_BIAS},
+) where {USE_BIAS}
     return ifelse(
-        use_bias,
+        USE_BIAS,
         (
-            u = layer.init_weight(rng, layer.nvars),
-            w = layer.init_weight(
-                rng,
-                ifelse(cond, (layer.nvars + layer.n_cond), layer.nvars),
-            ),
+            u = layer.init_weight(rng, layer.out_dims),
+            w = layer.init_weight(rng, layer.in_dims),
             b = layer.init_bias(rng, 1),
         ),
         (
-            u = layer.init_weight(rng, layer.nvars),
-            w = layer.init_weight(
-                rng,
-                ifelse(cond, (layer.nvars + layer.n_cond), layer.nvars),
-            ),
+            u = layer.init_weight(rng, layer.out_dims),
+            w = layer.init_weight(rng, layer.in_dims),
         ),
     )
 end
 
-function LuxCore.parameterlength(m::PlanarLayer{use_bias, cond}) where {use_bias, cond}
-    return m.nvars + ifelse(cond, (m.nvars + m.n_cond), m.nvars) + ifelse(use_bias, 1, 0)
+function LuxCore.parameterlength(m::PlanarLayer{USE_BIAS}) where {USE_BIAS}
+    return m.out_dims + m.in_dims + USE_BIAS
 end
 
 function LuxCore.outputsize(m::PlanarLayer, ::Any, ::Random.AbstractRNG)
-    return (m.nvars,)
+    return (m.out_dims,)
 end
 
 function (m::PlanarLayer{true})(z::AbstractVector, ps::Any, st::NamedTuple)

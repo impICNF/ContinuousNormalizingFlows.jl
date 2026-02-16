@@ -89,17 +89,21 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
                 planar,
                 Lux.Chain(
                     ContinuousNormalizingFlows.PlanarLayer(
-                        nvars * 2 + 1,
-                        tanh;
-                        n_cond = nvars,
+                        nvars * 3 + 1 + 1 => nvars * 2 + 1,
+                        tanh,
                     ),
                 ),
-                Lux.Chain(Lux.Dense(nvars * 3 + 1 => nvars * 2 + 1, tanh)),
+                Lux.Chain(Lux.Dense(nvars * 3 + 1 + 1 => nvars * 2 + 1, tanh)),
             ),
             ifelse(
                 planar,
-                Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2 + 1, tanh)),
-                Lux.Chain(Lux.Dense(nvars * 2 + 1 => nvars * 2 + 1, tanh)),
+                Lux.Chain(
+                    ContinuousNormalizingFlows.PlanarLayer(
+                        nvars * 2 + 1 + 1 => nvars * 2 + 1,
+                        tanh,
+                    ),
+                ),
+                Lux.Chain(Lux.Dense(nvars * 2 + 1 + 1 => nvars * 2 + 1, tanh)),
             ),
         )
         icnf = ContinuousNormalizingFlows.ICNF(;

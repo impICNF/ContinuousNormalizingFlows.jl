@@ -106,17 +106,21 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
                 planar,
                 Lux.Chain(
                     ContinuousNormalizingFlows.PlanarLayer(
-                        nvars * 2 + 1,
-                        tanh;
-                        n_cond = nvars,
+                        nvars * 3 + 1 + 1 => nvars * 2 + 1,
+                        tanh,
                     ),
                 ),
-                Lux.Chain(Lux.Dense(nvars * 3 + 1 => nvars * 2 + 1, tanh)),
+                Lux.Chain(Lux.Dense(nvars * 3 + 1 + 1 => nvars * 2 + 1, tanh)),
             ),
             ifelse(
                 planar,
-                Lux.Chain(ContinuousNormalizingFlows.PlanarLayer(nvars * 2 + 1, tanh)),
-                Lux.Chain(Lux.Dense(nvars * 2 + 1 => nvars * 2 + 1, tanh)),
+                Lux.Chain(
+                    ContinuousNormalizingFlows.PlanarLayer(
+                        nvars * 2 + 1 + 1 => nvars * 2 + 1,
+                        tanh,
+                    ),
+                ),
+                Lux.Chain(Lux.Dense(nvars * 2 + 1 + 1 => nvars * 2 + 1, tanh)),
             ),
         )
         icnf = ContinuousNormalizingFlows.ICNF(;
@@ -199,7 +203,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
-
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
 
