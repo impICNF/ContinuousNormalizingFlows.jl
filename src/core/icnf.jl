@@ -18,6 +18,7 @@ struct ICNF{
     CM <: ComputeMode,
     INPLACE,
     COND,
+    AUTONOMOUS,
     AUGMENTED,
     STEER,
     NORM_Z,
@@ -54,13 +55,14 @@ function ICNF(;
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     cond::Bool = false,
+    autonomous::Bool = false,
     device::MLDataDevices.AbstractDevice = MLDataDevices.cpu_device(),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
     nvars::Int = 1,
     naugmented::Int = nvars + 1,
     nn::LuxCore.AbstractLuxLayer = Lux.Chain(
-        Lux.Dense((nvars + naugmented) => (nvars + naugmented), tanh),
+        Lux.Dense(nvars + naugmented + !autonomous => nvars + naugmented, tanh),
     ),
     steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
     λ₁::AbstractFloat = convert(data_type, 1.0e-2),
@@ -92,6 +94,7 @@ function ICNF(;
         typeof(compute_mode),
         inplace,
         cond,
+        autonomous,
         !iszero(naugmented),
         !iszero(steer_rate),
         !iszero(λ₁),
@@ -131,14 +134,15 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIVectorMode, false, COND, AUGMENTED, STEER, NORM_Z},
+    t::Any,
+    icnf::ICNF{T, <:DIVectorMode, false, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
@@ -156,14 +160,15 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIVectorMode, true, COND, AUGMENTED, STEER, NORM_Z},
+    t::Any,
+    icnf::ICNF{T, <:DIVectorMode, true, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
@@ -181,14 +186,15 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:MatrixMode, false, COND, AUGMENTED, STEER, NORM_Z},
+    t::Any,
+    icnf::ICNF{T, <:MatrixMode, false, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
@@ -212,14 +218,15 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:MatrixMode, true, COND, AUGMENTED, STEER, NORM_Z},
+    t::Any,
+    icnf::ICNF{T, <:MatrixMode, true, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
@@ -237,14 +244,25 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIVecJacVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIVecJacVectorMode,
+        false,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -266,14 +284,25 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIVecJacVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIVecJacVectorMode,
+        true,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -295,14 +324,25 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIJacVecVectorMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIJacVecVectorMode,
+        false,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -324,14 +364,25 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIJacVecVectorMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIJacVecVectorMode,
+        true,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -353,14 +404,25 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIVecJacMatrixMode,
+        false,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -386,14 +448,25 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIVecJacMatrixMode,
+        true,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -415,14 +488,25 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIJacVecMatrixMode,
+        false,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -448,14 +532,25 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:DIJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:DIJacVecMatrixMode,
+        true,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -477,14 +572,25 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:LuxVecJacMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:LuxVecJacMatrixMode,
+        false,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -510,14 +616,25 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:LuxVecJacMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:LuxVecJacMatrixMode,
+        true,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -539,14 +656,25 @@ end
 function augmented_f(
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:LuxJacVecMatrixMode, false, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:LuxJacVecMatrixMode,
+        false,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
@@ -572,14 +700,25 @@ function augmented_f(
     du::Any,
     u::Any,
     p::Any,
-    ::Any,
-    icnf::ICNF{T, <:LuxJacVecMatrixMode, true, COND, AUGMENTED, STEER, NORM_Z, NORM_J},
+    t::Any,
+    icnf::ICNF{
+        T,
+        <:LuxJacVecMatrixMode,
+        true,
+        COND,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        NORM_J,
+    },
     mode::TrainMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
+    nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)

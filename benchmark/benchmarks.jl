@@ -3,8 +3,6 @@ import ADTypes,
     ComponentArrays,
     DifferentiationInterface,
     Distributions,
-    ForwardDiff,
-    Lux,
     LuxCore,
     PkgBenchmark,
     StableRNGs,
@@ -19,18 +17,8 @@ r = rand(rng, data_dist, ndimension, ndata)
 r = convert.(Float32, r)
 
 nvars = size(r, 1)
-naugs = nvars + 1
-n_in = nvars + naugs
-
-nn = Lux.Chain(
-    Lux.Dense(n_in => (2 * n_in + 1), tanh),
-    Lux.Dense((2 * n_in + 1) => n_in, tanh),
-)
-
-icnf = ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng)
-
-icnf2 =
-    ContinuousNormalizingFlows.ICNF(; nn, nvars, naugmented = naugs, rng, inplace = true)
+icnf = ContinuousNormalizingFlows.ICNF(; nvars, rng)
+icnf2 = ContinuousNormalizingFlows.ICNF(; nvars, rng, inplace = true)
 
 ps, st = LuxCore.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)

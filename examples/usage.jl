@@ -31,7 +31,7 @@ using ContinuousNormalizingFlows,
 # To use gpu, add related packages
 # using LuxCUDA
 
-nn = Chain(Dense(n_in => (2 * n_in + 1), tanh), Dense((2 * n_in + 1) => n_in, tanh))
+nn = Chain(Dense(n_in + 1 => n_in, tanh))
 icnf = ICNF(;
     nn = nn,
     nvars = nvars, # number of variables
@@ -45,6 +45,7 @@ icnf = ICNF(;
     # device = gpu_device(), # process data by GPU
     cond = false, # not conditioning on auxiliary input
     inplace = false, # not using the inplace version of functions
+    autonomous = false, # using non-autonomous flow
     compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
     sol_kwargs = (;
         save_everystep = false,
