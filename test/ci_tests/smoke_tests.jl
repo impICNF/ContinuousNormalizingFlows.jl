@@ -3,7 +3,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
         ContinuousNormalizingFlows.TrainMode{true}(),
         ContinuousNormalizingFlows.TestMode{true}(),
     ]
-    conds, inplaces = if GROUP == "SmokeXOut"
+    conditioneds, inplaces = if GROUP == "SmokeXOut"
         Bool[false], Bool[false]
     elseif GROUP == "SmokeXIn"
         Bool[false], Bool[true]
@@ -15,9 +15,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
         Bool[false, true], Bool[false, true]
     end
     planars = Bool[false, true]
-    nvars_ = Int[2]
-    ndata_ = Int[4]
-    data_types = Type{<:AbstractFloat}[Float32]
     devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
     adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(),
     # ADTypes.AutoForwardDiff(),
@@ -75,63 +72,60 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
         ),
     ]
 
-    Test.@testset verbose = true showtiming = true failfast = false "$device | $data_type | $compute_mode | ndata = $ndata | nvars = $nvars | inplace = $inplace | cond = $cond | planar = $planar | $omode" for device in
-                                                                                                                                                                                                                 devices,
-        data_type in data_types,
+    Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
+                                                                                                                                                                                devices,
         compute_mode in compute_modes,
-        ndata in ndata_,
-        nvars in nvars_,
+        omode in omodes,
         inplace in inplaces,
-        cond in conds,
-        planar in planars,
-        omode in omodes
+        conditioned in conditioneds,
+        planar in planars
 
-        data_dist =
-            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (2, 4))...)
-        data_dist2 =
-            Distributions.Beta{data_type}(convert(Tuple{data_type, data_type}, (4, 2))...)
+        ndata = 4
+        ndimensions = 2
+        data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
+        data_dist2 = Distributions.Beta{Float32}(2.0f0, 4.0f0)
         if compute_mode isa ContinuousNormalizingFlows.VectorMode
-            r = convert.(data_type, rand(data_dist, nvars))
-            r2 = convert.(data_type, rand(data_dist2, nvars))
+            r = convert.(Float32, rand(data_dist, ndimensions))
+            r2 = convert.(Float32, rand(data_dist2, ndimensions))
         elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
-            r = convert.(data_type, rand(data_dist, nvars, ndata))
-            r2 = convert.(data_type, rand(data_dist2, nvars, ndata))
+            r = convert.(Float32, rand(data_dist, ndimensions, ndata))
+            r2 = convert.(Float32, rand(data_dist2, ndimensions, ndata))
         end
         df = DataFrames.DataFrame(transpose(r), :auto)
         df2 = DataFrames.DataFrame(transpose(r2), :auto)
+        nvariables = size(r, 1)
 
-        nn = ifelse(
-            cond,
-            ifelse(
-                planar,
-                Lux.Chain(
-                    ContinuousNormalizingFlows.PlanarLayer(
-                        nvars * 3 + 1 + 1 => nvars * 2 + 1,
-                        tanh,
+        icnf = ifelse(
+            planar,
+            ContinuousNormalizingFlows.ICNF(;
+                nn = ifelse(
+                    conditioned,
+                    Lux.Chain(
+                        ContinuousNormalizingFlows.PlanarLayer(
+                            nvariables * 3 + 1 => nvariables * 2,
+                            tanh,
+                        ),
+                    ),
+                    Lux.Chain(
+                        ContinuousNormalizingFlows.PlanarLayer(
+                            nvariables * 2 + 1 => nvariables * 2,
+                            tanh,
+                        ),
                     ),
                 ),
-                Lux.Chain(Lux.Dense(nvars * 3 + 1 + 1 => nvars * 2 + 1, tanh)),
+                nvariables,
+                nconditions = ifelse(conditioned, nvariables, 0),
+                inplace,
+                compute_mode,
+                device,
             ),
-            ifelse(
-                planar,
-                Lux.Chain(
-                    ContinuousNormalizingFlows.PlanarLayer(
-                        nvars * 2 + 1 + 1 => nvars * 2 + 1,
-                        tanh,
-                    ),
-                ),
-                Lux.Chain(Lux.Dense(nvars * 2 + 1 + 1 => nvars * 2 + 1, tanh)),
+            ContinuousNormalizingFlows.ICNF(;
+                nvariables,
+                nconditions = ifelse(conditioned, nvariables, 0),
+                inplace,
+                compute_mode,
+                device,
             ),
-        )
-        icnf = ContinuousNormalizingFlows.ICNF(;
-            nn,
-            nvars,
-            naugmented = nvars + 1,
-            device,
-            cond,
-            inplace,
-            compute_mode,
-            data_type,
         )
         ps, st = LuxCore.setup(icnf.rng, icnf)
         ps = ComponentArrays.ComponentArray(ps)
@@ -140,7 +134,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
         ps = icnf.device(ps)
         st = icnf.device(st)
 
-        if cond
+        if conditioned
             Test.@test !isnothing(
                 ContinuousNormalizingFlows.inference(icnf, omode, r, r2, ps, st),
             )
@@ -190,7 +184,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             end
         end
 
-        if cond
+        if conditioned
             d = ContinuousNormalizingFlows.CondICNFDist(icnf, omode, r2, ps, st)
         else
             d = ContinuousNormalizingFlows.ICNFDist(icnf, omode, ps, st)
@@ -203,11 +197,10 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
-
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
 
-            if cond
+            if conditioned
                 model = ContinuousNormalizingFlows.CondICNFModel(;
                     icnf,
                     batchsize = 0,

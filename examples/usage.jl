@@ -8,15 +8,18 @@ global_logger(TerminalLogger())
 ## Data
 using Distributions
 ndata = 1024
-ndimension = 1
+ndimensions = 1
 data_dist = Beta{Float32}(2.0f0, 4.0f0)
-r = rand(data_dist, ndimension, ndata)
+r = rand(data_dist, ndimensions, ndata)
 r = convert.(Float32, r)
 
 ## Parameters
-nvars = size(r, 1)
-naugs = nvars + 1
-n_in = nvars + naugs
+nvariables = size(r, 1)
+naugments = nvariables + 1
+n_in = nvariables + naugments + 1 # add time concatenation
+n_out = n_in - 1 # remove time concatenation
+n_hidden_rate = 4
+n_hidden = n_in * n_hidden_rate
 
 ## Model
 using ContinuousNormalizingFlows,
@@ -31,11 +34,15 @@ using ContinuousNormalizingFlows,
 # To use gpu, add related packages
 # using LuxCUDA
 
-nn = Chain(Dense(n_in + 1 => n_in, tanh))
 icnf = ICNF(;
-    nn = nn,
-    nvars = nvars, # number of variables
-    naugmented = naugs, # number of augmented dimensions
+    nn = Chain(
+        Dense(n_in => n_hidden, softplus),
+        Dense(n_hidden => n_hidden, softplus),
+        Dense(n_hidden => n_out),
+    ),
+    nvariables = nvariables, # number of variables
+    naugments = naugments, # number of augmented dimensions
+    nconditions = 0, # number of conditioning inputs
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
@@ -43,7 +50,6 @@ icnf = ICNF(;
     tspan = (0.0f0, 1.0f0), # time span
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
-    cond = false, # not conditioning on auxiliary input
     inplace = false, # not using the inplace version of functions
     autonomous = false, # using non-autonomous flow
     compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote

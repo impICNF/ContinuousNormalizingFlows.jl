@@ -42,7 +42,7 @@ abstract type AbstractICNF{
     T <: AbstractFloat,
     CM <: ComputeMode,
     INPLACE,
-    COND,
+    CONDITIONED,
     AUGMENTED,
     STEER,
     NORM_Z_AUG,

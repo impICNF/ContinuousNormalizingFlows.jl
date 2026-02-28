@@ -17,7 +17,7 @@ struct ICNF{
     T <: AbstractFloat,
     CM <: ComputeMode,
     INPLACE,
-    COND,
+    CONDITIONED,
     AUTONOMOUS,
     AUGMENTED,
     STEER,
@@ -27,19 +27,19 @@ struct ICNF{
     DEVICE <: MLDataDevices.AbstractDevice,
     RNG <: Random.AbstractRNG,
     TSPAN <: NTuple{2, T},
-    NVARS <: Int,
+    NVARIABLES <: Int,
     NN <: LuxCore.AbstractLuxLayer,
     BASEDIST <: Distributions.Distribution,
     EPSDIST <: Distributions.Distribution,
     STEERDIST <: Distributions.Distribution,
     SOL_KWARGS <: NamedTuple,
-} <: AbstractICNF{T, CM, INPLACE, COND, AUGMENTED, STEER, NORM_Z_AUG}
+} <: AbstractICNF{T, CM, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG}
     compute_mode::CM
     device::DEVICE
     rng::RNG
     tspan::TSPAN
-    nvars::NVARS
-    naugmented::NVARS
+    nvariables::NVARIABLES
+    naugments::NVARIABLES
     nn::NN
     λ₁::T
     λ₂::T
@@ -54,27 +54,33 @@ function ICNF(;
     data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
-    cond::Bool = false,
     autonomous::Bool = false,
     device::MLDataDevices.AbstractDevice = MLDataDevices.cpu_device(),
     rng::Random.AbstractRNG = MLDataDevices.default_device_rng(device),
     tspan::NTuple{2} = (zero(data_type), one(data_type)),
-    nvars::Int = 1,
-    naugmented::Int = nvars + 1,
+    nvariables::Int = 1,
+    naugments::Int = nvariables + 1,
+    nconditions::Int = 0,
+    n_in::Int = nvariables + naugments + !autonomous + nconditions,
+    n_out::Int = nvariables + naugments,
+    n_hidden_rate::AbstractFloat = convert(data_type, 4.0e0),
+    n_hidden::Int = round(Int, n_in * n_hidden_rate),
     nn::LuxCore.AbstractLuxLayer = Lux.Chain(
-        Lux.Dense(nvars + naugmented + !autonomous => nvars + naugmented, tanh),
+        Lux.Dense(n_in => n_hidden, NNlib.softplus),
+        Lux.Dense(n_hidden => n_hidden, NNlib.softplus),
+        Lux.Dense(n_hidden => n_out),
     ),
     steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
     λ₁::AbstractFloat = convert(data_type, 1.0e-2),
     λ₂::AbstractFloat = convert(data_type, 1.0e-2),
     λ₃::AbstractFloat = convert(data_type, 1.0e-2),
     basedist::Distributions.Distribution = Distributions.MvNormal(
-        FillArrays.Zeros{data_type}(nvars + naugmented),
-        FillArrays.Eye{data_type}(nvars + naugmented),
+        FillArrays.Zeros{data_type}(nvariables + naugments),
+        FillArrays.Eye{data_type}(nvariables + naugments),
     ),
     epsdist::Distributions.Distribution = Distributions.MvNormal(
-        FillArrays.Zeros{data_type}(nvars + naugmented),
-        FillArrays.Eye{data_type}(nvars + naugmented),
+        FillArrays.Zeros{data_type}(nvariables + naugments),
+        FillArrays.Eye{data_type}(nvariables + naugments),
     ),
     sol_kwargs::NamedTuple = (;
         save_everystep = false,
@@ -93,9 +99,9 @@ function ICNF(;
         data_type,
         typeof(compute_mode),
         inplace,
-        cond,
+        !iszero(nconditions),
         autonomous,
-        !iszero(naugmented),
+        !iszero(naugments),
         !iszero(steer_rate),
         !iszero(λ₁),
         !iszero(λ₂),
@@ -103,7 +109,7 @@ function ICNF(;
         typeof(device),
         typeof(rng),
         typeof(tspan),
-        typeof(nvars),
+        typeof(nvariables),
         typeof(nn),
         typeof(basedist),
         typeof(epsdist),
@@ -114,8 +120,8 @@ function ICNF(;
         device,
         rng,
         tspan,
-        nvars,
-        naugmented,
+        nvariables,
+        naugments,
         nn,
         λ₁,
         λ₂,
@@ -135,12 +141,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:DIVectorMode, false, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
+    icnf::ICNF{T, <:DIVectorMode, false, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -161,12 +167,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:DIVectorMode, true, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
+    icnf::ICNF{T, <:DIVectorMode, true, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -187,12 +193,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:MatrixMode, false, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
+    icnf::ICNF{T, <:MatrixMode, false, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -219,12 +225,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:MatrixMode, true, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
+    icnf::ICNF{T, <:MatrixMode, true, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
     mode::TestMode{REG},
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -249,7 +255,7 @@ function augmented_f(
         T,
         <:DIVecJacVectorMode,
         false,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -260,7 +266,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -289,7 +295,7 @@ function augmented_f(
         T,
         <:DIVecJacVectorMode,
         true,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -300,7 +306,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -329,7 +335,7 @@ function augmented_f(
         T,
         <:DIJacVecVectorMode,
         false,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -340,7 +346,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -369,7 +375,7 @@ function augmented_f(
         T,
         <:DIJacVecVectorMode,
         true,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -380,7 +386,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -409,7 +415,7 @@ function augmented_f(
         T,
         <:DIVecJacMatrixMode,
         false,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -420,7 +426,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -453,7 +459,7 @@ function augmented_f(
         T,
         <:DIVecJacMatrixMode,
         true,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -464,7 +470,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -493,7 +499,7 @@ function augmented_f(
         T,
         <:DIJacVecMatrixMode,
         false,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -504,7 +510,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -537,7 +543,7 @@ function augmented_f(
         T,
         <:DIJacVecMatrixMode,
         true,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -548,7 +554,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -577,7 +583,7 @@ function augmented_f(
         T,
         <:LuxVecJacMatrixMode,
         false,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -588,7 +594,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -621,7 +627,7 @@ function augmented_f(
         T,
         <:LuxVecJacMatrixMode,
         true,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -632,7 +638,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -661,7 +667,7 @@ function augmented_f(
         T,
         <:LuxJacVecMatrixMode,
         false,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -672,7 +678,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -705,7 +711,7 @@ function augmented_f(
         T,
         <:LuxJacVecMatrixMode,
         true,
-        COND,
+        CONDITIONED,
         AUTONOMOUS,
         AUGMENTED,
         STEER,
@@ -716,7 +722,7 @@ function augmented_f(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, COND, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
     n_aug = n_augment(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)

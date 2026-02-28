@@ -1,13 +1,13 @@
 Test.@testset verbose = true showtiming = true failfast = false "Regression Tests" begin
     rng = StableRNGs.StableRNG(1)
     ndata = 2^10
-    ndimension = 1
+    ndimensions = 1
     data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-    r = rand(rng, data_dist, ndimension, ndata)
+    r = rand(rng, data_dist, ndimensions, ndata)
     r = convert.(Float32, r)
 
-    nvars = size(r, 1)
-    icnf = ContinuousNormalizingFlows.ICNF(; nvars, rng)
+    nvariables = size(r, 1)
+    icnf = ContinuousNormalizingFlows.ICNF(; nvariables, rng)
 
     df = DataFrames.DataFrame(transpose(r), :auto)
     model = ContinuousNormalizingFlows.ICNFModel(;
