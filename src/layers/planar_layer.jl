@@ -59,42 +59,42 @@ function LuxCore.outputsize(m::PlanarLayer, ::Any, ::Random.AbstractRNG)
     return (m.out_dims,)
 end
 
-function (m::PlanarLayer{true})(z::AbstractVector, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{true})(z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return ps.u * activation.(LinearAlgebra.dot(ps.w, z) + only(ps.b)), st
 end
 
-function (m::PlanarLayer{true})(z::AbstractMatrix, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{true})(z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return ps.u * activation.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
 
-function (m::PlanarLayer{false})(z::AbstractVector, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{false})(z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return ps.u * activation.(LinearAlgebra.dot(ps.w, z)), st
 end
 
-function (m::PlanarLayer{false})(z::AbstractMatrix, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{false})(z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return ps.u * activation.(transpose(ps.w) * z), st
 end
 
-function pl_h(m::PlanarLayer{true}, z::AbstractVector, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{true}, z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return activation.(LinearAlgebra.dot(ps.w, z) + only(ps.b)), st
 end
 
-function pl_h(m::PlanarLayer{true}, z::AbstractMatrix, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{true}, z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return activation.(muladd(transpose(ps.w), z, only(ps.b))), st
 end
 
-function pl_h(m::PlanarLayer{false}, z::AbstractVector, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{false}, z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return activation.(LinearAlgebra.dot(ps.w, z)), st
 end
 
-function pl_h(m::PlanarLayer{false}, z::AbstractMatrix, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{false}, z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return activation.(transpose(ps.w) * z), st
 end

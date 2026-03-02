@@ -6,13 +6,11 @@ function MLJModelInterface.fitted_params(::MLJICNF, fitresult)
 end
 
 function make_opt_loss(icnf::AbstractICNF, mode::Mode, st::NamedTuple, loss_::Function)
-    function opt_loss(u::Any, data::Tuple{<:Any})
-        xs, = data
+    function opt_loss(u::Any, (xs,)::Tuple{<:Any})
         return loss_(icnf, mode, xs, u, st)
     end
 
-    function opt_loss(u::Any, data::Tuple{<:Any, <:Any})
-        xs, ys = data
+    function opt_loss(u::Any, (xs, ys)::Tuple{<:Any, <:Any})
         return loss_(icnf, mode, xs, ys, u, st)
     end
 

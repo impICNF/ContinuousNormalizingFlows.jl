@@ -4,8 +4,8 @@ struct CondLayer{NN <: LuxCore.AbstractLuxLayer, AT <: Any} <:
     ys::AT
 end
 
-function (m::CondLayer{<:LuxCore.AbstractLuxLayer, <:AbstractArray})(
-    z::AbstractVecOrMat,
+function (m::CondLayer{<:LuxCore.AbstractLuxLayer, <:AbstractVecOrMat{<:Real}})(
+    z::AbstractVecOrMat{<:Real},
     ps::Any,
     st::NamedTuple,
 )
@@ -13,7 +13,7 @@ function (m::CondLayer{<:LuxCore.AbstractLuxLayer, <:AbstractArray})(
 end
 
 function (m::CondLayer{<:LuxCore.AbstractLuxLayer, <:Number})(
-    z::AbstractVector,
+    z::AbstractVector{<:Real},
     ps::Any,
     st::NamedTuple,
 )
@@ -21,7 +21,7 @@ function (m::CondLayer{<:LuxCore.AbstractLuxLayer, <:Number})(
 end
 
 function (m::CondLayer{<:LuxCore.AbstractLuxLayer, <:Number})(
-    z::AbstractMatrix,
+    z::AbstractMatrix{<:Real},
     ps::Any,
     st::NamedTuple,
 )

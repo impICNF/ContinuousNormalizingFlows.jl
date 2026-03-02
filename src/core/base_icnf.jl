@@ -42,7 +42,90 @@ function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
     return icnf.device(Array{T}(undef, dims...))
 end
 
-ChainRulesCore.@non_differentiable base_AT(::Any...)
+function add_conditions_nn(
+    icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true},
+    ys::AbstractVecOrMat{<:Real},
+) where {INPLACE}
+    return CondLayer(icnf.nn, ys)
+end
+
+function add_conditions_nn(
+    icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false},
+) where {INPLACE}
+    return icnf.nn
+end
+
+function make_ode_func(
+    icnf::AbstractICNF{T},
+    mode::Mode,
+    nn::LuxCore.AbstractLuxLayer,
+    st::NamedTuple,
+    ϵ::AbstractVecOrMat{T},
+) where {T <: AbstractFloat}
+    function ode_func(u::Any, p::Any, t::Any)
+        return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
+    end
+
+    function ode_func(du::Any, u::Any, p::Any, t::Any)
+        return augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
+    end
+
+    return ode_func
+end
+
+function reg_z_aug(
+    icnf::AbstractICNF{
+        <:AbstractFloat,
+        <:VectorMode,
+        INPLACE,
+        CONDITIONED,
+        true,
+        STEER,
+        true,
+    },
+    ::Mode{true},
+    z::Any,
+) where {INPLACE, CONDITIONED, STEER}
+    n_aug_input = n_augments_input(icnf)
+    z_aug = z[(end - n_aug_input + 1):end]
+    return LinearAlgebra.norm(z_aug)
+end
+
+function reg_z_aug(
+    ::AbstractICNF{T, <:VectorMode, INPLACE, CONDITIONED, AUGMENTED, STEER, false},
+    ::Mode,
+    z::Any,
+) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER}
+    return zero(T)
+end
+
+function reg_z_aug(
+    icnf::AbstractICNF{
+        <:AbstractFloat,
+        <:MatrixMode,
+        INPLACE,
+        CONDITIONED,
+        true,
+        STEER,
+        true,
+    },
+    ::Mode{true},
+    z::Any,
+) where {INPLACE, CONDITIONED, STEER}
+    n_aug_input = n_augments_input(icnf)
+    z_aug = z[(end - n_aug_input + 1):end, :]
+    return LinearAlgebra.norm.(eachcol(z_aug))
+end
+
+function reg_z_aug(
+    ::AbstractICNF{T, <:MatrixMode, INPLACE, CONDITIONED, AUGMENTED, STEER, false},
+    ::Mode,
+    z::Any,
+) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER}
+    zrs_aug = similar(z, size(z, 2))
+    ChainRulesCore.@ignore_derivatives fill!(zrs_aug, zero(T))
+    return zrs_aug
+end
 
 function base_sol(
     icnf::AbstractICNF{T, <:ComputeMode, INPLACE},
@@ -64,13 +147,7 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    Ȧ = if NORM_Z_AUG && AUGMENTED && REG
-        n_aug_input = n_augments_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end]
-        LinearAlgebra.norm(z_aug)
-    else
-        zero(T)
-    end
+    Ȧ = reg_z_aug(icnf, mode, z)
     return (logp̂x, vcat(augs, Ȧ))
 end
 
@@ -86,15 +163,7 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end, :]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    Ȧ = transpose(if NORM_Z_AUG && AUGMENTED && REG
-        n_aug_input = n_augments_input(icnf)
-        z_aug = z[(end - n_aug_input + 1):end, :]
-        LinearAlgebra.norm.(eachcol(z_aug))
-    else
-        zrs_aug = similar(augs, size(augs, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_aug, zero(T))
-        zrs_aug
-    end)
+    Ȧ = transpose(reg_z_aug(icnf, mode, z))
     return (logp̂x, eachrow(vcat(augs, Ȧ)))
 end
 
@@ -141,7 +210,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = icnf.nn
+    nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -166,7 +235,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = CondLayer(icnf.nn, ys)
+    nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -190,7 +259,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = icnf.nn
+    nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -215,7 +284,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input, size(xs, 2))
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = CondLayer(icnf.nn, ys)
+    nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -240,7 +309,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = icnf.nn
+    nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -266,7 +335,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = CondLayer(icnf.nn, ys)
+    nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -292,7 +361,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = icnf.nn
+    nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -319,7 +388,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.epsdist, ϵ)
-    nn = CondLayer(icnf.nn, ys)
+    nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
         SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
@@ -433,26 +502,8 @@ function loss(
     return -Statistics.mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 
-function make_ode_func(
-    icnf::AbstractICNF{T},
-    mode::Mode,
-    nn::LuxCore.AbstractLuxLayer,
-    st::NamedTuple,
-    ϵ::AbstractVecOrMat{T},
-) where {T <: AbstractFloat}
-    function ode_func(u::Any, p::Any, t::Any)
-        return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
-    end
-
-    function ode_func(du::Any, u::Any, p::Any, t::Any)
-        return augmented_f(du, u, p, t, icnf, mode, nn, st, ϵ)
-    end
-
-    return ode_func
-end
-
 function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false})(
-    xs::AbstractVecOrMat,
+    xs::AbstractVecOrMat{<:Real},
     ps::Any,
     st::NamedTuple,
 ) where {INPLACE}
@@ -460,10 +511,9 @@ function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false})(
 end
 
 function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true})(
-    xs_ys::Tuple,
+    (xs, ys)::Tuple{<:AbstractVecOrMat{<:Real}, <:AbstractVecOrMat{<:Real}},
     ps::Any,
     st::NamedTuple,
 ) where {INPLACE}
-    xs, ys = xs_ys
     return first(inference(icnf, TrainMode{false}(), xs, ys, ps, st)), st
 end
