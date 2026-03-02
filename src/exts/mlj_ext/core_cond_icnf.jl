@@ -54,28 +54,14 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     return (fitresult, cache, report)
 end
 
-function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
-    Xnew, Ynew = XYnew
+function MLJModelInterface.transform(model::CondICNFModel, fitresult, (Xnew, Ynew))
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
     ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
     xnew = model.icnf.device(xnew)
     ynew = model.icnf.device(ynew)
     (ps, st) = fitresult
 
-    logp̂x = if model.icnf.compute_mode isa VectorMode
-        @warn "to compute by vectors, data should be a vector." maxlog = 1
-        broadcast(
-            function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
-                return first(inference(model.icnf, TestMode{false}(), x, y, ps, st))
-            end,
-            collect(collect.(eachcol(xnew))),
-            collect(collect.(eachcol(ynew))),
-        )
-    elseif model.icnf.compute_mode isa MatrixMode
-        first(inference(model.icnf, TestMode{false}(), xnew, ynew, ps, st))
-    else
-        error("Not Implemented")
-    end
+    logp̂x = get_logp̂x(model.icnf, xnew, ynew, ps, st)
 
     return DataFrames.DataFrame(; px = exp.(logp̂x))
 end

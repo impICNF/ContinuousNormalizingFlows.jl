@@ -67,9 +67,7 @@ icnf = ICNF(;
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 
 icnf_mach_fn = "icnf_mach.jls"
-if ispath(icnf_mach_fn)
-    mach = machine(icnf_mach_fn) # load it
-else
+if !ispath(icnf_mach_fn)
     df = DataFrame(transpose(r), :auto)
     model = ICNFModel(;
         icnf,
@@ -84,6 +82,7 @@ else
 
     MLJBase.save(icnf_mach_fn, mach) # save it
 end
+mach = machine(icnf_mach_fn) # load it
 
 ## Use It
 d = ICNFDist(mach, TestMode())

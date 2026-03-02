@@ -153,28 +153,114 @@ function add_time_nn(
     return nn
 end
 
+function reg_z(
+    ::ICNF{
+        <:AbstractFloat,
+        <:VectorMode,
+        INPLACE,
+        CONDITIONED,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        true,
+    },
+    ::Mode{true},
+    ż::Any,
+) where {INPLACE, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER}
+    return LinearAlgebra.norm(ż)
+end
+
+function reg_z(::ICNF{T, <:VectorMode}, ::Mode, ::Any) where {T <: AbstractFloat}
+    return zero(T)
+end
+
+function reg_z(
+    ::ICNF{
+        <:AbstractFloat,
+        <:MatrixMode,
+        INPLACE,
+        CONDITIONED,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        true,
+    },
+    ::Mode{true},
+    ż::Any,
+) where {INPLACE, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER}
+    return LinearAlgebra.norm.(eachcol(ż))
+end
+
+function reg_z(::ICNF{T, <:MatrixMode}, ::Mode, ż::Any) where {T <: AbstractFloat}
+    zrs_Ė = similar(ż, size(ż, 2))
+    ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
+    return zrs_Ė
+end
+
+function reg_j(
+    ::ICNF{
+        <:AbstractFloat,
+        <:VectorMode,
+        INPLACE,
+        CONDITIONED,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        true,
+    },
+    ::TrainMode{true},
+    ϵ_J::Any,
+) where {INPLACE, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z}
+    return LinearAlgebra.norm(ϵ_J)
+end
+
+function reg_j(::ICNF{T, <:VectorMode}, ::Mode, ::Any) where {T <: AbstractFloat}
+    return zero(T)
+end
+
+function reg_j(
+    ::ICNF{
+        <:AbstractFloat,
+        <:MatrixMode,
+        INPLACE,
+        CONDITIONED,
+        AUTONOMOUS,
+        AUGMENTED,
+        STEER,
+        NORM_Z,
+        true,
+    },
+    ::TrainMode{true},
+    ϵ_J::Any,
+) where {INPLACE, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z}
+    return LinearAlgebra.norm.(eachcol(ϵ_J))
+end
+
+function reg_j(::ICNF{T, <:MatrixMode}, ::Mode, ϵ_J::Any) where {T <: AbstractFloat}
+    zrs_ṅ = similar(ϵ_J, size(ϵ_J, 2))
+    ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
+    return zrs_ṅ
+end
+
 function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:DIVectorMode, false, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
-    mode::TestMode{REG},
+    icnf::ICNF{T, <:DIVectorMode, false},
+    mode::TestMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     l̇ = -LinearAlgebra.tr(J)
-    Ė = if NORM_Z && REG
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    ṅ = zero(T)
+    Ė = reg_z(icnf, mode, ż)
+    ṅ = reg_j(icnf, mode, J)
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -183,12 +269,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:DIVectorMode, true, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
-    mode::TestMode{REG},
+    icnf::ICNF{T, <:DIVectorMode, true},
+    mode::TestMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -196,12 +282,8 @@ function augmented_f(
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.tr(J)
-    du[(end - n_aug + 1)] = if NORM_Z && REG
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2)] = zero(T)
+    du[(end - n_aug + 1)] = reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2)] = reg_j(icnf, mode, J)
     return nothing
 end
 
@@ -209,30 +291,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:MatrixMode, false, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
-    mode::TestMode{REG},
+    icnf::ICNF{T, <:MatrixMode, false},
+    mode::TestMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     l̇ = -transpose(LinearAlgebra.tr.(eachslice(J; dims = 3)))
-    Ė = transpose(if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zrs_Ė = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
-        zrs_Ė
-    end)
-    ṅ = transpose(begin
-        zrs_ṅ = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
-        zrs_ṅ
-    end)
+    Ė = transpose(reg_z(icnf, mode, ż))
+    ṅ = transpose(reg_j(icnf, mode, J))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -241,12 +313,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{T, <:MatrixMode, true, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z},
-    mode::TestMode{REG},
+    icnf::ICNF{T, <:MatrixMode, true},
+    mode::TestMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -254,12 +326,8 @@ function augmented_f(
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -(LinearAlgebra.tr.(eachslice(J; dims = 3)))
-    du[(end - n_aug + 1), :] .= if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2), :] .= zero(T)
+    du[(end - n_aug + 1), :] .= reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, J)
     return nothing
 end
 
@@ -267,38 +335,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIVecJacVectorMode,
-        false,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIVecJacVectorMode, false},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -LinearAlgebra.dot(ϵJ, ϵ)
-    Ė = if NORM_Z && REG
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    ṅ = if NORM_J && REG
-        LinearAlgebra.norm(ϵJ)
-    else
-        zero(T)
-    end
+    Ė = reg_z(icnf, mode, ż)
+    ṅ = reg_j(icnf, mode, ϵJ)
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -307,22 +357,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIVecJacVectorMode,
-        true,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIVecJacVectorMode, true},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -330,16 +370,8 @@ function augmented_f(
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵJ, ϵ)
-    du[(end - n_aug + 1)] = if NORM_Z && REG
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2)] = if NORM_J && REG
-        LinearAlgebra.norm(ϵJ)
-    else
-        zero(T)
-    end
+    du[(end - n_aug + 1)] = reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2)] = reg_j(icnf, mode, ϵJ)
     return nothing
 end
 
@@ -347,38 +379,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIJacVecVectorMode,
-        false,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIJacVecVectorMode, false},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -LinearAlgebra.dot(ϵ, Jϵ)
-    Ė = if NORM_Z && REG
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    ṅ = if NORM_J && REG
-        LinearAlgebra.norm(Jϵ)
-    else
-        zero(T)
-    end
+    Ė = reg_z(icnf, mode, ż)
+    ṅ = reg_j(icnf, mode, Jϵ)
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -387,22 +401,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIJacVecVectorMode,
-        true,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIJacVecVectorMode, true},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVector{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -410,16 +414,8 @@ function augmented_f(
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.dot(ϵ, Jϵ)
-    du[(end - n_aug + 1)] = if NORM_Z && REG
-        LinearAlgebra.norm(ż)
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2)] = if NORM_J && REG
-        LinearAlgebra.norm(Jϵ)
-    else
-        zero(T)
-    end
+    du[(end - n_aug + 1)] = reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2)] = reg_j(icnf, mode, Jϵ)
     return nothing
 end
 
@@ -427,42 +423,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIVecJacMatrixMode,
-        false,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIVecJacMatrixMode, false},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zrs_Ė = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
-        zrs_Ė
-    end)
-    ṅ = transpose(if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(ϵJ))
-    else
-        zrs_ṅ = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
-        zrs_ṅ
-    end)
+    Ė = transpose(reg_z(icnf, mode, ż))
+    ṅ = transpose(reg_j(icnf, mode, ϵJ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -471,22 +445,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIVecJacMatrixMode,
-        true,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIVecJacMatrixMode, true},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -494,16 +458,8 @@ function augmented_f(
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2), :] .= if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(ϵJ))
-    else
-        zero(T)
-    end
+    du[(end - n_aug + 1), :] .= reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, ϵJ)
     return nothing
 end
 
@@ -511,42 +467,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIJacVecMatrixMode,
-        false,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIJacVecMatrixMode, false},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
-    Ė = transpose(if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zrs_Ė = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
-        zrs_Ė
-    end)
-    ṅ = transpose(if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(Jϵ))
-    else
-        zrs_ṅ = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
-        zrs_ṅ
-    end)
+    Ė = transpose(reg_z(icnf, mode, ż))
+    ṅ = transpose(reg_j(icnf, mode, Jϵ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -555,22 +489,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:DIJacVecMatrixMode,
-        true,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:DIJacVecMatrixMode, true},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -578,16 +502,8 @@ function augmented_f(
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2), :] .= if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(Jϵ))
-    else
-        zero(T)
-    end
+    du[(end - n_aug + 1), :] .= reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, Jϵ)
     return nothing
 end
 
@@ -595,42 +511,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:LuxVecJacMatrixMode,
-        false,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:LuxVecJacMatrixMode, false},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zrs_Ė = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
-        zrs_Ė
-    end)
-    ṅ = transpose(if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(ϵJ))
-    else
-        zrs_ṅ = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
-        zrs_ṅ
-    end)
+    Ė = transpose(reg_z(icnf, mode, ż))
+    ṅ = transpose(reg_j(icnf, mode, ϵJ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -639,22 +533,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:LuxVecJacMatrixMode,
-        true,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:LuxVecJacMatrixMode, true},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -662,16 +546,8 @@ function augmented_f(
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵJ .* ϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2), :] .= if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(ϵJ))
-    else
-        zero(T)
-    end
+    du[(end - n_aug + 1), :] .= reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, ϵJ)
     return nothing
 end
 
@@ -679,42 +555,20 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:LuxJacVecMatrixMode,
-        false,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:LuxJacVecMatrixMode, false},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
-    Ė = transpose(if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zrs_Ė = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_Ė, zero(T))
-        zrs_Ė
-    end)
-    ṅ = transpose(if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(Jϵ))
-    else
-        zrs_ṅ = similar(ż, size(ż, 2))
-        ChainRulesCore.@ignore_derivatives fill!(zrs_ṅ, zero(T))
-        zrs_ṅ
-    end)
+    Ė = transpose(reg_z(icnf, mode, ż))
+    ṅ = transpose(reg_j(icnf, mode, Jϵ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -723,22 +577,12 @@ function augmented_f(
     u::Any,
     p::Any,
     t::Any,
-    icnf::ICNF{
-        T,
-        <:LuxJacVecMatrixMode,
-        true,
-        CONDITIONED,
-        AUTONOMOUS,
-        AUGMENTED,
-        STEER,
-        NORM_Z,
-        NORM_J,
-    },
-    mode::TrainMode{REG},
+    icnf::ICNF{T, <:LuxJacVecMatrixMode, true},
+    mode::TrainMode,
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
-) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
+) where {T <: AbstractFloat}
     n_aug = n_augments(icnf, mode)
     nn = add_time_nn(icnf, nn, t)
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
@@ -746,16 +590,8 @@ function augmented_f(
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -vec(sum(ϵ .* Jϵ; dims = 1))
-    du[(end - n_aug + 1), :] .= if NORM_Z && REG
-        LinearAlgebra.norm.(eachcol(ż))
-    else
-        zero(T)
-    end
-    du[(end - n_aug + 2), :] .= if NORM_J && REG
-        LinearAlgebra.norm.(eachcol(Jϵ))
-    else
-        zero(T)
-    end
+    du[(end - n_aug + 1), :] .= reg_z(icnf, mode, ż)
+    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, Jϵ)
     return nothing
 end
 

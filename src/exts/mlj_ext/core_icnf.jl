@@ -56,20 +56,7 @@ function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = model.icnf.device(xnew)
     (ps, st) = fitresult
 
-    logp̂x = if model.icnf.compute_mode isa VectorMode
-        @warn "to compute by vectors, data should be a vector." maxlog = 1
-        broadcast(
-            function (x::AbstractVector{<:Real})
-                return first(inference(model.icnf, TestMode{false}(), x, ps, st))
-            end,
-            collect(collect.(eachcol(xnew))),
-        )
-    elseif model.icnf.compute_mode isa MatrixMode
-        first(inference(model.icnf, TestMode{false}(), xnew, ps, st))
-    else
-        error("Not Implemented")
-    end
-
+    logp̂x = get_logp̂x(model.icnf, xnew, ps, st)
     return DataFrames.DataFrame(; px = exp.(logp̂x))
 end
 

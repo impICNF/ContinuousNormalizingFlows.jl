@@ -33,21 +33,18 @@ function PlanarLayer(
     )
 end
 
-function LuxCore.initialparameters(
-    rng::Random.AbstractRNG,
-    layer::PlanarLayer{USE_BIAS},
-) where {USE_BIAS}
-    return ifelse(
-        USE_BIAS,
-        (
-            u = layer.init_weight(rng, layer.out_dims),
-            w = layer.init_weight(rng, layer.in_dims),
-            b = layer.init_bias(rng, 1),
-        ),
-        (
-            u = layer.init_weight(rng, layer.out_dims),
-            w = layer.init_weight(rng, layer.in_dims),
-        ),
+function LuxCore.initialparameters(rng::Random.AbstractRNG, layer::PlanarLayer{true})
+    return (
+        u = layer.init_weight(rng, layer.out_dims),
+        w = layer.init_weight(rng, layer.in_dims),
+        b = layer.init_bias(rng, 1),
+    )
+end
+
+function LuxCore.initialparameters(rng::Random.AbstractRNG, layer::PlanarLayer{false})
+    return (
+        u = layer.init_weight(rng, layer.out_dims),
+        w = layer.init_weight(rng, layer.in_dims),
     )
 end
 

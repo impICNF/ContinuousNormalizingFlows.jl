@@ -92,10 +92,10 @@ function reg_z_aug(
 end
 
 function reg_z_aug(
-    ::AbstractICNF{T, <:VectorMode, INPLACE, CONDITIONED, AUGMENTED, STEER, false},
+    ::AbstractICNF{T, <:VectorMode},
     ::Mode,
     z::Any,
-) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER}
+) where {T <: AbstractFloat}
     return zero(T)
 end
 
@@ -118,10 +118,10 @@ function reg_z_aug(
 end
 
 function reg_z_aug(
-    ::AbstractICNF{T, <:MatrixMode, INPLACE, CONDITIONED, AUGMENTED, STEER, false},
+    ::AbstractICNF{T, <:MatrixMode},
     ::Mode,
     z::Any,
-) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER}
+) where {T <: AbstractFloat}
     zrs_aug = similar(z, size(z, 2))
     ChainRulesCore.@ignore_derivatives fill!(zrs_aug, zero(T))
     return zrs_aug
@@ -136,10 +136,10 @@ function base_sol(
 end
 
 function inference_sol(
-    icnf::AbstractICNF{T, <:VectorMode, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG},
-    mode::Mode{REG},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE},
+    mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
-) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG, REG}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1)]
@@ -152,10 +152,10 @@ function inference_sol(
 end
 
 function inference_sol(
-    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG},
-    mode::Mode{REG},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
+    mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
-) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG, REG}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1), :]
