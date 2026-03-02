@@ -133,7 +133,7 @@ function ICNF(;
     )
 end
 
-function n_augment(::ICNF, ::Mode)
+function n_augments(::ICNF, ::Mode)
     return 2
 end
 
@@ -147,7 +147,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -173,7 +173,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -199,7 +199,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -231,7 +231,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -267,7 +267,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -307,7 +307,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -347,7 +347,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -387,7 +387,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractVector{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1)]
@@ -427,7 +427,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -471,7 +471,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -511,7 +511,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -555,7 +555,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -595,7 +595,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -639,7 +639,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -679,7 +679,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
@@ -723,7 +723,7 @@ function augmented_f(
     st::NamedTuple,
     ϵ::AbstractMatrix{T},
 ) where {T <: AbstractFloat, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER, NORM_Z, NORM_J, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     nn = ifelse(AUTONOMOUS, nn, CondLayer(nn, t))
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]

@@ -2,17 +2,17 @@ function Base.show(io::IO, icnf::AbstractICNF)
     return print(io, typeof(icnf))
 end
 
-function n_augment(::AbstractICNF, ::Mode)
+function n_augments(::AbstractICNF, ::Mode)
     return 0
 end
 
-function n_augment_input(
+function n_augments_input(
     icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, CONDITIONED, true},
 ) where {INPLACE, CONDITIONED}
     return icnf.naugments
 end
 
-function n_augment_input(::AbstractICNF)
+function n_augments_input(::AbstractICNF)
     return 0
 end
 
@@ -57,7 +57,7 @@ function inference_sol(
     mode::Mode{REG},
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1)]
     Δlogp = fsol[(end - n_aug)]
@@ -65,7 +65,7 @@ function inference_sol(
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     Ȧ = if NORM_Z_AUG && AUGMENTED && REG
-        n_aug_input = n_augment_input(icnf)
+        n_aug_input = n_augments_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end]
         LinearAlgebra.norm(z_aug)
     else
@@ -79,7 +79,7 @@ function inference_sol(
     mode::Mode{REG},
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE, CONDITIONED, AUGMENTED, STEER, NORM_Z_AUG, REG}
-    n_aug = n_augment(icnf, mode)
+    n_aug = n_augments(icnf, mode)
     fsol = base_sol(icnf, prob)
     z = fsol[begin:(end - n_aug - 1), :]
     Δlogp = fsol[(end - n_aug), :]
@@ -87,7 +87,7 @@ function inference_sol(
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     Ȧ = transpose(if NORM_Z_AUG && AUGMENTED && REG
-        n_aug_input = n_augment_input(icnf)
+        n_aug_input = n_augments_input(icnf)
         z_aug = z[(end - n_aug_input + 1):end, :]
         LinearAlgebra.norm.(eachcol(z_aug))
     else
@@ -103,8 +103,8 @@ function generate_sol(
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     fsol = base_sol(icnf, prob)
     return fsol[begin:(end - n_aug_input - n_aug - 1)]
 end
@@ -114,8 +114,8 @@ function generate_sol(
     mode::Mode,
     prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     fsol = base_sol(icnf, prob)
     return fsol[begin:(end - n_aug_input - n_aug - 1), :]
 end
@@ -135,8 +135,8 @@ function inference_prob(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input)
@@ -160,8 +160,8 @@ function inference_prob(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input)
@@ -184,8 +184,8 @@ function inference_prob(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input, size(xs, 2))
@@ -209,8 +209,8 @@ function inference_prob(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
     ChainRulesCore.@ignore_derivatives fill!(zrs, zero(T))
     ϵ = base_AT(icnf, icnf.nvariables + n_aug_input, size(xs, 2))
@@ -232,8 +232,8 @@ function generate_prob(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
@@ -258,8 +258,8 @@ function generate_prob(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1)
@@ -284,8 +284,8 @@ function generate_prob(
     st::NamedTuple,
     n::Int,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
@@ -311,8 +311,8 @@ function generate_prob(
     st::NamedTuple,
     n::Int,
 ) where {T <: AbstractFloat, INPLACE}
-    n_aug = n_augment(icnf, mode)
-    n_aug_input = n_augment_input(icnf)
+    n_aug = n_augments(icnf, mode)
+    n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input, n)
     Random.rand!(icnf.rng, icnf.basedist, new_xs)
     zrs = similar(new_xs, n_aug + 1, n)
