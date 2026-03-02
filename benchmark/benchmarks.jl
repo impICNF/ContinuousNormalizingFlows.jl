@@ -5,20 +5,18 @@ import ADTypes,
     Distributions,
     LuxCore,
     PkgBenchmark,
-    StableRNGs,
     Zygote,
     ContinuousNormalizingFlows
 
-rng = StableRNGs.StableRNG(1)
 ndata = 2^10
 ndimensions = 1
 data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-r = rand(rng, data_dist, ndimensions, ndata)
+r = rand(data_dist, ndimensions, ndata)
 r = convert.(Float32, r)
 
 nvariables = size(r, 1)
-icnf = ContinuousNormalizingFlows.ICNF(; nvariables, rng)
-icnf2 = ContinuousNormalizingFlows.ICNF(; nvariables, rng, inplace = true)
+icnf = ContinuousNormalizingFlows.ICNF(; nvariables)
+icnf2 = ContinuousNormalizingFlows.ICNF(; nvariables, inplace = true)
 
 ps, st = LuxCore.setup(icnf.rng, icnf)
 ps = ComponentArrays.ComponentArray(ps)

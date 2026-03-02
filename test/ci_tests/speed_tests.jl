@@ -34,15 +34,14 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
                                                                                         compute_modes
         @show compute_mode
 
-        rng = StableRNGs.StableRNG(1)
         ndata = 2^10
         ndimensions = 1
         data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-        r = rand(rng, data_dist, ndimensions, ndata)
+        r = rand(data_dist, ndimensions, ndata)
         r = convert.(Float32, r)
 
         nvariables = size(r, 1)
-        icnf = ContinuousNormalizingFlows.ICNF(; nvariables, rng, compute_mode)
+        icnf = ContinuousNormalizingFlows.ICNF(; nvariables, compute_mode)
 
         df = DataFrames.DataFrame(transpose(r), :auto)
         model = ContinuousNormalizingFlows.ICNFModel(;
