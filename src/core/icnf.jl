@@ -164,7 +164,7 @@ function reg_z(
         STEER,
         true,
     },
-    ::Mode{true},
+    ::TrainMode{true},
     ż::Any,
 ) where {INPLACE, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER}
     return LinearAlgebra.norm(ż)
@@ -185,7 +185,7 @@ function reg_z(
         STEER,
         true,
     },
-    ::Mode{true},
+    ::TrainMode{true},
     ż::Any,
 ) where {INPLACE, CONDITIONED, AUTONOMOUS, AUGMENTED, STEER}
     return LinearAlgebra.norm.(eachcol(ż))
@@ -260,7 +260,7 @@ function augmented_f(
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     l̇ = -LinearAlgebra.tr(J)
     Ė = reg_z(icnf, mode, ż)
-    ṅ = reg_j(icnf, mode, J)
+    ṅ = reg_j(icnf, mode, ż)
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -283,7 +283,7 @@ function augmented_f(
     du[begin:(end - n_aug - 1)] .= ż
     du[(end - n_aug)] = -LinearAlgebra.tr(J)
     du[(end - n_aug + 1)] = reg_z(icnf, mode, ż)
-    du[(end - n_aug + 2)] = reg_j(icnf, mode, J)
+    du[(end - n_aug + 2)] = reg_j(icnf, mode, ż)
     return nothing
 end
 
@@ -304,7 +304,7 @@ function augmented_f(
     ż, J = icnf_jacobian(icnf, mode, snn, z)
     l̇ = -transpose(LinearAlgebra.tr.(eachslice(J; dims = 3)))
     Ė = transpose(reg_z(icnf, mode, ż))
-    ṅ = transpose(reg_j(icnf, mode, J))
+    ṅ = transpose(reg_j(icnf, mode, ż))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -327,7 +327,7 @@ function augmented_f(
     du[begin:(end - n_aug - 1), :] .= ż
     du[(end - n_aug), :] .= -(LinearAlgebra.tr.(eachslice(J; dims = 3)))
     du[(end - n_aug + 1), :] .= reg_z(icnf, mode, ż)
-    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, J)
+    du[(end - n_aug + 2), :] .= reg_j(icnf, mode, ż)
     return nothing
 end
 

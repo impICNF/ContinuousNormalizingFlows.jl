@@ -33,7 +33,7 @@ end
 function diff_loss_tt(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf,
-        ContinuousNormalizingFlows.TestMode{true}(),
+        ContinuousNormalizingFlows.TestMode(),
         r,
         x,
         st,
@@ -52,7 +52,7 @@ end
 function diff_loss_tt2(x::Any)
     return ContinuousNormalizingFlows.loss(
         icnf2,
-        ContinuousNormalizingFlows.TestMode{true}(),
+        ContinuousNormalizingFlows.TestMode(),
         r,
         x,
         st,

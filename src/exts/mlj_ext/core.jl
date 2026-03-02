@@ -51,7 +51,7 @@ function get_logp̂x(
     @warn "to compute by vectors, data should be a vector." maxlog = 1
     return broadcast(
         function (x::AbstractVector{<:Real})
-            return first(inference(icnf, TestMode{false}(), x, ps, st))
+            return first(inference(icnf, TestMode(), x, ps, st))
         end,
         collect(collect.(eachcol(xnew))),
     )
@@ -63,7 +63,7 @@ function get_logp̂x(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    return first(inference(icnf, TestMode{false}(), xnew, ps, st))
+    return first(inference(icnf, TestMode(), xnew, ps, st))
 end
 
 function get_logp̂x(
@@ -76,7 +76,7 @@ function get_logp̂x(
     @warn "to compute by vectors, data should be a vector." maxlog = 1
     broadcast(
         function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
-            return first(inference(icnf, TestMode{false}(), x, y, ps, st))
+            return first(inference(icnf, TestMode(), x, y, ps, st))
         end,
         collect(collect.(eachcol(xnew))),
         collect(collect.(eachcol(ynew))),
@@ -90,5 +90,5 @@ function get_logp̂x(
     ps::Any,
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
-    return first(inference(icnf, TestMode{false}(), xnew, ynew, ps, st))
+    return first(inference(icnf, TestMode(), xnew, ynew, ps, st))
 end

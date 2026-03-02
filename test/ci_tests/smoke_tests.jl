@@ -1,7 +1,7 @@
 Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" begin
     omodes = ContinuousNormalizingFlows.Mode[
         ContinuousNormalizingFlows.TrainMode{true}(),
-        ContinuousNormalizingFlows.TestMode{true}(),
+        ContinuousNormalizingFlows.TestMode(),
     ]
     conditioneds, inplaces = if GROUP == "SmokeXOut"
         Bool[false], Bool[false]

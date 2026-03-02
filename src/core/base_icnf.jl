@@ -83,7 +83,7 @@ function reg_z_aug(
         STEER,
         true,
     },
-    ::Mode{true},
+    ::TrainMode{true},
     z::Any,
 ) where {INPLACE, CONDITIONED, STEER}
     n_aug_input = n_augments_input(icnf)
@@ -109,7 +109,7 @@ function reg_z_aug(
         STEER,
         true,
     },
-    ::Mode{true},
+    ::TrainMode{true},
     z::Any,
 ) where {INPLACE, CONDITIONED, STEER}
     n_aug_input = n_augments_input(icnf)

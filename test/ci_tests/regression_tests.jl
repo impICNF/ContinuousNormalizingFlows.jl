@@ -18,10 +18,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
     mach = MLJBase.machine(model, df)
     MLJBase.fit!(mach)
 
-    d = ContinuousNormalizingFlows.ICNFDist(
-        mach,
-        ContinuousNormalizingFlows.TestMode{true}(),
-    )
+    d = ContinuousNormalizingFlows.ICNFDist(mach, ContinuousNormalizingFlows.TestMode())
     actual_pdf = Distributions.pdf.(data_dist, r)
     estimated_pdf = Distributions.pdf(d, r)
 

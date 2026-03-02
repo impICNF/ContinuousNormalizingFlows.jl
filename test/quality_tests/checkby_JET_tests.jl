@@ -6,7 +6,7 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
 
     omodes = ContinuousNormalizingFlows.Mode[
         ContinuousNormalizingFlows.TrainMode{true}(),
-        ContinuousNormalizingFlows.TestMode{true}(),
+        ContinuousNormalizingFlows.TestMode(),
     ]
     conditioneds = Bool[false, true]
     inplaces = Bool[false, true]
