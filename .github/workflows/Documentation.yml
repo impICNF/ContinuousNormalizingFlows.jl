@@ -21,7 +21,7 @@ jobs:
       - uses: julia-actions/install-juliaup@v2
         with:
           channel: release
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
