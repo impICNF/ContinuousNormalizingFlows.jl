@@ -3,60 +3,6 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
         ContinuousNormalizingFlows;
         target_modules = (ContinuousNormalizingFlows,),
     )
-
-    omodes = ContinuousNormalizingFlows.Mode[
-        ContinuousNormalizingFlows.TrainMode{true}(),
-        ContinuousNormalizingFlows.TestMode(),
-    ]
-    conditioneds = Bool[false, true]
-    inplaces = Bool[false, true]
-    planars = Bool[false, true]
-    devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
-    compute_modes = ContinuousNormalizingFlows.ComputeMode[
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIVecJacVectorMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIJacVecVectorMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-    ]
-
     Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
                                                                                                                                                                                 devices,
         compute_mode in compute_modes,

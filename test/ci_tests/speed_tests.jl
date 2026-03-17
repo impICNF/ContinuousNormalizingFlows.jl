@@ -1,35 +1,4 @@
 Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" begin
-    compute_modes = ContinuousNormalizingFlows.ComputeMode[
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-        ContinuousNormalizingFlows.LuxVecJacMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIVecJacMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.LuxJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-        ContinuousNormalizingFlows.DIJacVecMatrixMode(
-            ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
-            ),
-        ),
-    ]
-
     Test.@testset verbose = true showtiming = true failfast = false "$compute_mode" for compute_mode in
                                                                                         compute_modes
         @show compute_mode
