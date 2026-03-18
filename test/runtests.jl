@@ -18,6 +18,8 @@ import ADTypes,
     ContinuousNormalizingFlows
 
 GROUP = get(ENV, "GROUP", "All")
+VIA_ZYGOTE = parse(Bool, get(ENV, "VIA_ZYGOTE", "true"))
+VIA_FORWARDDIFF = parse(Bool, get(ENV, "VIA_FORWARDDIFF", "true"))
 VIA_ENZYME = parse(Bool, get(ENV, "VIA_ENZYME", "false"))
 
 omodes = ContinuousNormalizingFlows.Mode[
@@ -37,15 +39,30 @@ else
 end
 planars = Bool[false, true]
 devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
-adtypes = ADTypes.AbstractADType[ADTypes.AutoZygote(), ADTypes.AutoForwardDiff()]
-compute_modes = ContinuousNormalizingFlows.ComputeMode[
-    ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
-    ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
-    ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
-    ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-    ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
-    ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
-]
+adtypes = ADTypes.AbstractADType[]
+compute_modes = ContinuousNormalizingFlows.ComputeMode[]
+if VIA_ZYGOTE
+    adtypes = append!(adtypes, ADTypes.AbstractADType[ADTypes.AutoZygote(),])
+    compute_modes = append!(
+        compute_modes,
+        ContinuousNormalizingFlows.ComputeMode[
+            ContinuousNormalizingFlows.LuxVecJacMatrixMode(ADTypes.AutoZygote()),
+            ContinuousNormalizingFlows.DIVecJacMatrixMode(ADTypes.AutoZygote()),
+            ContinuousNormalizingFlows.DIVecJacVectorMode(ADTypes.AutoZygote()),
+        ],
+    )
+end
+if VIA_FORWARDDIFF
+    adtypes = append!(adtypes, ADTypes.AbstractADType[ADTypes.AutoForwardDiff(),])
+    compute_modes = append!(
+        compute_modes,
+        ContinuousNormalizingFlows.ComputeMode[
+            ContinuousNormalizingFlows.LuxJacVecMatrixMode(ADTypes.AutoForwardDiff()),
+            ContinuousNormalizingFlows.DIJacVecMatrixMode(ADTypes.AutoForwardDiff()),
+            ContinuousNormalizingFlows.DIJacVecVectorMode(ADTypes.AutoForwardDiff()),
+        ],
+    )
+end
 if VIA_ENZYME
     adtypes = append!(
         adtypes,

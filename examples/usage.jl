@@ -29,10 +29,9 @@ using ContinuousNormalizingFlows,
     SciMLSensitivity,
     ADTypes,
     Zygote,
+    # ForwardDiff, # to use JVP
+    # LuxCUDA, # To use gpu
     MLDataDevices
-
-# To use gpu, add related packages
-# using LuxCUDA
 
 icnf = ICNF(;
     nn = Chain(
@@ -50,9 +49,10 @@ icnf = ICNF(;
     tspan = (0.0f0, 1.0f0), # time span
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
-    inplace = false, # not using the inplace version of functions
     autonomous = false, # using non-autonomous flow
-    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
+    inplace = false, # not using the inplace version of functions
+    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use VJP via Zygote
+    # compute_mode = LuxJacVecMatrixMode(AutoForwardDiff()), # process data in batches and use JVP via ForwardDiff
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
