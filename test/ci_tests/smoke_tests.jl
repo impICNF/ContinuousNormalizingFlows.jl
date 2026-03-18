@@ -29,13 +29,13 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
                     conditioned,
                     Lux.Chain(
                         ContinuousNormalizingFlows.PlanarLayer(
-                            nvariables * 3 + 1 => nvariables * 2,
+                            nvariables * 3 + 2 => nvariables * 2 + 1,
                             tanh,
                         ),
                     ),
                     Lux.Chain(
                         ContinuousNormalizingFlows.PlanarLayer(
-                            nvariables * 2 + 1 => nvariables * 2,
+                            nvariables * 2 + 2 => nvariables * 2 + 1,
                             tanh,
                         ),
                     ),
