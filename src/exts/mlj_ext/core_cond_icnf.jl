@@ -11,7 +11,11 @@ function CondICNFModel(;
     icnf::AbstractICNF = ICNF(),
     loss::Function = loss,
     optimizers::Tuple = (
-        Optimisers.OptimiserChain(Optimisers.WeightDecay(), Optimisers.Adam()),
+        Optimisers.OptimiserChain(
+            Optimisers.ClipNorm(),
+            Optimisers.WeightDecay(),
+            Optimisers.Adam(),
+        ),
     ),
     batchsize::Int = 1024,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
