@@ -71,7 +71,7 @@ if !ispath(icnf_mach_fn)
     df = DataFrame(transpose(r), :auto)
     model = ICNFModel(;
         icnf,
-        optimizers = (OptimiserChain(ClipNorm(), WeightDecay(), Adam()),),
+        optimizers = (OptimiserChain(ClipNorm(1.0f-2), WeightDecay(1.0f-2), Adam()),),
         batchsize = 1024,
         adtype = AutoZygote(),
         sol_kwargs = (; epochs = 300, progress = true), # pass to the solver

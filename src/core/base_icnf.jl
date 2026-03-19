@@ -2,6 +2,10 @@ function Base.show(io::IO, icnf::AbstractICNF)
     return print(io, typeof(icnf))
 end
 
+function Base.eltype(::AbstractICNF{T}) where {T <: AbstractFloat}
+    return T
+end
+
 function n_augments(::AbstractICNF, ::Mode)
     return 0
 end
