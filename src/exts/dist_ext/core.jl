@@ -7,8 +7,8 @@ function Base.length(d::ICNFDistribution)
     return d.icnf.nvariables
 end
 
-function Base.eltype(::ICNFDistribution{AICNF}) where {AICNF <: AbstractICNF}
-    return eltype(AICNF)
+function Base.eltype(d::ICNFDistribution)
+    return eltype(d.icnf)
 end
 
 function Base.broadcastable(d::ICNFDistribution)
