@@ -12,7 +12,7 @@ function CondICNFModel(;
     loss::Function = loss,
     optimizers::Tuple = (
         Optimisers.OptimiserChain(
-            Optimisers.ClipNorm(convert(eltype(icnf), 1.0e-2)),
+            Optimisers.ClipNorm(one(eltype(icnf))),
             Optimisers.WeightDecay(convert(eltype(icnf), 1.0e-2)),
             Optimisers.Adam(),
         ),
