@@ -67,7 +67,7 @@ icnf = ICNF(;
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 
 icnf_mach_fn = "icnf_mach.jls"
-if !ispath(icnf_mach_fn)
+if !isfile(icnf_mach_fn)
     df = DataFrame(transpose(r), :auto)
     model = ICNFModel(;
         icnf,
