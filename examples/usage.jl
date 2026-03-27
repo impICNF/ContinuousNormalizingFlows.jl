@@ -1,6 +1,3 @@
-# Switch To MKL For Faster Computation
-using MKL
-
 ## Enable Logging
 using Logging, TerminalLoggers
 global_logger(TerminalLogger())
@@ -66,7 +63,7 @@ icnf = ICNF(;
 ## Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 
-icnf_mach_fn = "icnf_mach.jls"
+icnf_mach_fn = "icnf-machine.jls"
 if !isfile(icnf_mach_fn)
     df = DataFrame(transpose(r), :auto)
     model = ICNFModel(;
@@ -102,8 +99,8 @@ display(res_df)
 using CairoMakie
 f = Figure()
 ax = Axis(f[1, 1]; title = "Result")
-lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "actual")
-lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "estimated")
+lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "Actual")
+lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "Estimated")
 axislegend(ax)
-save("result-fig.svg", f)
-save("result-fig.png", f)
+save("result-figure.svg", f)
+save("result-figure.png", f)
