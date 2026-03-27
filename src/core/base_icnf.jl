@@ -43,7 +43,7 @@ function steer_tspan(icnf::AbstractICNF, ::Mode)
 end
 
 function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
-    return icnf.device(Array{T}(undef, dims...))
+    return icnf.device(similar(Array{T}, dims...))
 end
 
 function add_conditions_nn(
