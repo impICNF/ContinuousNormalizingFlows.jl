@@ -28,9 +28,10 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
     x = collect(transpose(MLJModelInterface.matrix(X)))
     ps, st = LuxCore.setup(model.icnf.rng, model.icnf)
     ps = ComponentArrays.ComponentArray(ps)
-    x = model.icnf.device(x)
-    ps = model.icnf.device(ps)
-    st = model.icnf.device(st)
+    eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
+    x = model.icnf.device(eltype_adaptor(x))
+    ps = model.icnf.device(eltype_adaptor(ps))
+    st = model.icnf.device(eltype_adaptor(st))
     data = make_dataloader(model.icnf, model.batchsize, (x,))
     data = model.icnf.device(data)
     optprob = SciMLBase.OptimizationProblem{true}(
@@ -57,7 +58,8 @@ end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
     xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    xnew = model.icnf.device(xnew)
+    eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
+    xnew = model.icnf.device(eltype_adaptor(xnew))
     (ps, st) = fitresult
 
     logp̂x = get_logp̂x(model.icnf, xnew, ps, st)
