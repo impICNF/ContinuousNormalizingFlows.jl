@@ -53,8 +53,8 @@ icnf = ICNF(;
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = 1.0f-4,
-        abstol = 1.0f-8,
+        reltol = eps(Float32),
+        abstol = eps(Float32),
         alg = VCABM(; thread = True()),
         sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
     ), # pass to the solver
@@ -68,7 +68,13 @@ if !isfile(icnf_mach_fn)
     df = DataFrame(transpose(r), :auto)
     model = ICNFModel(;
         icnf,
-        optimizers = (OptimiserChain(ClipNorm(1.0f0), WeightDecay(1.0f-2), Adam()),),
+        optimizers = (
+            OptimiserChain(
+                ClipNorm(1.0f0, 2.0f0; throw = true),
+                WeightDecay(; lambda = 1.0f-2),
+                Adam(; eta = 1.0f-3, beta = (9.0f-1, 9.99f-1), epsilon = eps(Float32)),
+            ),
+        ),
         batchsize = 1024,
         adtype = AutoZygote(),
         sol_kwargs = (; epochs = 300, progress = true), # pass to the solver

@@ -85,8 +85,8 @@ function ICNF(;
     sol_kwargs::NamedTuple = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = convert(data_type, 1.0e-4),
-        abstol = convert(data_type, 1.0e-8),
+        reltol = eps(data_type),
+        abstol = eps(data_type),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             checkpointing = true,
