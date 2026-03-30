@@ -53,8 +53,8 @@ icnf = ICNF(;
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = eps(Float32),
-        abstol = eps(Float32),
+        reltol = sqrt(eps(Float32)),
+        abstol = sqrt(eps(Float32)),
         alg = VCABM(; thread = True()),
         sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
     ), # pass to the solver
