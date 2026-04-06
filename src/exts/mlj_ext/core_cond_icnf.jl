@@ -27,7 +27,12 @@ function CondICNFModel(;
     ),
     batchsize::Int = 1024,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    sol_kwargs::NamedTuple = (; epochs = 300, progress = true),
+    log_niterations::Int = 64,
+    sol_kwargs::NamedTuple = (;
+        epochs = 300,
+        progress = true,
+        callback = make_opt_callback(log_niterations),
+    ),
 )
     return CondICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
 end

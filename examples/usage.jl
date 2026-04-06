@@ -63,6 +63,13 @@ icnf = ICNF(;
 ## Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 
+function opt_callback(state::Any, l::Any)
+    if isone(state.iter % 64) # log the loss at each 64 iterations
+        println("Iteration: $(state.iter) | Loss: $l")
+    end
+    return false
+end
+
 icnf_mach_fn = "icnf-machine.jls"
 if !isfile(icnf_mach_fn)
     df = DataFrame(transpose(r), :auto)
@@ -77,7 +84,7 @@ if !isfile(icnf_mach_fn)
         ),
         batchsize = 1024,
         adtype = AutoZygote(),
-        sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
+        sol_kwargs = (; epochs = 300, progress = true, callback = opt_callback), # pass to the solver
     )
     mach = machine(model, df)
     fit!(mach)

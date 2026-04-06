@@ -92,3 +92,14 @@ function get_logp̂x(
 ) where {T <: AbstractFloat, INPLACE}
     return first(inference(icnf, TestMode(), xnew, ynew, ps, st))
 end
+
+function make_opt_callback(n::Int)
+    function opt_callback(state::Any, l::Any)
+        if isone(state.iter % n)
+            println("Iteration: $(state.iter) | Loss: $l")
+        end
+        return false
+    end
+
+    return opt_callback
+end
