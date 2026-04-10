@@ -14,9 +14,8 @@ r = convert.(Float32, r)
 nvariables = size(r, 1)
 naugments = nvariables + 1
 n_in = nvariables + naugments + 1 # add time concatenation
-n_out = n_in - 1 # remove time concatenation
-n_hidden_rate = 4
-n_hidden = n_in * n_hidden_rate
+n_out = nvariables + naugments
+n_hidden = n_in * 4
 
 ## Model
 using ContinuousNormalizingFlows,

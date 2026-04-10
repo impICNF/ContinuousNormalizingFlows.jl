@@ -63,8 +63,7 @@ function ICNF(;
     nconditions::Int = 0,
     n_in::Int = nvariables + naugments + !autonomous + nconditions,
     n_out::Int = nvariables + naugments,
-    n_hidden_rate::AbstractFloat = convert(data_type, 4.0e0),
-    n_hidden::Int = round(Int, n_in * n_hidden_rate),
+    n_hidden::Int = n_in * 4,
     nn::LuxCore.AbstractLuxLayer = Lux.Chain(
         Lux.Dense(n_in => n_hidden, NNlib.softplus),
         Lux.Dense(n_hidden => n_hidden, NNlib.softplus),
