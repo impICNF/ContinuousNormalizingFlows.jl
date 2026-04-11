@@ -37,7 +37,7 @@ function ICNFModel(;
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
-    x = collect(transpose(MLJModelInterface.matrix(X)))
+    x = permutedims(MLJModelInterface.matrix(X))
     ps, st = LuxCore.setup(model.icnf.rng, model.icnf)
     ps = ComponentArrays.ComponentArray(ps)
     eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
@@ -69,7 +69,7 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
 end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
-    xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
+    xnew = permutedims(MLJModelInterface.matrix(Xnew))
     eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
     xnew = model.icnf.device(eltype_adaptor(xnew))
     (ps, st) = fitresult

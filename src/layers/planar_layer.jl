@@ -63,7 +63,7 @@ end
 
 function (m::PlanarLayer{true})(z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return ps.u * activation.(muladd(transpose(ps.w), z, only(ps.b))), st
+    return ps.u * activation.(muladd(permutedims(ps.w), z, only(ps.b))), st
 end
 
 function (m::PlanarLayer{false})(z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
@@ -73,7 +73,7 @@ end
 
 function (m::PlanarLayer{false})(z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return ps.u * activation.(transpose(ps.w) * z), st
+    return ps.u * activation.(permutedims(ps.w) * z), st
 end
 
 function pl_h(m::PlanarLayer{true}, z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
@@ -83,7 +83,7 @@ end
 
 function pl_h(m::PlanarLayer{true}, z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return activation.(muladd(transpose(ps.w), z, only(ps.b))), st
+    return activation.(muladd(permutedims(ps.w), z, only(ps.b))), st
 end
 
 function pl_h(m::PlanarLayer{false}, z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
@@ -93,5 +93,5 @@ end
 
 function pl_h(m::PlanarLayer{false}, z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return activation.(transpose(ps.w) * z), st
+    return activation.(permutedims(ps.w) * z), st
 end

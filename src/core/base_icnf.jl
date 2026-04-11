@@ -167,7 +167,7 @@ function inference_sol(
     augs = fsol[(end - n_aug + 1):end, :]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
-    Ȧ = transpose(reg_z_aug(icnf, mode, z))
+    Ȧ = permutedims(reg_z_aug(icnf, mode, z))
     return (logp̂x, eachrow(vcat(augs, Ȧ)))
 end
 

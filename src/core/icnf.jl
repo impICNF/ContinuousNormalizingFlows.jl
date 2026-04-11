@@ -301,9 +301,9 @@ function augmented_f(
     snn = LuxCore.StatefulLuxLayer{true}(nn, p, st)
     z = u[begin:(end - n_aug - 1), :]
     ż, J = icnf_jacobian(icnf, mode, snn, z)
-    l̇ = -transpose(LinearAlgebra.tr.(eachslice(J; dims = 3)))
-    Ė = transpose(reg_z(icnf, mode, ż))
-    ṅ = transpose(reg_j(icnf, mode, ż))
+    l̇ = -permutedims(LinearAlgebra.tr.(eachslice(J; dims = 3)))
+    Ė = permutedims(reg_z(icnf, mode, ż))
+    ṅ = permutedims(reg_j(icnf, mode, ż))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -434,8 +434,8 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(reg_z(icnf, mode, ż))
-    ṅ = transpose(reg_j(icnf, mode, ϵJ))
+    Ė = permutedims(reg_z(icnf, mode, ż))
+    ṅ = permutedims(reg_j(icnf, mode, ϵJ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -478,8 +478,8 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
-    Ė = transpose(reg_z(icnf, mode, ż))
-    ṅ = transpose(reg_j(icnf, mode, Jϵ))
+    Ė = permutedims(reg_z(icnf, mode, ż))
+    ṅ = permutedims(reg_j(icnf, mode, Jϵ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -522,8 +522,8 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, ϵJ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵJ .* ϵ; dims = 1)
-    Ė = transpose(reg_z(icnf, mode, ż))
-    ṅ = transpose(reg_j(icnf, mode, ϵJ))
+    Ė = permutedims(reg_z(icnf, mode, ż))
+    ṅ = permutedims(reg_j(icnf, mode, ϵJ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 
@@ -566,8 +566,8 @@ function augmented_f(
     z = u[begin:(end - n_aug - 1), :]
     ż, Jϵ = icnf_jacobian(icnf, mode, snn, z, ϵ)
     l̇ = -sum(ϵ .* Jϵ; dims = 1)
-    Ė = transpose(reg_z(icnf, mode, ż))
-    ṅ = transpose(reg_j(icnf, mode, Jϵ))
+    Ė = permutedims(reg_z(icnf, mode, ż))
+    ṅ = permutedims(reg_j(icnf, mode, Jϵ))
     return vcat(ż, l̇, Ė, ṅ)
 end
 

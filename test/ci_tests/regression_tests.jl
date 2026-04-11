@@ -8,7 +8,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
     nvariables = size(r, 1)
     icnf = ContinuousNormalizingFlows.ICNF(; nvariables)
 
-    df = DataFrames.DataFrame(transpose(r), :auto)
+    df = DataFrames.DataFrame(permutedims(r), :auto)
     model = ContinuousNormalizingFlows.ICNFModel(;
         icnf,
         batchsize = 0,

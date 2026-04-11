@@ -71,7 +71,7 @@ end
 
 icnf_mach_fn = "icnf-machine.jls"
 if !isfile(icnf_mach_fn)
-    df = DataFrame(transpose(r), :auto)
+    df = DataFrame(permutedims(r), :auto)
     model = ICNFModel(;
         icnf,
         optimizers = (

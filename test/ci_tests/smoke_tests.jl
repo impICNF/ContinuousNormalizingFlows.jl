@@ -18,8 +18,8 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
             r = convert.(Float32, rand(data_dist, ndimensions, ndata))
             r2 = convert.(Float32, rand(data_dist2, ndimensions, ndata))
         end
-        df = DataFrames.DataFrame(transpose(r), :auto)
-        df2 = DataFrames.DataFrame(transpose(r2), :auto)
+        df = DataFrames.DataFrame(permutedims(r), :auto)
+        df2 = DataFrames.DataFrame(permutedims(r2), :auto)
         nvariables = size(r, 1)
 
         icnf = ifelse(
