@@ -136,7 +136,7 @@ function base_sol(
     prob::SciMLBase.AbstractODEProblem{<:AbstractVecOrMat{<:Real}, NTuple{2, T}, INPLACE},
 ) where {T <: AbstractFloat, INPLACE}
     sol = SciMLBase.solve(prob; icnf.sol_kwargs...)
-    return get_fsol(sol)
+    return last(sol.u)
 end
 
 function inference_sol(
@@ -191,14 +191,6 @@ function generate_sol(
     n_aug_input = n_augments_input(icnf)
     fsol = base_sol(icnf, prob)
     return fsol[begin:(end - n_aug_input - n_aug - 1), :]
-end
-
-function get_fsol(sol::SciMLBase.AbstractODESolution)
-    return last(sol.u)
-end
-
-function get_fsol(sol::AbstractArray{T, N}) where {T, N}
-    return selectdim(sol, N, lastindex(sol, N))
 end
 
 function inference_prob(
