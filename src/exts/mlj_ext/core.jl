@@ -74,7 +74,7 @@ function get_logp̂x(
     st::NamedTuple,
 ) where {T <: AbstractFloat, INPLACE}
     @warn "to compute by vectors, data should be a vector." maxlog = 1
-    broadcast(
+    return broadcast(
         function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
             return first(inference(icnf, TestMode(), x, y, ps, st))
         end,

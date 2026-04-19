@@ -1,6 +1,7 @@
 Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" begin
     Test.@testset verbose = true showtiming = true failfast = false "$compute_mode" for compute_mode in
                                                                                         compute_modes
+
         @show compute_mode
 
         ndata = 2^10
