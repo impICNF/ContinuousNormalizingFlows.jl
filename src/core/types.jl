@@ -1,10 +1,6 @@
-abstract type Mode{REG} end
-struct TestMode{REG} <: Mode{REG} end
-struct TrainMode{REG} <: Mode{REG} end
-
-function TestMode()
-    return TestMode{true}()
-end
+abstract type Mode end
+struct TestMode <: Mode end
+struct TrainMode{REG} <: Mode end
 
 function TrainMode()
     return TrainMode{true}()
@@ -42,7 +38,7 @@ abstract type AbstractICNF{
     T <: AbstractFloat,
     CM <: ComputeMode,
     INPLACE,
-    COND,
+    CONDITIONED,
     AUGMENTED,
     STEER,
     NORM_Z_AUG,

@@ -1,6 +1,3 @@
-# Switch To MKL For Faster Computation
-using MKL
-
 ## Enable Logging
 using Logging, TerminalLoggers
 global_logger(TerminalLogger())
@@ -8,15 +5,17 @@ global_logger(TerminalLogger())
 ## Data
 using Distributions
 ndata = 1024
-ndimension = 1
+ndimensions = 1
 data_dist = Beta{Float32}(2.0f0, 4.0f0)
-r = rand(data_dist, ndimension, ndata)
+r = rand(data_dist, ndimensions, ndata)
 r = convert.(Float32, r)
 
 ## Parameters
-nvars = size(r, 1)
-naugs = nvars + 1
-n_in = nvars + naugs
+nvariables = size(r, 1)
+naugments = nvariables + 1
+n_in = nvariables + naugments + 1 # add time concatenation
+n_out = nvariables + naugments
+n_hidden = n_in * 4
 
 ## Model
 using ContinuousNormalizingFlows,
@@ -26,16 +25,19 @@ using ContinuousNormalizingFlows,
     SciMLSensitivity,
     ADTypes,
     Zygote,
+    # ForwardDiff, # to use JVP
+    # LuxCUDA, # To use gpu
     MLDataDevices
 
-# To use gpu, add related packages
-# using LuxCUDA
-
-nn = Chain(Dense(n_in + 1 => n_in, tanh))
 icnf = ICNF(;
-    nn = nn,
-    nvars = nvars, # number of variables
-    naugmented = naugs, # number of augmented dimensions
+    nn = Chain(
+        Dense(n_in => n_hidden, softplus),
+        Dense(n_hidden => n_hidden, softplus),
+        Dense(n_hidden => n_out),
+    ),
+    nvariables = nvariables, # number of variables
+    naugments = naugments, # number of augmented dimensions
+    nconditions = 0, # number of conditioning inputs
     λ₁ = 1.0f-2, # regulate flow
     λ₂ = 1.0f-2, # regulate volume change
     λ₃ = 1.0f-2, # regulate augmented dimensions
@@ -43,15 +45,15 @@ icnf = ICNF(;
     tspan = (0.0f0, 1.0f0), # time span
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
-    cond = false, # not conditioning on auxiliary input
-    inplace = false, # not using the inplace version of functions
     autonomous = false, # using non-autonomous flow
-    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use Zygote
+    inplace = false, # not using the inplace version of functions
+    compute_mode = LuxVecJacMatrixMode(AutoZygote()), # process data in batches and use VJP via Zygote
+    # compute_mode = LuxJacVecMatrixMode(AutoForwardDiff()), # process data in batches and use JVP via ForwardDiff
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = 1.0f-4,
-        abstol = 1.0f-8,
+        reltol = sqrt(eps(Float32)),
+        abstol = sqrt(eps(Float32)),
         alg = VCABM(; thread = True()),
         sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
     ), # pass to the solver
@@ -60,17 +62,28 @@ icnf = ICNF(;
 ## Fit It
 using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
 
-icnf_mach_fn = "icnf_mach.jls"
-if ispath(icnf_mach_fn)
-    mach = machine(icnf_mach_fn) # load it
-else
-    df = DataFrame(transpose(r), :auto)
+function opt_callback(state::Any, l::Any)
+    if isone(state.iter % 64) # log the loss at each 64 iterations
+        println("Iteration: $(state.iter) | Loss: $l")
+    end
+    return false
+end
+
+icnf_mach_fn = "icnf-machine.jls"
+if !isfile(icnf_mach_fn)
+    df = DataFrame(permutedims(r), :auto)
     model = ICNFModel(;
         icnf,
-        optimizers = (OptimiserChain(WeightDecay(), Adam()),),
+        optimizers = (
+            OptimiserChain(
+                ClipNorm(1.0f0, 2.0f0; throw = true),
+                WeightDecay(; lambda = 1.0f-2),
+                Adam(; eta = 1.0f-3, beta = (9.0f-1, 9.99f-1), epsilon = eps(Float32)),
+            ),
+        ),
         batchsize = 1024,
         adtype = AutoZygote(),
-        sol_kwargs = (; epochs = 300, progress = true), # pass to the solver
+        sol_kwargs = (; epochs = 300, progress = true, callback = opt_callback), # pass to the solver
     )
     mach = machine(model, df)
     fit!(mach)
@@ -78,6 +91,7 @@ else
 
     MLJBase.save(icnf_mach_fn, mach) # save it
 end
+mach = machine(icnf_mach_fn) # load it
 
 ## Use It
 d = ICNFDist(mach, TestMode())
@@ -97,8 +111,8 @@ display(res_df)
 using CairoMakie
 f = Figure()
 ax = Axis(f[1, 1]; title = "Result")
-lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "actual")
-lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "estimated")
+lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "Actual")
+lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "Estimated")
 axislegend(ax)
-save("result-fig.svg", f)
-save("result-fig.png", f)
+save("result-figure.svg", f)
+save("result-figure.png", f)

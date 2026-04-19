@@ -11,22 +11,39 @@ function ICNFModel(;
     icnf::AbstractICNF = ICNF(),
     loss::Function = loss,
     optimizers::Tuple = (
-        Optimisers.OptimiserChain(Optimisers.WeightDecay(), Optimisers.Adam()),
+        Optimisers.OptimiserChain(
+            Optimisers.ClipNorm(
+                one(eltype(icnf)),
+                convert(eltype(icnf), 2.0e0);
+                throw = true,
+            ),
+            Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-2)),
+            Optimisers.Adam(;
+                eta = convert(eltype(icnf), 1.0e-3),
+                beta = (convert(eltype(icnf), 9e-1), convert(eltype(icnf), 9.99e-1)),
+                epsilon = eps(eltype(icnf)),
+            ),
+        ),
     ),
     batchsize::Int = 1024,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    sol_kwargs::NamedTuple = (; epochs = 300, progress = true),
+    sol_kwargs::NamedTuple = (;
+        epochs = 300,
+        progress = true,
+        callback = make_opt_callback(64),
+    ),
 )
     return ICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
-    x = collect(transpose(MLJModelInterface.matrix(X)))
+    x = permutedims(MLJModelInterface.matrix(X))
     ps, st = LuxCore.setup(model.icnf.rng, model.icnf)
     ps = ComponentArrays.ComponentArray(ps)
-    x = model.icnf.device(x)
-    ps = model.icnf.device(ps)
-    st = model.icnf.device(st)
+    eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
+    x = model.icnf.device(eltype_adaptor(x))
+    ps = model.icnf.device(eltype_adaptor(ps))
+    st = model.icnf.device(eltype_adaptor(st))
     data = make_dataloader(model.icnf, model.batchsize, (x,))
     data = model.icnf.device(data)
     optprob = SciMLBase.OptimizationProblem{true}(
@@ -52,24 +69,12 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
 end
 
 function MLJModelInterface.transform(model::ICNFModel, fitresult, Xnew)
-    xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    xnew = model.icnf.device(xnew)
+    xnew = permutedims(MLJModelInterface.matrix(Xnew))
+    eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
+    xnew = model.icnf.device(eltype_adaptor(xnew))
     (ps, st) = fitresult
 
-    logp̂x = if model.icnf.compute_mode isa VectorMode
-        @warn "to compute by vectors, data should be a vector." maxlog = 1
-        broadcast(
-            function (x::AbstractVector{<:Real})
-                return first(inference(model.icnf, TestMode{false}(), x, ps, st))
-            end,
-            collect(collect.(eachcol(xnew))),
-        )
-    elseif model.icnf.compute_mode isa MatrixMode
-        first(inference(model.icnf, TestMode{false}(), xnew, ps, st))
-    else
-        error("Not Implemented")
-    end
-
+    logp̂x = get_logp̂x(model.icnf, xnew, ps, st)
     return DataFrames.DataFrame(; px = exp.(logp̂x))
 end
 

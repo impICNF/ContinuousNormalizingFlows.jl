@@ -11,25 +11,42 @@ function CondICNFModel(;
     icnf::AbstractICNF = ICNF(),
     loss::Function = loss,
     optimizers::Tuple = (
-        Optimisers.OptimiserChain(Optimisers.WeightDecay(), Optimisers.Adam()),
+        Optimisers.OptimiserChain(
+            Optimisers.ClipNorm(
+                one(eltype(icnf)),
+                convert(eltype(icnf), 2.0e0);
+                throw = true,
+            ),
+            Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-2)),
+            Optimisers.Adam(;
+                eta = convert(eltype(icnf), 1.0e-3),
+                beta = (convert(eltype(icnf), 9e-1), convert(eltype(icnf), 9.99e-1)),
+                epsilon = eps(eltype(icnf)),
+            ),
+        ),
     ),
     batchsize::Int = 1024,
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    sol_kwargs::NamedTuple = (; epochs = 300, progress = true),
+    sol_kwargs::NamedTuple = (;
+        epochs = 300,
+        progress = true,
+        callback = make_opt_callback(64),
+    ),
 )
     return CondICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     X, Y = XY
-    x = collect(transpose(MLJModelInterface.matrix(X)))
-    y = collect(transpose(MLJModelInterface.matrix(Y)))
+    x = permutedims(MLJModelInterface.matrix(X))
+    y = permutedims(MLJModelInterface.matrix(Y))
     ps, st = LuxCore.setup(model.icnf.rng, model.icnf)
     ps = ComponentArrays.ComponentArray(ps)
-    x = model.icnf.device(x)
-    y = model.icnf.device(y)
-    ps = model.icnf.device(ps)
-    st = model.icnf.device(st)
+    eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
+    x = model.icnf.device(eltype_adaptor(x))
+    y = model.icnf.device(eltype_adaptor(y))
+    ps = model.icnf.device(eltype_adaptor(ps))
+    st = model.icnf.device(eltype_adaptor(st))
     data = make_dataloader(model.icnf, model.batchsize, (x, y))
     data = model.icnf.device(data)
     optprob = SciMLBase.OptimizationProblem{true}(
@@ -54,28 +71,15 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
     return (fitresult, cache, report)
 end
 
-function MLJModelInterface.transform(model::CondICNFModel, fitresult, XYnew)
-    Xnew, Ynew = XYnew
-    xnew = collect(transpose(MLJModelInterface.matrix(Xnew)))
-    ynew = collect(transpose(MLJModelInterface.matrix(Ynew)))
-    xnew = model.icnf.device(xnew)
-    ynew = model.icnf.device(ynew)
+function MLJModelInterface.transform(model::CondICNFModel, fitresult, (Xnew, Ynew))
+    xnew = permutedims(MLJModelInterface.matrix(Xnew))
+    ynew = permutedims(MLJModelInterface.matrix(Ynew))
+    eltype_adaptor = Lux.LuxEltypeAdaptor{eltype(model.icnf)}()
+    xnew = model.icnf.device(eltype_adaptor(xnew))
+    ynew = model.icnf.device(eltype_adaptor(ynew))
     (ps, st) = fitresult
 
-    logp̂x = if model.icnf.compute_mode isa VectorMode
-        @warn "to compute by vectors, data should be a vector." maxlog = 1
-        broadcast(
-            function (x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
-                return first(inference(model.icnf, TestMode{false}(), x, y, ps, st))
-            end,
-            collect(collect.(eachcol(xnew))),
-            collect(collect.(eachcol(ynew))),
-        )
-    elseif model.icnf.compute_mode isa MatrixMode
-        first(inference(model.icnf, TestMode{false}(), xnew, ynew, ps, st))
-    else
-        error("Not Implemented")
-    end
+    logp̂x = get_logp̂x(model.icnf, xnew, ynew, ps, st)
 
     return DataFrames.DataFrame(; px = exp.(logp̂x))
 end

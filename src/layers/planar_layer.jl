@@ -3,9 +3,9 @@ Implementation of Planar Layer from
 
 [Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
 """
-struct PlanarLayer{USE_BIAS, F1, F2, F3, NVARS <: Int} <: LuxCore.AbstractLuxLayer
-    in_dims::NVARS
-    out_dims::NVARS
+struct PlanarLayer{USE_BIAS, F1, F2, F3, NVARIABLES <: Int} <: LuxCore.AbstractLuxLayer
+    in_dims::NVARIABLES
+    out_dims::NVARIABLES
     activation::F1
     init_weight::F2
     init_bias::F3
@@ -33,21 +33,18 @@ function PlanarLayer(
     )
 end
 
-function LuxCore.initialparameters(
-    rng::Random.AbstractRNG,
-    layer::PlanarLayer{USE_BIAS},
-) where {USE_BIAS}
-    return ifelse(
-        USE_BIAS,
-        (
-            u = layer.init_weight(rng, layer.out_dims),
-            w = layer.init_weight(rng, layer.in_dims),
-            b = layer.init_bias(rng, 1),
-        ),
-        (
-            u = layer.init_weight(rng, layer.out_dims),
-            w = layer.init_weight(rng, layer.in_dims),
-        ),
+function LuxCore.initialparameters(rng::Random.AbstractRNG, layer::PlanarLayer{true})
+    return (
+        u = layer.init_weight(rng, layer.out_dims),
+        w = layer.init_weight(rng, layer.in_dims),
+        b = layer.init_bias(rng, 1),
+    )
+end
+
+function LuxCore.initialparameters(rng::Random.AbstractRNG, layer::PlanarLayer{false})
+    return (
+        u = layer.init_weight(rng, layer.out_dims),
+        w = layer.init_weight(rng, layer.in_dims),
     )
 end
 
@@ -59,42 +56,42 @@ function LuxCore.outputsize(m::PlanarLayer, ::Any, ::Random.AbstractRNG)
     return (m.out_dims,)
 end
 
-function (m::PlanarLayer{true})(z::AbstractVector, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{true})(z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return ps.u * activation.(LinearAlgebra.dot(ps.w, z) + only(ps.b)), st
 end
 
-function (m::PlanarLayer{true})(z::AbstractMatrix, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{true})(z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return ps.u * activation.(muladd(transpose(ps.w), z, only(ps.b))), st
+    return ps.u * activation.(muladd(permutedims(ps.w), z, only(ps.b))), st
 end
 
-function (m::PlanarLayer{false})(z::AbstractVector, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{false})(z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return ps.u * activation.(LinearAlgebra.dot(ps.w, z)), st
 end
 
-function (m::PlanarLayer{false})(z::AbstractMatrix, ps::Any, st::NamedTuple)
+function (m::PlanarLayer{false})(z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return ps.u * activation.(transpose(ps.w) * z), st
+    return ps.u * activation.(permutedims(ps.w) * z), st
 end
 
-function pl_h(m::PlanarLayer{true}, z::AbstractVector, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{true}, z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return activation.(LinearAlgebra.dot(ps.w, z) + only(ps.b)), st
 end
 
-function pl_h(m::PlanarLayer{true}, z::AbstractMatrix, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{true}, z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return activation.(muladd(transpose(ps.w), z, only(ps.b))), st
+    return activation.(muladd(permutedims(ps.w), z, only(ps.b))), st
 end
 
-function pl_h(m::PlanarLayer{false}, z::AbstractVector, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{false}, z::AbstractVector{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
     return activation.(LinearAlgebra.dot(ps.w, z)), st
 end
 
-function pl_h(m::PlanarLayer{false}, z::AbstractMatrix, ps::Any, st::NamedTuple)
+function pl_h(m::PlanarLayer{false}, z::AbstractMatrix{<:Real}, ps::Any, st::NamedTuple)
     activation = NNlib.fast_act(m.activation, z)
-    return activation.(transpose(ps.w) * z), st
+    return activation.(permutedims(ps.w) * z), st
 end
