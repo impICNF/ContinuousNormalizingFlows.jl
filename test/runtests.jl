@@ -42,7 +42,7 @@ devices = MLDataDevices.AbstractDevice[MLDataDevices.cpu_device()]
 adtypes = ADTypes.AbstractADType[]
 compute_modes = ContinuousNormalizingFlows.ComputeMode[]
 if VIA_ZYGOTE
-    adtypes = append!(adtypes, ADTypes.AbstractADType[ADTypes.AutoZygote(),])
+    adtypes = append!(adtypes, ADTypes.AbstractADType[ADTypes.AutoZygote()])
     compute_modes = append!(
         compute_modes,
         ContinuousNormalizingFlows.ComputeMode[
@@ -53,7 +53,7 @@ if VIA_ZYGOTE
     )
 end
 if VIA_FORWARDDIFF
-    adtypes = append!(adtypes, ADTypes.AbstractADType[ADTypes.AutoForwardDiff(),])
+    adtypes = append!(adtypes, ADTypes.AbstractADType[ADTypes.AutoForwardDiff()])
     compute_modes = append!(
         compute_modes,
         ContinuousNormalizingFlows.ComputeMode[
