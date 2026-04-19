@@ -20,7 +20,7 @@ function CondICNFModel(;
             Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-2)),
             Optimisers.Adam(;
                 eta = convert(eltype(icnf), 1.0e-3),
-                beta = (convert(eltype(icnf), 9e-1), convert(eltype(icnf), 9.99e-1)),
+                beta = (convert(eltype(icnf), 9.0e-1), convert(eltype(icnf), 9.99e-1)),
                 epsilon = eps(eltype(icnf)),
             ),
         ),
