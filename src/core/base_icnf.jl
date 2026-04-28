@@ -213,7 +213,8 @@ function inference_prob(
         ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -238,7 +239,8 @@ function inference_prob(
         ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -262,7 +264,8 @@ function inference_prob(
         ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -287,7 +290,8 @@ function inference_prob(
         ),
         vcat(xs, zrs),
         steer_tspan(icnf, mode),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -312,7 +316,8 @@ function generate_prob(
         ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -338,7 +343,8 @@ function generate_prob(
         ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -364,7 +370,8 @@ function generate_prob(
         ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
@@ -391,7 +398,8 @@ function generate_prob(
         ),
         vcat(new_xs, zrs),
         reverse(steer_tspan(icnf, mode)),
-        ps,
+        ps;
+        icnf.sol_kwargs...,
     )
 end
 
