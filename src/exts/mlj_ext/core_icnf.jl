@@ -52,7 +52,8 @@ function MLJModelInterface.fit(model::ICNFModel, verbosity, X)
             model.adtype,
         ),
         ps,
-        data,
+        data;
+        model.sol_kwargs...,
     )
     res_stats = Any[]
     for opt in model.optimizers

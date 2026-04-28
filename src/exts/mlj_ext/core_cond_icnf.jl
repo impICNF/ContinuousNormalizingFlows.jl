@@ -55,7 +55,8 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
             model.adtype,
         ),
         ps,
-        data,
+        data;
+        model.sol_kwargs...,
     )
     res_stats = Any[]
     for opt in model.optimizers
