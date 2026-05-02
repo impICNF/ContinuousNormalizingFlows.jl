@@ -21,7 +21,7 @@ n_hidden = n_in * 4
 using ContinuousNormalizingFlows,
     Lux,
     OrdinaryDiffEqAdamsBashforthMoulton,
-    Static,
+    FastBroadcast,
     SciMLSensitivity,
     ADTypes,
     Zygote,
@@ -54,7 +54,7 @@ icnf = ICNF(;
         maxiters = typemax(Int),
         reltol = sqrt(eps(Float32)),
         abstol = sqrt(eps(Float32)),
-        alg = VCABM(; thread = True()),
+        alg = VCABM(; thread = Threaded()),
         sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
     ), # pass to the solver
 )

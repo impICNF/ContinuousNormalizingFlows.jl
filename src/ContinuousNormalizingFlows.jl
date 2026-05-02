@@ -27,7 +27,6 @@ import ADTypes,
     SciMLBase,
     SciMLSensitivity,
     ScientificTypesBase,
-    Static,
     Statistics,
     WeightInitializers,
     Zygote
