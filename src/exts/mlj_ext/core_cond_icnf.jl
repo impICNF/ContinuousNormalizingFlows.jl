@@ -31,6 +31,7 @@ function CondICNFModel(;
         epochs = 300,
         progress = true,
         callback = make_opt_callback(64),
+        verbose = OptimizationBase.OptimizationVerbosity.All(),
     ),
 )
     return CondICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)

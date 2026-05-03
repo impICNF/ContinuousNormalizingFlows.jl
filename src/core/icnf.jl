@@ -93,6 +93,7 @@ function ICNF(;
             checkpointing = true,
             autodiff = true,
         ),
+        verbose = DiffEqBase.DEVerbosity.All(),
     ),
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
