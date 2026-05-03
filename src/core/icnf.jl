@@ -95,11 +95,7 @@ function ICNF(;
             autojacvec = ifelse(
                 inplace,
                 true,
-                ifelse(
-                    isa(compute_mode, LuxMatrixMode),
-                    SciMLSensitivity.ZygoteVJP(),
-                    true,
-                ),
+                ifelse(compute_mode isa LuxMatrixMode, SciMLSensitivity.ZygoteVJP(), true),
             ),
         ),
         verbose = DiffEqBase.DEVerbosity(SciMLLogging.Detailed()),
