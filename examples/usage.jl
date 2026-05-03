@@ -55,7 +55,11 @@ icnf = ICNF(;
         reltol = sqrt(eps(Float32)),
         abstol = sqrt(eps(Float32)),
         alg = VCABM(; thread = Threaded()),
-        sensealg = InterpolatingAdjoint(; checkpointing = true, autodiff = true),
+        sensealg = InterpolatingAdjoint(;
+            checkpointing = true,
+            autodiff = true,
+            autojacvec = ZygoteVJP(),
+        ),
     ), # pass to the solver
 )
 
