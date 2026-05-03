@@ -92,6 +92,7 @@ function ICNF(;
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             checkpointing = true,
             autodiff = true,
+            autojacvec = ifelse(inplace, true, SciMLSensitivity.ZygoteVJP()),
         ),
         verbose = DiffEqBase.DEVerbosity(SciMLLogging.Detailed()),
     ),
