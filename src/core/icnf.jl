@@ -86,11 +86,19 @@ function ICNF(;
         maxiters = typemax(Int),
         reltol = sqrt(eps(data_type)),
         abstol = sqrt(eps(data_type)),
-        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(; thread = Static.True()),
+        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(;
+            thread = FastBroadcast.Threaded(),
+        ),
         sensealg = SciMLSensitivity.InterpolatingAdjoint(;
             checkpointing = true,
             autodiff = true,
+            autojacvec = ifelse(
+                inplace,
+                true,
+                ifelse(compute_mode isa LuxMatrixMode, SciMLSensitivity.ZygoteVJP(), true),
+            ),
         ),
+        verbose = DiffEqBase.DEVerbosity(SciMLLogging.Detailed()),
     ),
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)
