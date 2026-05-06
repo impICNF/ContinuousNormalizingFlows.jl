@@ -29,8 +29,8 @@ function ICNFModel(;
     adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
     sol_kwargs::NamedTuple = (;
         epochs = 300,
-        progress = true,
         callback = make_opt_callback(64),
+        progress = true,
         verbose = OptimizationBase.OptimizationVerbosity(SciMLLogging.Detailed()),
     ),
 )

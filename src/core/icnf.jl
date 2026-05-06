@@ -98,6 +98,7 @@ function ICNF(;
                 ifelse(compute_mode isa LuxMatrixMode, SciMLSensitivity.ZygoteVJP(), true),
             ),
         ),
+        progress = false,
         verbose = DiffEqBase.DEVerbosity(SciMLLogging.Detailed()),
     ),
 )

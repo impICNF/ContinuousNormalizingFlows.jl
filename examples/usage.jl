@@ -22,6 +22,7 @@ using ContinuousNormalizingFlows,
     Lux,
     OrdinaryDiffEqAdamsBashforthMoulton,
     FastBroadcast,
+    SciMLLogging,
     SciMLSensitivity,
     ADTypes,
     Zygote,
@@ -60,6 +61,8 @@ icnf = ICNF(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
         ),
+        progress = false,
+        verbose = Detailed(),
     ), # pass to the solver
 )
 
@@ -87,7 +90,12 @@ if !isfile(icnf_mach_fn)
         ),
         batchsize = 1024,
         adtype = AutoZygote(),
-        sol_kwargs = (; epochs = 300, progress = true, callback = opt_callback), # pass to the solver
+        sol_kwargs = (;
+            epochs = 300,
+            callback = opt_callback,
+            progress = true,
+            verbose = Detailed(),
+        ), # pass to the solver
     )
     mach = machine(model, df)
     fit!(mach)
