@@ -1,7 +1,6 @@
 Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" begin
     Test.@testset verbose = true showtiming = true failfast = false "$compute_mode" for compute_mode in
                                                                                         compute_modes
-
         @show compute_mode
 
         ndata = 2^10
@@ -14,11 +13,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Speed Tests" be
         icnf = ContinuousNormalizingFlows.ICNF(; nvariables, compute_mode)
 
         df = DataFrames.DataFrame(permutedims(r), :auto)
-        model = ContinuousNormalizingFlows.ICNFModel(;
-            icnf,
-            batchsize = 0,
-            sol_kwargs = (; epochs = 5),
-        )
+        model = ContinuousNormalizingFlows.ICNFModel(; icnf)
 
         mach = MLJBase.machine(model, df)
         MLJBase.fit!(mach)

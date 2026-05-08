@@ -124,17 +124,11 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
-
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
 
             if conditioned
-                model = ContinuousNormalizingFlows.CondICNFModel(;
-                    icnf,
-                    batchsize = 0,
-                    adtype,
-                    sol_kwargs = (; epochs = 2),
-                )
+                model = ContinuousNormalizingFlows.CondICNFModel(; icnf, adtype)
                 mach = MLJBase.machine(model, (df, df2))
 
                 Test.@test !isnothing(MLJBase.fit!(mach))
@@ -146,12 +140,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
                     ContinuousNormalizingFlows.CondICNFDist(mach, omode, r2),
                 )
             else
-                model = ContinuousNormalizingFlows.ICNFModel(;
-                    icnf,
-                    batchsize = 0,
-                    adtype,
-                    sol_kwargs = (; epochs = 2),
-                )
+                model = ContinuousNormalizingFlows.ICNFModel(; icnf, adtype)
                 mach = MLJBase.machine(model, df)
 
                 Test.@test !isnothing(MLJBase.fit!(mach))

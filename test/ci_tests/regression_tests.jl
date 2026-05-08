@@ -9,11 +9,7 @@ Test.@testset verbose = true showtiming = true failfast = false "Regression Test
     icnf = ContinuousNormalizingFlows.ICNF(; nvariables)
 
     df = DataFrames.DataFrame(permutedims(r), :auto)
-    model = ContinuousNormalizingFlows.ICNFModel(;
-        icnf,
-        batchsize = 0,
-        sol_kwargs = (; epochs = 300),
-    )
+    model = ContinuousNormalizingFlows.ICNFModel(; icnf)
 
     mach = MLJBase.machine(model, df)
     MLJBase.fit!(mach)
