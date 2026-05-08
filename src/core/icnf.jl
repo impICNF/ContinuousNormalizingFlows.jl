@@ -99,7 +99,7 @@ function ICNF(;
             ),
         ),
         progress = false,
-        verbose = DiffEqBase.DEVerbosity(SciMLLogging.Detailed()),
+        verbose = SciMLLogging.Detailed(),
     ),
 )
     steerdist = Distributions.Uniform{data_type}(-steer_rate, steer_rate)

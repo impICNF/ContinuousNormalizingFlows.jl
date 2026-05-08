@@ -31,7 +31,7 @@ function ICNFModel(;
         epochs = 300,
         callback = make_opt_callback(64),
         progress = true,
-        verbose = OptimizationBase.OptimizationVerbosity(SciMLLogging.Detailed()),
+        verbose = SciMLLogging.Detailed(),
     ),
 )
     return ICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
