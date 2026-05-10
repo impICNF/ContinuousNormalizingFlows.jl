@@ -84,8 +84,8 @@ if !isfile(icnf_mach_fn)
         icnf,
         optimizers = (
             OptimiserChain(
-                ClipNorm(1.0f0, 2.0f0; throw = true),
                 WeightDecay(; lambda = 1.0f-2),
+                ClipNorm(1.0f0, 2.0f0; throw = true),
                 Adam(; eta = 1.0f-3, beta = (9.0f-1, 9.99f-1), epsilon = eps(Float32)),
             ),
         ),
