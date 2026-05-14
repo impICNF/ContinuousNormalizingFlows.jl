@@ -15,12 +15,12 @@ function CondICNFModel(;
             Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-4)),
             Optimisers.ClipNorm(
                 one(eltype(icnf)),
-                convert(eltype(icnf), 2.0e0);
+                convert(eltype(icnf), 2.0);
                 throw = true,
             ),
             Optimisers.Adam(;
-                eta = convert(eltype(icnf), 1.0e-3),
-                beta = (convert(eltype(icnf), 9.0e-1), convert(eltype(icnf), 9.99e-1)),
+                eta = convert(eltype(icnf), 0.001),
+                beta = (convert(eltype(icnf), 0.9), convert(eltype(icnf), 0.999)),
                 epsilon = convert(eltype(icnf), 1.0e-8),
             ),
         ),

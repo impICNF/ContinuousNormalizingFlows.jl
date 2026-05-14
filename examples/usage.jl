@@ -6,9 +6,8 @@ global_logger(TerminalLogger())
 using Distributions
 ndata = 1024
 ndimensions = 1
-data_dist = Beta{Float32}(2.0f0, 4.0f0)
+data_dist = Beta(2.0, 4.0)
 r = rand(data_dist, ndimensions, ndata)
-r = convert.(Float32, r)
 
 ## Parameters
 nvariables = size(r, 1)
@@ -40,11 +39,11 @@ icnf = ICNF(;
     nvariables = nvariables, # number of variables
     naugments = naugments, # number of augmented dimensions
     nconditions = 0, # number of conditioning inputs
-    λ₁ = 1.0f-2, # regulate flow
-    λ₂ = 1.0f-2, # regulate volume change
-    λ₃ = 1.0f-2, # regulate augmented dimensions
-    steer_rate = 1.0f-1, # add random noise to end of the time span
-    tspan = (0.0f0, 1.0f0), # time span
+    λ₁ = 0.01, # regulate flow
+    λ₂ = 0.01, # regulate volume change
+    λ₃ = 0.01, # regulate augmented dimensions
+    steer_rate = 0.1, # add random noise to end of the time span
+    tspan = (0.0, 1.0), # time span
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
     autonomous = false, # using non-autonomous flow
@@ -54,8 +53,8 @@ icnf = ICNF(;
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = 1.0f-4,
-        abstol = 1.0f-4,
+        reltol = 1.0e-4,
+        abstol = 1.0e-4,
         alg = VCABM(; thread = Threaded()),
         sensealg = InterpolatingAdjoint(;
             checkpointing = true,
@@ -84,9 +83,9 @@ if !isfile(icnf_mach_fn)
         icnf,
         optimizers = (
             OptimiserChain(
-                WeightDecay(; lambda = 1.0f-4),
-                ClipNorm(1.0f0, 2.0f0; throw = true),
-                Adam(; eta = 1.0f-3, beta = (9.0f-1, 9.99f-1), epsilon = 1.0f-8),
+                WeightDecay(; lambda = 1.0e-4),
+                ClipNorm(1.0, 2.0; throw = true),
+                Adam(; eta = 0.001, beta = (0.9, 0.999), epsilon = 1.0e-8),
             ),
         ),
         batchsize = 1024,
@@ -124,8 +123,8 @@ display(res_df)
 using CairoMakie
 f = Figure()
 ax = Axis(f[1, 1]; title = "Result")
-lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "Actual")
-lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "Estimated")
+lines!(ax, 0.0 .. 1.0, x -> pdf(data_dist, x); label = "Actual")
+lines!(ax, 0.0 .. 1.0, x -> pdf(d, vcat(x)); label = "Estimated")
 axislegend(ax)
 save("result-figure.svg", f)
 save("result-figure.png", f)

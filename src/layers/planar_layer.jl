@@ -15,7 +15,7 @@ function PlanarLayer(
     mapping::Pair{<:Int, <:Int},
     activation::Any = identity;
     init_weight::Any = WeightInitializers.glorot_uniform,
-    init_bias::Any = WeightInitializers.zeros32,
+    init_bias::Any = WeightInitializers.zeros64,
     use_bias::Bool = true,
 )
     return PlanarLayer{

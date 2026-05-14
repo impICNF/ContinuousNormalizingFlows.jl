@@ -9,14 +9,14 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         ndata = 4
         ndimensions = 2
-        data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-        data_dist2 = Distributions.Beta{Float32}(2.0f0, 4.0f0)
+        data_dist = Distributions.Beta(2.0, 4.0)
+        data_dist2 = Distributions.Beta(2.0, 4.0)
         if compute_mode isa ContinuousNormalizingFlows.VectorMode
-            r = convert.(Float32, rand(data_dist, ndimensions))
-            r2 = convert.(Float32, rand(data_dist2, ndimensions))
+            r = rand(data_dist, ndimensions)
+            r2 = rand(data_dist2, ndimensions)
         elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
-            r = convert.(Float32, rand(data_dist, ndimensions, ndata))
-            r2 = convert.(Float32, rand(data_dist2, ndimensions, ndata))
+            r = rand(data_dist, ndimensions, ndata)
+            r2 = rand(data_dist2, ndimensions, ndata)
         end
         df = DataFrames.DataFrame(permutedims(r), :auto)
         df2 = DataFrames.DataFrame(permutedims(r2), :auto)
@@ -124,7 +124,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" be
 
         Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
                                                                                               adtypes
-
             Test.@test !isnothing(DifferentiationInterface.gradient(diff_loss, adtype, ps))
             Test.@test !isnothing(DifferentiationInterface.gradient(diff2_loss, adtype, r))
 
