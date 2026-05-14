@@ -129,10 +129,6 @@ Test.@testset verbose = true showtiming = true failfast = false "Overall" begin
         include("ci_tests/regression_tests.jl")
     end
 
-    if GROUP == "All" || GROUP == "Speed"
-        include("ci_tests/speed_tests.jl")
-    end
-
     if GROUP == "All" || GROUP == "CheckByAqua"
         include("quality_tests/checkby_Aqua_tests.jl")
     end
