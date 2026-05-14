@@ -54,8 +54,8 @@ icnf = ICNF(;
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = sqrt(eps(Float32)),
-        abstol = sqrt(eps(Float32)),
+        reltol = 1.0f-4,
+        abstol = 1.0f-4,
         alg = VCABM(; thread = Threaded()),
         sensealg = InterpolatingAdjoint(;
             checkpointing = true,
@@ -84,9 +84,9 @@ if !isfile(icnf_mach_fn)
         icnf,
         optimizers = (
             OptimiserChain(
-                WeightDecay(; lambda = 1.0f-2),
+                WeightDecay(; lambda = 1.0f-4),
                 ClipNorm(1.0f0, 2.0f0; throw = true),
-                Adam(; eta = 1.0f-3, beta = (9.0f-1, 9.99f-1), epsilon = eps(Float32)),
+                Adam(; eta = 1.0f-3, beta = (9.0f-1, 9.99f-1), epsilon = 1.0f-8),
             ),
         ),
         batchsize = 1024,

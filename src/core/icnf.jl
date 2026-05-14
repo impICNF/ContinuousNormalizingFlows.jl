@@ -84,8 +84,8 @@ function ICNF(;
     sol_kwargs::NamedTuple = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = sqrt(eps(data_type)),
-        abstol = sqrt(eps(data_type)),
+        reltol = convert(data_type, 1.0e-4),
+        abstol = convert(data_type, 1.0e-4),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(;
             thread = FastBroadcast.Threaded(),
         ),
