@@ -51,7 +51,7 @@ struct ICNF{
 end
 
 function ICNF(;
-    data_type::Type{<:AbstractFloat} = Float32,
+    data_type::Type{<:AbstractFloat} = Float64,
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     autonomous::Bool = false,
@@ -69,10 +69,10 @@ function ICNF(;
         Lux.Dense(n_hidden => n_hidden, NNlib.softplus),
         Lux.Dense(n_hidden => n_out),
     ),
-    steer_rate::AbstractFloat = convert(data_type, 1.0e-1),
-    λ₁::AbstractFloat = convert(data_type, 1.0e-2),
-    λ₂::AbstractFloat = convert(data_type, 1.0e-2),
-    λ₃::AbstractFloat = convert(data_type, 1.0e-2),
+    steer_rate::AbstractFloat = convert(data_type, 0.1),
+    λ₁::AbstractFloat = convert(data_type, 0.01),
+    λ₂::AbstractFloat = convert(data_type, 0.01),
+    λ₃::AbstractFloat = convert(data_type, 0.01),
     basedist::Distributions.Distribution = Distributions.MvNormal(
         FillArrays.Zeros{data_type}(nvariables + naugments),
         FillArrays.Eye{data_type}(nvariables + naugments),

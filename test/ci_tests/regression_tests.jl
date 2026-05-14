@@ -1,9 +1,8 @@
 Test.@testset verbose = true showtiming = true failfast = false "Regression Tests" begin
     ndata = 2^10
     ndimensions = 1
-    data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
+    data_dist = Distributions.Beta(2.0, 4.0)
     r = rand(data_dist, ndimensions, ndata)
-    r = convert.(Float32, r)
 
     nvariables = size(r, 1)
     icnf = ContinuousNormalizingFlows.ICNF(; nvariables)
