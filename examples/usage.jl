@@ -56,7 +56,7 @@ icnf = ICNF(;
         reltol = 1.0e-4,
         abstol = 1.0e-4,
         alg = VCABM(; thread = Threaded()),
-        sensealg = InterpolatingAdjoint(;
+        sensealg = GaussAdjoint(;
             checkpointing = true,
             autodiff = true,
             autojacvec = ZygoteVJP(),
