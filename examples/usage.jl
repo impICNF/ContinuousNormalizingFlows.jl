@@ -54,7 +54,7 @@ icnf = ICNF(;
         save_everystep = false,
         maxiters = typemax(Int),
         reltol = 1.0e-4,
-        abstol = 1.0e-4,
+        abstol = 1.0e-8,
         alg = VCABM(; thread = Threaded()),
         sensealg = GaussAdjoint(;
             checkpointing = true,
