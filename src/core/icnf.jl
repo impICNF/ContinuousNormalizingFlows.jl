@@ -89,18 +89,15 @@ function ICNF(;
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(;
             thread = FastBroadcast.Threaded(),
         ),
-        sensealg = ifelse(
-            (!inplace && compute_mode isa LuxMatrixMode),
-            SciMLSensitivity.GaussAdjoint(;
-                checkpointing = true,
-                autodiff = true,
-                autojacvec = SciMLSensitivity.ZygoteVJP(),
+        sensealg = SciMLSensitivity.QuadratureAdjoint(;
+            autodiff = true,
+            autojacvec = ifelse(
+                (!inplace && compute_mode isa LuxMatrixMode),
+                SciMLSensitivity.ZygoteVJP(),
+                true,
             ),
-            SciMLSensitivity.InterpolatingAdjoint(;
-                checkpointing = true,
-                autodiff = true,
-                autojacvec = true,
-            ),
+            reltol = convert(data_type, 1.0e-4),
+            abstol = convert(data_type, 1.0e-8),
         ),
         progress = false,
         verbose = SciMLLogging.Detailed(),

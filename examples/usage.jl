@@ -56,10 +56,11 @@ icnf = ICNF(;
         reltol = 1.0e-4,
         abstol = 1.0e-8,
         alg = VCABM(; thread = Threaded()),
-        sensealg = GaussAdjoint(;
-            checkpointing = true,
+        sensealg = QuadratureAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
+            reltol = 1.0e-4,
+            abstol = 1.0e-8,
         ),
         progress = false,
         verbose = Detailed(),
@@ -84,7 +85,7 @@ if !isfile(icnf_mach_fn)
         optimizers = (
             OptimiserChain(
                 WeightDecay(; lambda = 1.0e-4),
-                ClipNorm(1.0, 2.0; throw = true),
+                ClipNorm(10.0, 2.0; throw = true),
                 Adam(; eta = 0.001, beta = (0.9, 0.999), epsilon = 1.0e-8),
             ),
         ),

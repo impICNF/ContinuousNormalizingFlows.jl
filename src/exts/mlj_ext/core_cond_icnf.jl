@@ -14,7 +14,7 @@ function CondICNFModel(;
         Optimisers.OptimiserChain(
             Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-4)),
             Optimisers.ClipNorm(
-                one(eltype(icnf)),
+                convert(eltype(icnf), 10.0),
                 convert(eltype(icnf), 2.0);
                 throw = true,
             ),
