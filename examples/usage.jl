@@ -20,8 +20,6 @@ n_hidden = n_in * 4
 using ContinuousNormalizingFlows,
     Lux,
     OrdinaryDiffEqAdamsBashforthMoulton,
-    FastBroadcast,
-    Polyester,
     SciMLLogging,
     SciMLSensitivity,
     ADTypes,
@@ -55,7 +53,7 @@ icnf = ICNF(;
         maxiters = typemax(Int),
         reltol = 1.0e-4,
         abstol = 1.0e-8,
-        alg = VCABM(; thread = Threaded()),
+        alg = VCABM(),
         sensealg = QuadratureAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),

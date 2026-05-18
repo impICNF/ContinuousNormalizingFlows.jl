@@ -86,9 +86,7 @@ function ICNF(;
         maxiters = typemax(Int),
         reltol = convert(data_type, 1.0e-4),
         abstol = convert(data_type, 1.0e-8),
-        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(;
-            thread = FastBroadcast.Threaded(),
-        ),
+        alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(),
         sensealg = SciMLSensitivity.QuadratureAdjoint(;
             autodiff = true,
             autojacvec = ifelse(
