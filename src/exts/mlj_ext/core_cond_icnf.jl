@@ -1,7 +1,6 @@
 mutable struct CondICNFModel{AICNF <: AbstractICNF} <: MLJICNF{AICNF}
     icnf::AICNF
     loss::Function
-    optimizers::Tuple
     batchsize::Int
     adtype::ADTypes.AbstractADType
     sol_kwargs::NamedTuple
@@ -10,8 +9,12 @@ end
 function CondICNFModel(;
     icnf::AbstractICNF = ICNF(),
     loss::Function = loss,
-    optimizers::Tuple = (
-        Optimisers.OptimiserChain(
+    batchsize::Int = 1024,
+    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
+    sol_kwargs::NamedTuple = (;
+        epochs = 300,
+        callback = make_opt_callback(64),
+        alg = Optimisers.OptimiserChain(
             Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-4)),
             Optimisers.ClipNorm(
                 convert(eltype(icnf), 10.0),
@@ -24,17 +27,11 @@ function CondICNFModel(;
                 epsilon = convert(eltype(icnf), 1.0e-8),
             ),
         ),
-    ),
-    batchsize::Int = 1024,
-    adtype::ADTypes.AbstractADType = ADTypes.AutoZygote(),
-    sol_kwargs::NamedTuple = (;
-        epochs = 300,
-        callback = make_opt_callback(64),
         progress = true,
         verbose = SciMLLogging.Detailed(),
     ),
 )
-    return CondICNFModel(icnf, loss, optimizers, batchsize, adtype, sol_kwargs)
+    return CondICNFModel(icnf, loss, batchsize, adtype, sol_kwargs)
 end
 
 function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
@@ -59,17 +56,12 @@ function MLJModelInterface.fit(model::CondICNFModel, verbosity, XY)
         data;
         model.sol_kwargs...,
     )
-    res_stats = Any[]
-    for opt in model.optimizers
-        optprob_re = SciMLBase.remake(optprob; u0 = ps)
-        res = SciMLBase.solve(optprob_re, opt; model.sol_kwargs...)
-        ps .= res.u
-        push!(res_stats, res.stats)
-    end
+    res = SciMLBase.solve(optprob; model.sol_kwargs...)
+    ps .= res.u
 
     fitresult = (ps, st)
     cache = nothing
-    report = (stats = res_stats,)
+    report = (stats = res.stats,)
     return (fitresult, cache, report)
 end
 

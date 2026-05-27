@@ -80,18 +80,16 @@ if !isfile(icnf_mach_fn)
     df = DataFrame(permutedims(r), :auto)
     model = ICNFModel(;
         icnf,
-        optimizers = (
-            OptimiserChain(
-                WeightDecay(; lambda = 1.0e-4),
-                ClipNorm(10.0, 2.0; throw = true),
-                Adam(; eta = 0.001, beta = (0.9, 0.999), epsilon = 1.0e-8),
-            ),
-        ),
         batchsize = 1024,
         adtype = AutoZygote(),
         sol_kwargs = (;
             epochs = 300,
             callback = opt_callback,
+            alg = OptimiserChain(
+                WeightDecay(; lambda = 1.0e-4),
+                ClipNorm(10.0, 2.0; throw = true),
+                Adam(; eta = 0.001, beta = (0.9, 0.999), epsilon = 1.0e-8),
+            ),
             progress = true,
             verbose = Detailed(),
         ), # pass to the solver
