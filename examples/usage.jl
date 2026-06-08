@@ -66,7 +66,7 @@ icnf = ICNF(;
 )
 
 ## Fit It
-using DataFrames, MLJBase, Zygote, ADTypes, OptimizationOptimisers
+using DataFrames, MLJBase, Zygote, SciMLLogging, ADTypes, OptimizationOptimisers
 
 function opt_callback(state::Any, l::Any)
     if isone(state.iter % 64) # log the loss at each 64 iterations
