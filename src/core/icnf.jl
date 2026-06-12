@@ -51,7 +51,7 @@ struct ICNF{
 end
 
 function ICNF(;
-    data_type::Type{<:AbstractFloat} = Float64,
+    data_type::Type{<:AbstractFloat} = Float32,
     compute_mode::ComputeMode = LuxVecJacMatrixMode(ADTypes.AutoZygote()),
     inplace::Bool = false,
     autonomous::Bool = false,
@@ -85,7 +85,7 @@ function ICNF(;
         save_everystep = false,
         maxiters = typemax(Int),
         reltol = convert(data_type, 1.0e-4),
-        abstol = convert(data_type, 1.0e-8),
+        abstol = convert(data_type, 1.0e-4),
         alg = OrdinaryDiffEqAdamsBashforthMoulton.VCABM(),
         sensealg = SciMLSensitivity.QuadratureAdjoint(;
             autodiff = true,
@@ -95,7 +95,7 @@ function ICNF(;
                 true,
             ),
             reltol = convert(data_type, 1.0e-4),
-            abstol = convert(data_type, 1.0e-8),
+            abstol = convert(data_type, 1.0e-4),
         ),
         progress = false,
         verbose = SciMLLogging.Detailed(),

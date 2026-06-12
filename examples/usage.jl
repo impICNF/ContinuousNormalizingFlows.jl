@@ -37,11 +37,11 @@ icnf = ICNF(;
     nvariables = nvariables, # number of variables
     naugments = naugments, # number of augmented dimensions
     nconditions = 0, # number of conditioning inputs
-    λ₁ = 0.01, # regulate flow
-    λ₂ = 0.01, # regulate volume change
-    λ₃ = 0.01, # regulate augmented dimensions
-    steer_rate = 0.1, # add random noise to end of the time span
-    tspan = (0.0, 1.0), # time span
+    λ₁ = 0.01f0, # regulate flow
+    λ₂ = 0.01f0, # regulate volume change
+    λ₃ = 0.01f0, # regulate augmented dimensions
+    steer_rate = 0.1f0, # add random noise to end of the time span
+    tspan = (0.0f0, 1.0f0), # time span
     device = cpu_device(), # process data by CPU
     # device = gpu_device(), # process data by GPU
     autonomous = false, # using non-autonomous flow
@@ -51,14 +51,14 @@ icnf = ICNF(;
     sol_kwargs = (;
         save_everystep = false,
         maxiters = typemax(Int),
-        reltol = 1.0e-4,
-        abstol = 1.0e-8,
+        reltol = 1.0f-4,
+        abstol = 1.0f-4,
         alg = VCABM(),
         sensealg = QuadratureAdjoint(;
             autodiff = true,
             autojacvec = ZygoteVJP(),
-            reltol = 1.0e-4,
-            abstol = 1.0e-8,
+            reltol = 1.0f-4,
+            abstol = 1.0f-4,
         ),
         progress = false,
         verbose = Detailed(),
@@ -86,8 +86,8 @@ if !isfile(icnf_mach_fn)
             epochs = 300,
             callback = opt_callback,
             alg = OptimiserChain(
-                WeightDecay(; lambda = 1.0e-4),
-                Adam(; eta = 0.001, beta = (0.9, 0.999), epsilon = 1.0e-8),
+                WeightDecay(; lambda = 1.0f-4),
+                Adam(; eta = 0.001f0, beta = (0.9f0, 0.999f0), epsilon = 1.0f-8),
             ),
             progress = true,
             verbose = Detailed(),
