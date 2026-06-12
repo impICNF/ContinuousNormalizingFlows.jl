@@ -6,7 +6,7 @@ global_logger(TerminalLogger())
 using Distributions
 ndata = 1024
 ndimensions = 1
-data_dist = Beta(2.0, 4.0)
+data_dist = Beta(2.0f0, 4.0f0)
 r = rand(data_dist, ndimensions, ndata)
 
 ## Parameters
@@ -119,8 +119,8 @@ display(res_df)
 using CairoMakie
 f = Figure()
 ax = Axis(f[1, 1]; title = "Result")
-lines!(ax, 0.0 .. 1.0, x -> pdf(data_dist, x); label = "Actual")
-lines!(ax, 0.0 .. 1.0, x -> pdf(d, vcat(x)); label = "Estimated")
+lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(data_dist, x); label = "Actual")
+lines!(ax, 0.0f0 .. 1.0f0, x -> pdf(d, vcat(x)); label = "Estimated")
 axislegend(ax)
 save("result-figure.svg", f)
 save("result-figure.png", f)
