@@ -13,8 +13,8 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
 
         ndata = 4
         ndimensions = 2
-        data_dist = Distributions.Beta(2.0, 4.0)
-        data_dist2 = Distributions.Beta(2.0, 4.0)
+        data_dist = Distributions.Beta(2.0f0, 4.0f0)
+        data_dist2 = Distributions.Beta(2.0f0, 4.0f0)
         if compute_mode isa ContinuousNormalizingFlows.VectorMode
             r = rand(data_dist, ndimensions)
             r2 = rand(data_dist2, ndimensions)
