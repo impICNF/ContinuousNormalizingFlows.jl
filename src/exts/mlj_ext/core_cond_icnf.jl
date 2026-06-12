@@ -16,11 +16,6 @@ function CondICNFModel(;
         callback = make_opt_callback(64),
         alg = Optimisers.OptimiserChain(
             Optimisers.WeightDecay(; lambda = convert(eltype(icnf), 1.0e-4)),
-            Optimisers.ClipNorm(
-                convert(eltype(icnf), 10.0),
-                convert(eltype(icnf), 2.0);
-                throw = true,
-            ),
             Optimisers.Adam(;
                 eta = convert(eltype(icnf), 0.001),
                 beta = (convert(eltype(icnf), 0.9), convert(eltype(icnf), 0.999)),

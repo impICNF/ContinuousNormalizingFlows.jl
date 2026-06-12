@@ -87,7 +87,6 @@ if !isfile(icnf_mach_fn)
             callback = opt_callback,
             alg = OptimiserChain(
                 WeightDecay(; lambda = 1.0e-4),
-                ClipNorm(10.0, 2.0; throw = true),
                 Adam(; eta = 0.001, beta = (0.9, 0.999), epsilon = 1.0e-8),
             ),
             progress = true,
