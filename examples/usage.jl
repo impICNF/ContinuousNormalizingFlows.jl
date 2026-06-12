@@ -6,8 +6,9 @@ global_logger(TerminalLogger())
 using Distributions
 ndata = 1024
 ndimensions = 1
-data_dist = Beta(2.0f0, 4.0f0)
+data_dist = Beta{Float32}(2.0f0, 4.0f0)
 r = rand(data_dist, ndimensions, ndata)
+r = convert.(Float32, r)
 
 ## Parameters
 nvariables = size(r, 1)

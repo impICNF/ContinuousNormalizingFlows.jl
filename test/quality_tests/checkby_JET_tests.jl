@@ -13,14 +13,18 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
 
         ndata = 4
         ndimensions = 2
-        data_dist = Distributions.Beta(2.0f0, 4.0f0)
-        data_dist2 = Distributions.Beta(2.0f0, 4.0f0)
+        data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
+        data_dist2 = Distributions.Beta{Float32}(2.0f0, 4.0f0)
         if compute_mode isa ContinuousNormalizingFlows.VectorMode
             r = rand(data_dist, ndimensions)
+            r = convert.(Float32, r)
             r2 = rand(data_dist2, ndimensions)
+            r2 = convert.(Float32, r2)
         elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
             r = rand(data_dist, ndimensions, ndata)
+            r = convert.(Float32, r)
             r2 = rand(data_dist2, ndimensions, ndata)
+            r2 = convert.(Float32, r2)
         end
         nvariables = size(r, 1)
 
