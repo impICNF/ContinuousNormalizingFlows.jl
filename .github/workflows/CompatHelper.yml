@@ -28,4 +28,4 @@ jobs:
         shell: julia --color=yes {0}
         run: |
           import CompatHelper
-          CompatHelper.main(; include_jll = true, subdirs = ["", "docs", "test", "benchmark"])
+          CompatHelper.main(; include_jll = true, subdirs = ["", "docs", "test", "benchmark", "examples"])

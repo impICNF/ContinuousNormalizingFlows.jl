@@ -11,6 +11,7 @@ updates:
       - '/docs'
       - '/test'
       - '/benchmark'
+      - '/examples'
     schedule:
       interval: cron
       cronjob: '20 8 * * 2'
