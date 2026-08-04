@@ -69,37 +69,27 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
 
         if conditioned
             ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st)
-            JET.@test_call target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
-                icnf,
-                omode,
-                r,
-                r2,
-                ps,
-                st,
+            JET.test_call(
+                ContinuousNormalizingFlows.loss,
+                typeof((icnf, omode, r, r2, ps, st));
+                target_modules = (ContinuousNormalizingFlows,),
             )
-            JET.@test_opt target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
-                icnf,
-                omode,
-                r,
-                r2,
-                ps,
-                st,
+            JET.test_opt(
+                ContinuousNormalizingFlows.loss,
+                typeof((icnf, omode, r, r2, ps, st));
+                target_modules = (ContinuousNormalizingFlows,),
             )
         else
             ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st)
-            JET.@test_call target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
-                icnf,
-                omode,
-                r,
-                ps,
-                st,
+            JET.test_call(
+                ContinuousNormalizingFlows.loss,
+                typeof((icnf, omode, r, ps, st));
+                target_modules = (ContinuousNormalizingFlows,),
             )
-            JET.@test_opt target_modules = (ContinuousNormalizingFlows,) ContinuousNormalizingFlows.loss(
-                icnf,
-                omode,
-                r,
-                ps,
-                st,
+            JET.test_opt(
+                ContinuousNormalizingFlows.loss,
+                typeof((icnf, omode, r, ps, st));
+                target_modules = (ContinuousNormalizingFlows,),
             )
         end
     end
