@@ -21,12 +21,11 @@ function icnf_jacobian(
     oftype(
         cat(y; dims = Val(3)),
         stack(
-            (
-                J[i:j, i:j] for (i, j) in zip(
-                    firstindex(J, 1):size(y, 1):lastindex(J, 1),
-                    (firstindex(J, 1) + size(y, 1) - 1):size(y, 1):lastindex(J, 1),
-                )
-            );
+            function (i, j)
+                return J[i:j, i:j]
+            end,
+            firstindex(J, 1):size(y, 1):lastindex(J, 1),
+            (firstindex(J, 1) + size(y, 1) - 1):size(y, 1):lastindex(J, 1);
             dims = 3,
         ),
     )
