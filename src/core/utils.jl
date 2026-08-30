@@ -20,14 +20,14 @@ function icnf_jacobian(
     return y,
     oftype(
         cat(y; dims = Val(3)),
-        cat(
+        stack(
             (
                 J[i:j, i:j] for (i, j) in zip(
                     firstindex(J, 1):size(y, 1):lastindex(J, 1),
                     (firstindex(J, 1) + size(y, 1) - 1):size(y, 1):lastindex(J, 1),
                 )
-            )...;
-            dims = Val(3),
+            );
+            dims = 3,
         ),
     )
 end
@@ -39,18 +39,23 @@ function icnf_jacobian(
     xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
     y = f(xs)
-    z = similar(xs)
-    ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(y, size(xs, 1), size(xs, 1), size(xs, 2))
-    for i in axes(xs, 1)
-        ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[i, :, :] = oftype(
-            y,
-            only(DifferentiationInterface.pullback(f, icnf.compute_mode.adback, xs, (z,))),
-        )
-        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
-    end
-    return y, oftype(cat(y; dims = Val(3)), copy(res))
+    ons = similar(xs, 1, size(xs, 2))
+    ChainRulesCore.@ignore_derivatives fill!(ons, one(T))
+    return y,
+    oftype(
+        cat(y; dims = Val(3)),
+        stack(
+            DifferentiationInterface.pullback(
+                f,
+                icnf.compute_mode.adback,
+                xs,
+                ntuple(function (i::Int)
+                    return oftype(xs, (axes(xs, 1) .== i) * ons)
+                end, size(xs, 1)),
+            );
+            dims = 1,
+        ),
+    )
 end
 
 function icnf_jacobian(
@@ -60,20 +65,23 @@ function icnf_jacobian(
     xs::AbstractMatrix{<:Real},
 ) where {T <: AbstractFloat}
     y = f(xs)
-    z = similar(xs)
-    ChainRulesCore.@ignore_derivatives fill!(z, zero(T))
-    res = Zygote.Buffer(y, size(xs, 1), size(xs, 1), size(xs, 2))
-    for i in axes(xs, 1)
-        ChainRulesCore.@ignore_derivatives z[i, :] .= one(T)
-        res[:, i, :] = oftype(
-            y,
-            only(
-                DifferentiationInterface.pushforward(f, icnf.compute_mode.adback, xs, (z,)),
-            ),
-        )
-        ChainRulesCore.@ignore_derivatives z[i, :] .= zero(T)
-    end
-    return y, oftype(cat(y; dims = Val(3)), copy(res))
+    ons = similar(xs, 1, size(xs, 2))
+    ChainRulesCore.@ignore_derivatives fill!(ons, one(T))
+    return y,
+    oftype(
+        cat(y; dims = Val(3)),
+        stack(
+            DifferentiationInterface.pushforward(
+                f,
+                icnf.compute_mode.adback,
+                xs,
+                ntuple(function (i::Int)
+                    return oftype(xs, (axes(xs, 1) .== i) * ons)
+                end, size(xs, 1)),
+            );
+            dims = 2,
+        ),
+    )
 end
 
 function icnf_jacobian(
