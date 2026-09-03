@@ -1,8 +1,3 @@
-"""
-Implementation of Planar Layer from
-
-[Chen, Ricky TQ, Yulia Rubanova, Jesse Bettencourt, and David Duvenaud. "Neural Ordinary Differential Equations." arXiv preprint arXiv:1806.07366 (2018).](https://arxiv.org/abs/1806.07366)
-"""
 struct PlanarLayer{USE_BIAS, F1, F2, F3, NVARIABLES <: Int} <: LuxCore.AbstractLuxLayer
     in_dims::NVARIABLES
     out_dims::NVARIABLES
