@@ -9,6 +9,9 @@ LuxCore = "bb33d45b-7691-41d6-9220-0943567d0623"
 PkgBenchmark = "32113eaa-f34f-5b0d-bd6c-c81e245fc73d"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
+[sources]
+ContinuousNormalizingFlows = {path = ".."}
+
 [compat]
 ADTypes = "1"
 BenchmarkTools = "1"

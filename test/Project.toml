@@ -18,6 +18,9 @@ MLJBase = "a7f614a8-145f-11e9-1d2a-a57a1082229d"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
+[sources]
+ContinuousNormalizingFlows = {path = ".."}
+
 [compat]
 ADTypes = "1"
 Aqua = "0.8"
