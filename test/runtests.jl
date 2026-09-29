@@ -121,7 +121,7 @@ if VIA_ENZYME
     )
 end
 
-Test.@testset "Overall" begin
+Test.@testset verbose = true showtiming = true failfast = false "Overall" begin
     if GROUP == "All" || GROUP in ["SmokeXOut", "SmokeXIn", "SmokeXYOut", "SmokeXYIn"]
         include("ci_tests/smoke_tests.jl")
     end

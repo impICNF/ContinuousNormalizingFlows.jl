@@ -1,4 +1,4 @@
-Test.@testset let ndata = 4, ndimensions = 2, α = 2, β = 4
+let ndata = 4, ndimensions = 2, α = 2, β = 4
     Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" begin
         JET.test_package(
             ContinuousNormalizingFlows;

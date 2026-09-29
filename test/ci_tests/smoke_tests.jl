@@ -1,4 +1,4 @@
-Test.@testset let ndata = 4, ndimensions = 2, α = 2, β = 4
+let ndata = 4, ndimensions = 2, α = 2, β = 4
     Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" begin
         Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
                 devices,
