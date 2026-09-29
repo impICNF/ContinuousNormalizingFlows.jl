@@ -1,17 +1,17 @@
-Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" begin
-    JET.test_package(
-        ContinuousNormalizingFlows;
-        target_modules = (ContinuousNormalizingFlows,),
-    )
-    Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
-                                                                                                                                                                                devices,
-        compute_mode in compute_modes,
-        omode in omodes,
-        inplace in inplaces,
-        conditioned in conditioneds,
-        planar in planars
+Test.@testset let ndata = 4, ndimensions = 2, α = 2, β = 4
+    Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" begin
+        JET.test_package(
+            ContinuousNormalizingFlows;
+            target_modules=(ContinuousNormalizingFlows,),
+        )
+        Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
+                devices,
+            compute_mode in compute_modes,
+            omode in omodes,
+            inplace in inplaces,
+            conditioned in conditioneds,
+            planar in planars
 
-        Test.@testset let ndata = 4, ndimensions = 2, α = 2, β = 4
             data_dist =
                 Distributions.Beta{Float32}(convert(Float32, α), convert(Float32, β))
             data_dist2 =
@@ -32,7 +32,7 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
             icnf = ifelse(
                 planar,
                 ContinuousNormalizingFlows.ICNF(;
-                    nn = ifelse(
+                    nn=ifelse(
                         conditioned,
                         Lux.Chain(
                             ContinuousNormalizingFlows.PlanarLayer(
@@ -48,14 +48,14 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
                         ),
                     ),
                     nvariables,
-                    nconditions = ifelse(conditioned, nvariables, 0),
+                    nconditions=ifelse(conditioned, nvariables, 0),
                     inplace,
                     compute_mode,
                     device,
                 ),
                 ContinuousNormalizingFlows.ICNF(;
                     nvariables,
-                    nconditions = ifelse(conditioned, nvariables, 0),
+                    nconditions=ifelse(conditioned, nvariables, 0),
                     inplace,
                     compute_mode,
                     device,
@@ -73,24 +73,24 @@ Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" beg
                 JET.test_call(
                     ContinuousNormalizingFlows.loss,
                     typeof((icnf, omode, r, r2, ps, st));
-                    target_modules = (ContinuousNormalizingFlows,),
+                    target_modules=(ContinuousNormalizingFlows,),
                 )
                 JET.test_opt(
                     ContinuousNormalizingFlows.loss,
                     typeof((icnf, omode, r, r2, ps, st));
-                    target_modules = (ContinuousNormalizingFlows,),
+                    target_modules=(ContinuousNormalizingFlows,),
                 )
             else
                 ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st)
                 JET.test_call(
                     ContinuousNormalizingFlows.loss,
                     typeof((icnf, omode, r, ps, st));
-                    target_modules = (ContinuousNormalizingFlows,),
+                    target_modules=(ContinuousNormalizingFlows,),
                 )
                 JET.test_opt(
                     ContinuousNormalizingFlows.loss,
                     typeof((icnf, omode, r, ps, st));
-                    target_modules = (ContinuousNormalizingFlows,),
+                    target_modules=(ContinuousNormalizingFlows,),
                 )
             end
         end

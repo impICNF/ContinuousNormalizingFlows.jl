@@ -69,12 +69,12 @@ if VIA_ENZYME
         adtypes,
         ADTypes.AbstractADType[
             ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                function_annotation = Enzyme.Const,
+                mode=Enzyme.set_runtime_activity(Enzyme.Reverse),
+                function_annotation=Enzyme.Const,
             ),
             ADTypes.AutoEnzyme(;
-                mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                function_annotation = Enzyme.Const,
+                mode=Enzyme.set_runtime_activity(Enzyme.Forward),
+                function_annotation=Enzyme.Const,
             ),
         ],
     )
@@ -83,45 +83,45 @@ if VIA_ENZYME
         ContinuousNormalizingFlows.ComputeMode[
             ContinuousNormalizingFlows.LuxVecJacMatrixMode(
                 ADTypes.AutoEnzyme(;
-                    mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                    function_annotation = Enzyme.Const,
+                    mode=Enzyme.set_runtime_activity(Enzyme.Reverse),
+                    function_annotation=Enzyme.Const,
                 ),
             ),
             ContinuousNormalizingFlows.DIVecJacMatrixMode(
                 ADTypes.AutoEnzyme(;
-                    mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                    function_annotation = Enzyme.Const,
+                    mode=Enzyme.set_runtime_activity(Enzyme.Reverse),
+                    function_annotation=Enzyme.Const,
                 ),
             ),
             ContinuousNormalizingFlows.DIVecJacVectorMode(
                 ADTypes.AutoEnzyme(;
-                    mode = Enzyme.set_runtime_activity(Enzyme.Reverse),
-                    function_annotation = Enzyme.Const,
+                    mode=Enzyme.set_runtime_activity(Enzyme.Reverse),
+                    function_annotation=Enzyme.Const,
                 ),
             ),
             ContinuousNormalizingFlows.LuxJacVecMatrixMode(
                 ADTypes.AutoEnzyme(;
-                    mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                    function_annotation = Enzyme.Const,
+                    mode=Enzyme.set_runtime_activity(Enzyme.Forward),
+                    function_annotation=Enzyme.Const,
                 ),
             ),
             ContinuousNormalizingFlows.DIJacVecMatrixMode(
                 ADTypes.AutoEnzyme(;
-                    mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                    function_annotation = Enzyme.Const,
+                    mode=Enzyme.set_runtime_activity(Enzyme.Forward),
+                    function_annotation=Enzyme.Const,
                 ),
             ),
             ContinuousNormalizingFlows.DIJacVecVectorMode(
                 ADTypes.AutoEnzyme(;
-                    mode = Enzyme.set_runtime_activity(Enzyme.Forward),
-                    function_annotation = Enzyme.Const,
+                    mode=Enzyme.set_runtime_activity(Enzyme.Forward),
+                    function_annotation=Enzyme.Const,
                 ),
             ),
         ],
     )
 end
 
-Test.@testset verbose = true showtiming = true failfast = false "Overall" begin
+Test.@testset "Overall" begin
     if GROUP == "All" || GROUP in ["SmokeXOut", "SmokeXIn", "SmokeXYOut", "SmokeXYIn"]
         include("ci_tests/smoke_tests.jl")
     end

@@ -1,5 +1,5 @@
-Test.@testset verbose = true showtiming = true failfast = false "Regression Tests" begin
-    Test.@testset let ndata = 2^10, ndimensions = 1, α = 2, β = 4
+Test.@testset let ndata = 2^10, ndimensions = 1, α = 2, β = 4
+    Test.@testset verbose = true showtiming = true failfast = false "Regression Tests" begin
         data_dist = Distributions.Beta{Float32}(convert(Float32, α), convert(Float32, β))
         r = rand(data_dist, ndimensions, ndata)
         r = convert.(Float32, r)
