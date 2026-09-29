@@ -1,96 +1,96 @@
 Test.@testset verbose = true showtiming = true failfast = false "CheckByJET" begin
     JET.test_package(
         ContinuousNormalizingFlows;
-        target_modules = (ContinuousNormalizingFlows,),
+        target_modules=(ContinuousNormalizingFlows,),
     )
     Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
-                                                                                                                                                                                devices,
+            devices,
         compute_mode in compute_modes,
         omode in omodes,
         inplace in inplaces,
         conditioned in conditioneds,
         planar in planars
 
-        ndata = 4
-        ndimensions = 2
-        data_dist = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-        data_dist2 = Distributions.Beta{Float32}(2.0f0, 4.0f0)
-        if compute_mode isa ContinuousNormalizingFlows.VectorMode
-            r = rand(data_dist, ndimensions)
-            r = convert.(Float32, r)
-            r2 = rand(data_dist2, ndimensions)
-            r2 = convert.(Float32, r2)
-        elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
-            r = rand(data_dist, ndimensions, ndata)
-            r = convert.(Float32, r)
-            r2 = rand(data_dist2, ndimensions, ndata)
-            r2 = convert.(Float32, r2)
-        end
-        nvariables = size(r, 1)
+        Test.@testset let ndata = 4, ndimensions = 2, α = 2, β = 4
+            data_dist = Distributions.Beta{Float32}(convert(Float32, α), convert(Float32, β))
+            data_dist2 = Distributions.Beta{Float32}(convert(Float32, α), convert(Float32, β))
+            if compute_mode isa ContinuousNormalizingFlows.VectorMode
+                r = rand(data_dist, ndimensions)
+                r = convert.(Float32, r)
+                r2 = rand(data_dist2, ndimensions)
+                r2 = convert.(Float32, r2)
+            elseif compute_mode isa ContinuousNormalizingFlows.MatrixMode
+                r = rand(data_dist, ndimensions, ndata)
+                r = convert.(Float32, r)
+                r2 = rand(data_dist2, ndimensions, ndata)
+                r2 = convert.(Float32, r2)
+            end
+            nvariables = size(r, 1)
 
-        icnf = ifelse(
-            planar,
-            ContinuousNormalizingFlows.ICNF(;
-                nn = ifelse(
-                    conditioned,
-                    Lux.Chain(
-                        ContinuousNormalizingFlows.PlanarLayer(
-                            nvariables * 3 + 2 => nvariables * 2 + 1,
-                            tanh,
+            icnf = ifelse(
+                planar,
+                ContinuousNormalizingFlows.ICNF(;
+                    nn=ifelse(
+                        conditioned,
+                        Lux.Chain(
+                            ContinuousNormalizingFlows.PlanarLayer(
+                                nvariables * 3 + 2 => nvariables * 2 + 1,
+                                tanh,
+                            ),
+                        ),
+                        Lux.Chain(
+                            ContinuousNormalizingFlows.PlanarLayer(
+                                nvariables * 2 + 2 => nvariables * 2 + 1,
+                                tanh,
+                            ),
                         ),
                     ),
-                    Lux.Chain(
-                        ContinuousNormalizingFlows.PlanarLayer(
-                            nvariables * 2 + 2 => nvariables * 2 + 1,
-                            tanh,
-                        ),
-                    ),
+                    nvariables,
+                    nconditions=ifelse(conditioned, nvariables, 0),
+                    inplace,
+                    compute_mode,
+                    device,
                 ),
-                nvariables,
-                nconditions = ifelse(conditioned, nvariables, 0),
-                inplace,
-                compute_mode,
-                device,
-            ),
-            ContinuousNormalizingFlows.ICNF(;
-                nvariables,
-                nconditions = ifelse(conditioned, nvariables, 0),
-                inplace,
-                compute_mode,
-                device,
-            ),
-        )
-        ps, st = LuxCore.setup(icnf.rng, icnf)
-        ps = ComponentArrays.ComponentArray(ps)
-        r = icnf.device(r)
-        r2 = icnf.device(r2)
-        ps = icnf.device(ps)
-        st = icnf.device(st)
+                ContinuousNormalizingFlows.ICNF(;
+                    nvariables,
+                    nconditions=ifelse(conditioned, nvariables, 0),
+                    inplace,
+                    compute_mode,
+                    device,
+                ),
+            )
+            ps, st = LuxCore.setup(icnf.rng, icnf)
+            ps = ComponentArrays.ComponentArray(ps)
+            r = icnf.device(r)
+            r2 = icnf.device(r2)
+            ps = icnf.device(ps)
+            st = icnf.device(st)
 
-        if conditioned
-            ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st)
-            JET.test_call(
-                ContinuousNormalizingFlows.loss,
-                typeof((icnf, omode, r, r2, ps, st));
-                target_modules = (ContinuousNormalizingFlows,),
-            )
-            JET.test_opt(
-                ContinuousNormalizingFlows.loss,
-                typeof((icnf, omode, r, r2, ps, st));
-                target_modules = (ContinuousNormalizingFlows,),
-            )
-        else
-            ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st)
-            JET.test_call(
-                ContinuousNormalizingFlows.loss,
-                typeof((icnf, omode, r, ps, st));
-                target_modules = (ContinuousNormalizingFlows,),
-            )
-            JET.test_opt(
-                ContinuousNormalizingFlows.loss,
-                typeof((icnf, omode, r, ps, st));
-                target_modules = (ContinuousNormalizingFlows,),
-            )
+            if conditioned
+                ContinuousNormalizingFlows.loss(icnf, omode, r, r2, ps, st)
+                JET.test_call(
+                    ContinuousNormalizingFlows.loss,
+                    typeof((icnf, omode, r, r2, ps, st));
+                    target_modules=(ContinuousNormalizingFlows,),
+                )
+                JET.test_opt(
+                    ContinuousNormalizingFlows.loss,
+                    typeof((icnf, omode, r, r2, ps, st));
+                    target_modules=(ContinuousNormalizingFlows,),
+                )
+            else
+                ContinuousNormalizingFlows.loss(icnf, omode, r, ps, st)
+                JET.test_call(
+                    ContinuousNormalizingFlows.loss,
+                    typeof((icnf, omode, r, ps, st));
+                    target_modules=(ContinuousNormalizingFlows,),
+                )
+                JET.test_opt(
+                    ContinuousNormalizingFlows.loss,
+                    typeof((icnf, omode, r, ps, st));
+                    target_modules=(ContinuousNormalizingFlows,),
+                )
+            end
         end
     end
 end
