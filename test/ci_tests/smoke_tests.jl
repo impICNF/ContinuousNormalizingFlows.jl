@@ -1,7 +1,7 @@
 let ndata = 4, ndimensions = 2, α = 2, β = 4
     Test.@testset verbose = true showtiming = true failfast = false "Smoke Tests" begin
         Test.@testset verbose = true showtiming = true failfast = false "$device | $compute_mode | $omode | inplace = $inplace | conditioned = $conditioned | planar = $planar" for device in
-                devices,
+                                                                                                                                                                                    devices,
             compute_mode in compute_modes,
             omode in omodes,
             inplace in inplaces,
@@ -30,7 +30,7 @@ let ndata = 4, ndimensions = 2, α = 2, β = 4
             icnf = ifelse(
                 planar,
                 ContinuousNormalizingFlows.ICNF(;
-                    nn=ifelse(
+                    nn = ifelse(
                         conditioned,
                         Lux.Chain(
                             ContinuousNormalizingFlows.PlanarLayer(
@@ -46,14 +46,14 @@ let ndata = 4, ndimensions = 2, α = 2, β = 4
                         ),
                     ),
                     nvariables,
-                    nconditions=ifelse(conditioned, nvariables, 0),
+                    nconditions = ifelse(conditioned, nvariables, 0),
                     inplace,
                     compute_mode,
                     device,
                 ),
                 ContinuousNormalizingFlows.ICNF(;
                     nvariables,
-                    nconditions=ifelse(conditioned, nvariables, 0),
+                    nconditions = ifelse(conditioned, nvariables, 0),
                     inplace,
                     compute_mode,
                     device,
@@ -130,7 +130,7 @@ let ndata = 4, ndimensions = 2, α = 2, β = 4
             Test.@test !isnothing(rand(d, ndata))
 
             Test.@testset verbose = true showtiming = true failfast = false "$adtype on loss" for adtype in
-                    adtypes
+                                                                                                  adtypes
 
                 Test.@test !isnothing(
                     DifferentiationInterface.gradient(diff_loss, adtype, ps),
