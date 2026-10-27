@@ -1,7 +1,7 @@
 name: CompatHelper
 on:
   schedule:
-    - cron: '20 8 * * 2'
+    - cron: '20 8 * * *'
   push:
     branches:
       - main

@@ -4,7 +4,7 @@ updates:
     directory: '/'
     schedule:
       interval: cron
-      cronjob: '20 8 * * 2'
+      cronjob: '20 8 * * *'
   - package-ecosystem: julia
     directories:
       - '/'
@@ -14,4 +14,4 @@ updates:
       - '/examples'
     schedule:
       interval: cron
-      cronjob: '20 8 * * 2'
+      cronjob: '20 8 * * *'
