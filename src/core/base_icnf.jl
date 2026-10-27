@@ -2,7 +2,7 @@ function Base.show(io::IO, icnf::AbstractICNF)
     return print(io, typeof(icnf))
 end
 
-function Base.eltype(::AbstractICNF{T}) where {T<:AbstractFloat}
+function Base.eltype(::AbstractICNF{T}) where {T <: AbstractFloat}
     return T
 end
 
@@ -11,8 +11,8 @@ function n_augments(::AbstractICNF, ::Mode)
 end
 
 function n_augments_input(
-    icnf::AbstractICNF{<:AbstractFloat,<:ComputeMode,INPLACE,CONDITIONED,true},
-) where {INPLACE,CONDITIONED}
+    icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, CONDITIONED, true},
+) where {INPLACE, CONDITIONED}
     return icnf.naugments
 end
 
@@ -30,7 +30,7 @@ function steer_tspan(
         true,
     },
     ::TrainMode{true},
-) where {INPLACE,CONDITIONED,AUGMENTED}
+) where {INPLACE, CONDITIONED, AUGMENTED}
     t₀, t₁ = icnf.tspan
     Δt = abs(t₁ - t₀)
     r = oftype(t₁, rand(icnf.rng, icnf.steerdist))
@@ -42,19 +42,19 @@ function steer_tspan(icnf::AbstractICNF, ::Mode)
     return icnf.tspan
 end
 
-function base_AT(icnf::AbstractICNF{T}, dims...) where {T<:AbstractFloat}
+function base_AT(icnf::AbstractICNF{T}, dims...) where {T <: AbstractFloat}
     return icnf.device(similar(Array{T}, dims...))
 end
 
 function add_conditions_nn(
-    icnf::AbstractICNF{<:AbstractFloat,<:ComputeMode,INPLACE,true},
+    icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true},
     ys::AbstractVecOrMat{<:Real},
 ) where {INPLACE}
     return CondLayer(icnf.nn, ys)
 end
 
 function add_conditions_nn(
-    icnf::AbstractICNF{<:AbstractFloat,<:ComputeMode,INPLACE,false},
+    icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false},
 ) where {INPLACE}
     return icnf.nn
 end
@@ -65,7 +65,7 @@ function make_ode_func(
     nn::LuxCore.AbstractLuxLayer,
     st::NamedTuple,
     ϵ::AbstractVecOrMat{T},
-) where {T<:AbstractFloat}
+) where {T <: AbstractFloat}
     function ode_func(u::Any, p::Any, t::Any)
         return augmented_f(u, p, t, icnf, mode, nn, st, ϵ)
     end
@@ -89,17 +89,17 @@ function reg_z_aug(
     },
     ::TrainMode{true},
     z::Any,
-) where {INPLACE,CONDITIONED,STEER}
+) where {INPLACE, CONDITIONED, STEER}
     n_aug_input = n_augments_input(icnf)
-    z_aug = z[(end-n_aug_input+1):end]
+    z_aug = z[(end - n_aug_input + 1):end]
     return LinearAlgebra.norm(z_aug)
 end
 
 function reg_z_aug(
-    ::AbstractICNF{T,<:VectorMode},
+    ::AbstractICNF{T, <:VectorMode},
     ::Mode,
     z::Any,
-) where {T<:AbstractFloat}
+) where {T <: AbstractFloat}
     return zero(T)
 end
 
@@ -115,40 +115,40 @@ function reg_z_aug(
     },
     ::TrainMode{true},
     z::Any,
-) where {INPLACE,CONDITIONED,STEER}
+) where {INPLACE, CONDITIONED, STEER}
     n_aug_input = n_augments_input(icnf)
-    z_aug = z[(end-n_aug_input+1):end, :]
+    z_aug = z[(end - n_aug_input + 1):end, :]
     return LinearAlgebra.norm.(eachcol(z_aug))
 end
 
 function reg_z_aug(
-    ::AbstractICNF{T,<:MatrixMode},
+    ::AbstractICNF{T, <:MatrixMode},
     ::Mode,
     z::Any,
-) where {T<:AbstractFloat}
+) where {T <: AbstractFloat}
     zrs_aug = similar(z, size(z, 2))
     ChainRulesCore.@ignore_derivatives fill!(zrs_aug, zero(T))
     return zrs_aug
 end
 
 function base_sol(
-    icnf::AbstractICNF{T,<:ComputeMode,INPLACE},
-    prob::SciMLBase.AbstractODEProblem{<:AbstractVecOrMat{<:Real},NTuple{2,T},INPLACE},
-) where {T<:AbstractFloat,INPLACE}
+    icnf::AbstractICNF{T, <:ComputeMode, INPLACE},
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVecOrMat{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     sol = SciMLBase.solve(prob; icnf.sol_kwargs...)
     return last(sol.u)
 end
 
 function inference_sol(
-    icnf::AbstractICNF{T,<:VectorMode,INPLACE},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real},NTuple{2,T},INPLACE},
-) where {T<:AbstractFloat,INPLACE}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     fsol = base_sol(icnf, prob)
-    z = fsol[begin:(end-n_aug-1)]
-    Δlogp = fsol[(end-n_aug)]
-    augs = fsol[(end-n_aug+1):end]
+    z = fsol[begin:(end - n_aug - 1)]
+    Δlogp = fsol[(end - n_aug)]
+    augs = fsol[(end - n_aug + 1):end]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     Ȧ = reg_z_aug(icnf, mode, z)
@@ -156,15 +156,15 @@ function inference_sol(
 end
 
 function inference_sol(
-    icnf::AbstractICNF{T,<:MatrixMode,INPLACE},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real},NTuple{2,T},INPLACE},
-) where {T<:AbstractFloat,INPLACE}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     fsol = base_sol(icnf, prob)
-    z = fsol[begin:(end-n_aug-1), :]
-    Δlogp = fsol[(end-n_aug), :]
-    augs = fsol[(end-n_aug+1):end, :]
+    z = fsol[begin:(end - n_aug - 1), :]
+    Δlogp = fsol[(end - n_aug), :]
+    augs = fsol[(end - n_aug + 1):end, :]
     logpz = oftype(Δlogp, Distributions.logpdf(icnf.basedist, z))
     logp̂x = logpz - Δlogp
     Ȧ = permutedims(reg_z_aug(icnf, mode, z))
@@ -172,34 +172,34 @@ function inference_sol(
 end
 
 function generate_sol(
-    icnf::AbstractICNF{T,<:VectorMode,INPLACE},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real},NTuple{2,T},INPLACE},
-) where {T<:AbstractFloat,INPLACE}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractVector{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     fsol = base_sol(icnf, prob)
-    return fsol[begin:(end-n_aug_input-n_aug-1)]
+    return fsol[begin:(end - n_aug_input - n_aug - 1)]
 end
 
 function generate_sol(
-    icnf::AbstractICNF{T,<:MatrixMode,INPLACE},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE},
     mode::Mode,
-    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real},NTuple{2,T},INPLACE},
-) where {T<:AbstractFloat,INPLACE}
+    prob::SciMLBase.AbstractODEProblem{<:AbstractMatrix{<:Real}, NTuple{2, T}, INPLACE},
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     fsol = base_sol(icnf, prob)
-    return fsol[begin:(end-n_aug_input-n_aug-1), :]
+    return fsol[begin:(end - n_aug_input - n_aug - 1), :]
 end
 
 function inference_prob(
-    icnf::AbstractICNF{T,<:VectorMode,INPLACE,false},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, false},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
     st::NamedTuple,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
@@ -208,7 +208,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(xs, zrs),
@@ -219,13 +219,13 @@ function inference_prob(
 end
 
 function inference_prob(
-    icnf::AbstractICNF{T,<:VectorMode,INPLACE,true},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, true},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
     ps::Any,
     st::NamedTuple,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1)
@@ -234,7 +234,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(xs, zrs),
@@ -245,12 +245,12 @@ function inference_prob(
 end
 
 function inference_prob(
-    icnf::AbstractICNF{T,<:MatrixMode,INPLACE,false},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, false},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
     st::NamedTuple,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
@@ -259,7 +259,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(xs, zrs),
@@ -270,13 +270,13 @@ function inference_prob(
 end
 
 function inference_prob(
-    icnf::AbstractICNF{T,<:MatrixMode,INPLACE,true},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, true},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::NamedTuple,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     zrs = similar(xs, n_aug_input + n_aug + 1, size(xs, 2))
@@ -285,7 +285,7 @@ function inference_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(xs, zrs),
@@ -296,11 +296,11 @@ function inference_prob(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T,<:VectorMode,INPLACE,false},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, false},
     mode::Mode,
     ps::Any,
     st::NamedTuple,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input)
@@ -311,7 +311,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(new_xs, zrs),
@@ -322,12 +322,12 @@ function generate_prob(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T,<:VectorMode,INPLACE,true},
+    icnf::AbstractICNF{T, <:VectorMode, INPLACE, true},
     mode::Mode,
     ys::AbstractVector{<:Real},
     ps::Any,
     st::NamedTuple,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input)
@@ -338,7 +338,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(new_xs, zrs),
@@ -349,12 +349,12 @@ function generate_prob(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T,<:MatrixMode,INPLACE,false},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, false},
     mode::Mode,
     ps::Any,
     st::NamedTuple,
     n::Int,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input, n)
@@ -365,7 +365,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(new_xs, zrs),
@@ -376,13 +376,13 @@ function generate_prob(
 end
 
 function generate_prob(
-    icnf::AbstractICNF{T,<:MatrixMode,INPLACE,true},
+    icnf::AbstractICNF{T, <:MatrixMode, INPLACE, true},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
     ps::Any,
     st::NamedTuple,
     n::Int,
-) where {T<:AbstractFloat,INPLACE}
+) where {T <: AbstractFloat, INPLACE}
     n_aug = n_augments(icnf, mode)
     n_aug_input = n_augments_input(icnf)
     new_xs = base_AT(icnf, icnf.nvariables + n_aug_input, n)
@@ -393,7 +393,7 @@ function generate_prob(
     ChainRulesCore.@ignore_derivatives Random.rand!(icnf.rng, icnf.epsdist, ϵ)
     nn = add_conditions_nn(icnf, ys)
     return SciMLBase.ODEProblem{INPLACE}(
-        SciMLBase.ODEFunction{INPLACE,SciMLBase.FullSpecialize}(
+        SciMLBase.ODEFunction{INPLACE, SciMLBase.FullSpecialize}(
             make_ode_func(icnf, mode, nn, st, ϵ),
         ),
         vcat(new_xs, zrs),
@@ -425,7 +425,7 @@ function inference(
 end
 
 function generate(
-    icnf::AbstractICNF{<:AbstractFloat,<:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ps::Any,
     st::NamedTuple,
@@ -434,7 +434,7 @@ function generate(
 end
 
 function generate(
-    icnf::AbstractICNF{<:AbstractFloat,<:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     ys::AbstractVector{<:Real},
     ps::Any,
@@ -444,7 +444,7 @@ function generate(
 end
 
 function generate(
-    icnf::AbstractICNF{<:AbstractFloat,<:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ps::Any,
     st::NamedTuple,
@@ -454,7 +454,7 @@ function generate(
 end
 
 function generate(
-    icnf::AbstractICNF{<:AbstractFloat,<:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     ys::AbstractMatrix{<:Real},
     ps::Any,
@@ -465,7 +465,7 @@ function generate(
 end
 
 function loss(
-    icnf::AbstractICNF{<:AbstractFloat,<:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ps::Any,
@@ -475,7 +475,7 @@ function loss(
 end
 
 function loss(
-    icnf::AbstractICNF{<:AbstractFloat,<:VectorMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:VectorMode},
     mode::Mode,
     xs::AbstractVector{<:Real},
     ys::AbstractVector{<:Real},
@@ -486,7 +486,7 @@ function loss(
 end
 
 function loss(
-    icnf::AbstractICNF{<:AbstractFloat,<:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ps::Any,
@@ -496,7 +496,7 @@ function loss(
 end
 
 function loss(
-    icnf::AbstractICNF{<:AbstractFloat,<:MatrixMode},
+    icnf::AbstractICNF{<:AbstractFloat, <:MatrixMode},
     mode::Mode,
     xs::AbstractMatrix{<:Real},
     ys::AbstractMatrix{<:Real},
@@ -506,7 +506,7 @@ function loss(
     return -Statistics.mean(first(inference(icnf, mode, xs, ys, ps, st)))
 end
 
-function (icnf::AbstractICNF{<:AbstractFloat,<:ComputeMode,INPLACE,false})(
+function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, false})(
     xs::AbstractVecOrMat{<:Real},
     ps::Any,
     st::NamedTuple,
@@ -514,8 +514,8 @@ function (icnf::AbstractICNF{<:AbstractFloat,<:ComputeMode,INPLACE,false})(
     return first(inference(icnf, TrainMode{false}(), xs, ps, st)), st
 end
 
-function (icnf::AbstractICNF{<:AbstractFloat,<:ComputeMode,INPLACE,true})(
-    (xs, ys)::Tuple{<:AbstractVecOrMat{<:Real},<:AbstractVecOrMat{<:Real}},
+function (icnf::AbstractICNF{<:AbstractFloat, <:ComputeMode, INPLACE, true})(
+    (xs, ys)::Tuple{<:AbstractVecOrMat{<:Real}, <:AbstractVecOrMat{<:Real}},
     ps::Any,
     st::NamedTuple,
 ) where {INPLACE}
